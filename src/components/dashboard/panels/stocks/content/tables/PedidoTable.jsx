@@ -2,6 +2,21 @@
 import { useState } from "react";
 import { FiltroDropdown, Search } from "../../../../widgets";
 import { Download, SearchIcon, ShowEyes } from "../../../../../../assets/icons";
+import RemitoModal from "../../../../widgets/RemiModal";
+
+const productos = [
+  { codigo: "PD12949ULM", descripcion: "Mesa de Roble Macizo", cantidad: 5 },
+  {
+    codigo: "FS12945ULFM",
+    descripcion: "Silla Tapizada de Cuero",
+    cantidad: 1,
+  },
+  {
+    codigo: "LK52948ULNM",
+    descripcion: "Lámpara de Pie Minimalista",
+    cantidad: 2,
+  },
+];
 
 const pedidosRealizados = [
   {
@@ -39,6 +54,7 @@ const pedidosAConfirmar = [
 
 const PedidoTable = () => {
   const [tags, onCambiar] = useState("realizados");
+  const [showModal, setShowModal] = useState(false);
 
   return (
     <div className="w-full h-full bg-white rounded-lg shadow overflow-x-auto p-4">
@@ -123,7 +139,10 @@ const PedidoTable = () => {
                         {pedido.estado}
                       </span>
                     </td>
-                    <td className="flex items-center justify-center gap-2">
+                    <td
+                      className="flex items-center gap-2"
+                      onClick={() => setShowModal(true)}
+                    >
                       <ShowEyes />
                     </td>
                   </tr>
@@ -158,8 +177,13 @@ const PedidoTable = () => {
                         {pedido.estado}
                       </span>
                     </td>
-                    <td className="flex items-center justify-center gap-2">
-                      <ShowEyes />
+                    <td className="flex gap-2">
+                      <span
+                        className="cursor-pointe"
+                        onClick={() => setShowModal(true)}
+                      >
+                        <ShowEyes />
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -167,6 +191,17 @@ const PedidoTable = () => {
         </table>
       </div>
       {/* Tabla */}
+
+      {showModal ? (
+        <RemitoModal
+          productos={productos}
+          onCancel={() => setShowModal(false)}
+          onConfirm={() => {
+            alert("Pedido confirmado");
+            setShowModal(false); // Cerrar modal después de confirmar
+          }}
+        />
+      ) : null}
     </div>
   );
 };
