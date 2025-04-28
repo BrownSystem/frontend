@@ -1,4 +1,6 @@
-const ActionCard = ({
+import React from "react";
+
+const ActionCardComponent = ({
   onClick,
   svgAction,
   action,
@@ -12,7 +14,7 @@ const ActionCard = ({
         <div className="bg-gradient-to-b from-[var(--brown-ligth-400)] to-[var(--brown-dark-800)] rounded-lg p-2 w-[40px] cursor-pointer shadow-md">
           {svgAction}
         </div>
-        {others && true ? (
+        {others && (
           <div className="text-1xl relative pr-5">
             <figure className="flex relative">
               <img
@@ -32,18 +34,18 @@ const ActionCard = ({
               </div>
             </figure>
           </div>
-        ) : null}
+        )}
       </div>
-      <div className="">
+      <div>
         <p className="text-1xl text-gray-500 font-light">{title}</p>
-        <a
+        <div
           onClick={onClick}
           className="!p-0 text-sm !text-green-600  cursor-pointer flex bg-transparent "
         >
           {action}
 
           <span className="pt-[5.5px] pl-1 relative">
-            {hasNotifications && true ? (
+            {hasNotifications && (
               <span className="absolute bottom-[93px] right-[33px]">
                 <svg
                   width="12"
@@ -58,7 +60,7 @@ const ActionCard = ({
                   ></path>
                 </svg>
               </span>
-            ) : null}
+            )}
             <svg
               width="12"
               height="12"
@@ -69,23 +71,24 @@ const ActionCard = ({
               <path
                 d="M6.43704 5.9581L15.5163 2.93168C19.5892 1.57404 21.8095 3.79435 20.4519 7.86729L17.4255 16.9465C15.389 23.0559 12.0585 23.0489 10.0291 16.9465L9.42103 15.1081C9.26546 14.6414 8.74927 14.1252 8.28258 13.9696L6.43703 13.3544C0.334707 11.325 0.334708 7.98749 6.43704 5.9581Z"
                 stroke="#00a63e"
-                stroke-width="2dd"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               ></path>
               <path
                 d="M9.05322 14.3302L12.8716 10.5118"
                 stroke="#00a63e"
-                stroke-width="2dd"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               ></path>
             </svg>
           </span>
-        </a>
+        </div>
       </div>
     </div>
   );
 };
 
+const ActionCard = React.memo(ActionCardComponent);
 export default ActionCard;

@@ -1,15 +1,14 @@
-import LayoutPanel from "../../layout/LayoutPanel";
 import { ActionCard } from "../../widgets";
 import {
   Pedidos,
   CreateUser,
-  Comporbantes,
   Lock,
+  Comprobantes,
 } from "../../../../assets/icons";
 
 const ShopPanel = () => {
   return (
-    <LayoutPanel>
+    <>
       <div className="w-full flex max-h-full roundend-lg">
         <div className="w-full flex h-[120px] gap-5">
           <ActionCard
@@ -20,7 +19,7 @@ const ShopPanel = () => {
             hasNotifications={false}
           />
           <ActionCard
-            svgAction={<Comporbantes />}
+            svgAction={<Comprobantes />}
             action={"Generar"}
             title={"Comprobantes"}
             others={false}
@@ -43,7 +42,7 @@ const ShopPanel = () => {
         </div>
       </div>
       <div className="mt-5">{/* TODO: Add content here */}</div>
-    </LayoutPanel>
+    </>
   );
 };
 

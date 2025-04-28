@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
 
-const opciones = ["Todos", "Pendiente", "Confirmado", "Por Confirmar"];
-
-const FiltroDropdown = ({ onSeleccionar }) => {
+const FiltroDropdown = ({ onSeleccionar, opciones }) => {
   const [abierto, setAbierto] = useState(false);
   const [seleccionado, setSeleccionado] = useState("Filtrar");
 
@@ -23,7 +21,7 @@ const FiltroDropdown = ({ onSeleccionar }) => {
         <FaChevronDown className="ml-2 text-[#4d2e11] text-sm" />
       </div>
       {abierto && (
-        <div className="absolute z-10 mt-1 w-40 bg-white border border-[#f5e6c9] rounded-md shadow-lg">
+        <div className="fixed z-[999] mt-1 w-40 bg-white border border-[#f5e6c9] rounded-md shadow-lg">
           {opciones.map((opcion) => (
             <div
               key={opcion}

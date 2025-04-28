@@ -1,8 +1,7 @@
 // PedidoTable.tsx
 import { useState } from "react";
-import { FiltroDropdown, Search } from "../../../../widgets";
-import { Download, SearchIcon, ShowEyes } from "../../../../../../assets/icons";
-import RemitoModal from "../../../../widgets/RemiModal";
+import { ConfirmationModalRemito, FiltroDropdown } from "../../../../widgets";
+import { SearchIcon, ShowEyes } from "../../../../../../assets/icons";
 
 const productos = [
   { codigo: "PD12949ULM", descripcion: "Mesa de Roble Macizo", cantidad: 5 },
@@ -50,7 +49,16 @@ const pedidosAConfirmar = [
     productos: 1,
     estado: "Pendiente",
   },
+  {
+    fecha: "16/04/2025",
+    origen: "Depósito Alta Córdoba",
+    destino: "Depósito Hyper",
+    productos: 1,
+    estado: "Confirmado",
+  },
 ];
+
+const opciones = ["Todos", "Pendiente", "Confirmado", "Por Confirmar"];
 
 const PedidoTable = () => {
   const [tags, onCambiar] = useState("realizados");
@@ -67,7 +75,7 @@ const PedidoTable = () => {
             className="bg-transparent outline-none w-full text-[#5c4c3a] placeholder-[#5c4c3a] text-[15px]"
           />
         </div>
-        <FiltroDropdown />
+        <FiltroDropdown opciones={opciones} />
       </div>
 
       <div className="w-full mt-4">
@@ -193,7 +201,7 @@ const PedidoTable = () => {
       {/* Tabla */}
 
       {showModal ? (
-        <RemitoModal
+        <ConfirmationModalRemito
           productos={productos}
           onCancel={() => setShowModal(false)}
           onConfirm={() => {

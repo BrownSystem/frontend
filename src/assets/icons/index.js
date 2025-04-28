@@ -1,5 +1,5 @@
 export { default as Home } from "./Home";
-export { default as Comporbantes } from "./Comporbantes";
+export { default as Comprobantes } from "./Comprobantes";
 export { default as CreateUser } from "./CreateUser";
 export { default as Pedidos } from "./Pedidos";
 export { default as Ventas } from "./Ventas";
@@ -13,3 +13,6 @@ export { default as Lock } from "./Lock";
 export { default as Tick } from "./Tick";
 export { default as SearchIcon } from "./SearchIcon";
 export { default as Download } from "./Download";
+export { default as CreditNote } from "./CreditNote";
+export { default as Wallet } from "./Wallet";
+export { default as Delete } from "./Delete";

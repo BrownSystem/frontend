@@ -1,13 +1,11 @@
 import { useState } from "react";
 import { DepositCard } from "../../../widgets";
-import { useStockView } from "../../../../../context/StockViewContext";
+import { useStockViewStore } from "@store/useStockViewStore";
 
 const DepositsContent = () => {
   const [selectedDeposit, setSelectedDeposit] = useState(null);
-  const { setView, renderContent } = useStockView({
-    name: "productos",
-    props: null,
-  });
+  const setView = useStockViewStore((state) => state.setViewSafe);
+  const renderContent = useStockViewStore((state) => state.renderContent);
 
   const handleCardClick = (deposit) => {
     setSelectedDeposit(deposit);
@@ -28,7 +26,7 @@ const DepositsContent = () => {
   return (
     <>
       <h1 className="!text-3xl font-normal text-gray-700">
-        Depositos{" "}
+        Depósitos{" "}
         <span className="text-gray-500 text-[20px]">
           (selecciona para gestionar transferencias)
         </span>

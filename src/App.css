@@ -6,8 +6,14 @@
 
   /* COLORS */
   --brown-dark-950: #361c12;
+  --brown-dark-900: #5e3625;
   --brown-dark-800: #6e4025;
+  --brown-dark-700: #834c25;
+  --brown-dark-700: #a3682b;
+  --brown-dark-500: #bd8535;
   --brown-ligth-400: #cb963b;
+  --brown-ligth-300: #d9b66b;
+  --brown-ligth-200: #e7d3a1;
   --brown-ligth-100: #f2e9cf;
   --brown-ligth-50: #faf6ec;
 }

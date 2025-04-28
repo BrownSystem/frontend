@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useStockView } from "../../../../../../context/StockViewContext";
+import { useStockViewStore } from "@store/useStockViewStore";
 import { Search, StockStatus } from "../../../../widgets";
 import RemitoModal from "../../../../widgets/RemiModal";
 
@@ -53,8 +53,7 @@ const productos = [
 ];
 
 const ProductTableDeposit = ({ title, span, backTo }) => {
-  // const { openProductDetail } = useProductModal();
-  const { setView } = useStockView();
+  const setView = useStockViewStore((state) => state.setViewSafe);
 
   const [products, setProducts] = useState(initialProducts);
   const [quantities, setQuantities] = useState(
@@ -100,16 +99,14 @@ const ProductTableDeposit = ({ title, span, backTo }) => {
         <div className="flex gap-2">
           <Search placeholder="Buscar productos" />
           {backTo && (
-            <a
-              href="#"
+            <div
               onClick={() => setView({ name: "depositos", props: null })}
               className="!text-white px-4 pt-3 rounded-lg bg-gradient-to-b from-[var(--brown-ligth-400)] to-[var(--brown-dark-800)]"
             >
               Volver
-            </a>
+            </div>
           )}
           <button
-            href="#"
             onClick={() => setShowModal(true)}
             className="!text-white px-4 pt-3 rounded-lg bg-gradient-to-b from-[var(--brown-ligth-400)] to-[var(--brown-dark-800)]"
           >

@@ -46,14 +46,14 @@ const TopBar = () => {
               <path
                 d="M21.25 12C21.25 6.89137 17.1086 2.75 12 2.75C6.89137 2.75 2.75 6.89137 2.75 12C2.75 17.1086 6.89137 21.25 12 21.25C17.1086 21.25 21.25 17.1086 21.25 12Z"
                 stroke="#6e4025"
-                stroke-width="2"
+                strokeWidth="2"
               ></path>
               <path
                 d="M12 7.5V12L15 15"
                 stroke="#6e4025"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               ></path>
             </svg>
           </span>

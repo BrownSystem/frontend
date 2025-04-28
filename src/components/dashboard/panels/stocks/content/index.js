@@ -1,2 +1,2 @@
 export { default as DepositsContent } from "./DepositsContent";
-export { default as SupplierContent } from "./SupplierContent";
+export { default as SuppliersContent } from "./SupplierContent/SuppliersContent";
