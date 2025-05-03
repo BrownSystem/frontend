@@ -16,7 +16,9 @@ const CreateInvoice = () => {
       proveedor: "",
       numeroFactura: "",
       letra: "",
-      productos: [{ codigoIva: "", codigo: "", descripcion: "", precio: 0 }],
+      productos: [
+        { codigoIva: "", codigo: "", descripcion: "", precio: 0, quantity: 1 },
+      ],
     },
   });
 
@@ -30,20 +32,22 @@ const CreateInvoice = () => {
   const calcularTotales = () => {
     let subtotal = 0;
     let totalIva = 0;
+    let subTotalProducto = 0;
 
     productos.forEach((prod) => {
-      const precio = parseFloat(prod.precio) || 0;
+      const precio = parseFloat(prod.precio) * prod.quantity || 0;
       const codigoIva = parseInt(prod.codigoIva);
       const porcentajeIva = ivaOptions[codigoIva] || 0;
 
       const totalProducto = precio;
       const ivaProducto = totalProducto * (porcentajeIva / 100);
-
+      subTotalProducto = totalProducto * (porcentajeIva / 100);
       subtotal += totalProducto;
       totalIva += ivaProducto;
     });
 
     return {
+      subTotalProducto: subTotalProducto.toFixed(2),
       subtotal: subtotal.toFixed(2),
       totalIva: totalIva.toFixed(2),
       total: (subtotal + totalIva).toFixed(2),
@@ -59,10 +63,10 @@ const CreateInvoice = () => {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="rounded-md  space-y-4 overflow-y-scroll h-[280px]"
+      className="rounded-md  space-y-4 h-full"
     >
       {/* Datos de factura */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 px-5">
         <div>
           <label className="block text-brown-800 font-medium mb-1">Fecha</label>
           <input
@@ -106,17 +110,18 @@ const CreateInvoice = () => {
       </div>
 
       {/* Productos */}
-      <div className="space-y-2">
-        <div className="grid grid-cols-6 gap-2 font-medium text-black bg-[#FDF7F1] rounded-t-md px-4 py-2 border border-[var(--brown-ligth-400)]">
+      <div className="space-y-2 px-5">
+        <div className="grid grid-cols-7 gap-2 font-medium text-black bg-[#FDF7F1] rounded-t-md px-4 py-2 border border-[var(--brown-ligth-400)]">
           <div>Código de IVA</div>
           <div className="col-span-2">Código de producto</div>
           <div className="text-start">Descripción</div>
           <div className="text-center">Precio</div>
-          <div className="text-center">Borrar</div> {/* NUEVO */}
+          <div className="text-center">Cantidad</div>
+          <div className="text-center">Borrar</div>
         </div>
 
         {fields.map((item, index) => (
-          <div key={item.id} className="grid grid-cols-6 gap-2 items-center">
+          <div key={item.id} className="grid grid-cols-7 gap-2 items-center">
             <input
               type="number"
               {...register(`productos.${index}.codigoIva`)}
@@ -138,6 +143,12 @@ const CreateInvoice = () => {
               {...register(`productos.${index}.precio`)}
               className="border border-[var(--brown-ligth-400)] rounded px-2 py-1 text-right"
             />
+            <input
+              type="number"
+              step="0.01"
+              {...register(`productos.${index}.quantity`)}
+              className="border border-[var(--brown-ligth-400)] rounded px-2 py-1 text-right"
+            />
             <button
               type="button"
               onClick={() => remove(index)}
@@ -152,7 +163,13 @@ const CreateInvoice = () => {
           <button
             type="button"
             onClick={() =>
-              append({ codigoIva: "", codigo: "", descripcion: "", precio: 0 })
+              append({
+                codigoIva: "1",
+                codigo: "",
+                descripcion: "",
+                precio: 0,
+                quantity: 1,
+              })
             }
             className="text-brown-800 border border-[var(--brown-ligth-400)] rounded-full w-8 h-8 flex items-center justify-center hover:bg-brown-100"
           >
@@ -162,9 +179,8 @@ const CreateInvoice = () => {
           </button>
         </div>
       </div>
-
       {/* Totales */}
-      <div className="flex justify-between px-10 items-end w-full">
+      <div className="flex justify-between px-12  items-end w-full">
         <div className="flex flex-col gap-1">
           <button
             type="submit"
@@ -189,8 +205,6 @@ const CreateInvoice = () => {
           </div>
         </div>
       </div>
-
-      {/* Guardar */}
     </form>
   );
 };

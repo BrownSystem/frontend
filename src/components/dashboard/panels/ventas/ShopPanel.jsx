@@ -32,13 +32,6 @@ const ShopPanel = () => {
             others={false}
             hasNotifications={false}
           />
-          <ActionCard
-            svgAction={<Pedidos />}
-            action={"Visualizar"}
-            title={"Pedidos"}
-            others={false}
-            hasNotifications={true}
-          />
         </div>
       </div>
       <div className="mt-5">{/* TODO: Add content here */}</div>

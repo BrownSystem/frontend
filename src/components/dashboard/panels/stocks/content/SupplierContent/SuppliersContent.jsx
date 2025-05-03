@@ -14,7 +14,7 @@ const SuppliersContent = () => {
 
   return (
     <>
-      <div className="w-full h-full bg-white rounded-lg shadow overflow-x-auto p-4">
+      <div className="w-auto h-full bg-white rounded-lg  p-4">
         <div className="flex">
           <div className="w-[90%] flex items-center gap-4">
             <SupplierOptionCard

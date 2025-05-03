@@ -11,16 +11,16 @@ const DepositCard = memo(
     onClick,
   }) => {
     return (
-      <div className="min-w-auto min-h-auto bg-white rounded-md flex flex-col items-center p-2 pt-4 gap-1">
-        <figure className="w-[40%] rounded-bl-full mb-3">
+      <div className="min-w-auto min-h-auto bg-[var(--brown-ligth-50)] border-[1px] border-[var(--brown-dark-800)] rounded-md flex flex-col items-center p-2 pt-4 gap-1 shadow-md">
+        <figure className="w-[40%] rounded-full mb-3 shadow-md border-[2px] border-white">
           <img
             className="w-full rounded-full"
             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzj00mTDRWomeiIY_ezq_EVu1H_1_9I7IRxA&s"
             alt=""
           />
         </figure>
-        <p className="font-semibold text-gray-700 text-xl text-center">{`${name} (${location})`}</p>
-        <p className="text-center text-gray-500 ">
+        <p className="font-semibold text-[var(--brown-dark-950)] text-xl text-center">{`${name} (${location})`}</p>
+        <p className="text-center  text-black/80">
           <span>
             {" "}
             Puede cubrir:{" "}
@@ -29,21 +29,21 @@ const DepositCard = memo(
           </span>
         </p>
         {canTransfer ? (
-          <p className=" text-gray-500 flex items-center gap-1">
+          <p className=" flex items-center gap-1 text-black/80">
             <span>
               <Tick />
             </span>
             <span> Transferible. </span>
           </p>
         ) : (
-          <p className=" text-gray-500 flex items-center gap-1">
+          <p className=" flex items-center gap-1 text-black/80">
             <span>
               <DangerTriangle />
             </span>
             <span> No transferible.</span>
           </p>
         )}
-        <p className="text-gray-500 text-center text-xs uppercase">
+        <p className=" text-center text-xs uppercase text-black/80">
           Reposición:{" "}
           <span
             className={wasRecentlyRestocked ? "text-green-600" : "text-red-700"}
@@ -52,7 +52,7 @@ const DepositCard = memo(
           </span>
         </p>
         <button
-          className="w-full !border-t-[.5px] !border-0 !border-gray-300 !bg-transparent !text-gray-500 !mt-2 !py-2 !px-8 !cursor-pointer hover:text-red-700"
+          className="w-full !border-t-[.5px] !border-0 !border-gray-300 !bg-transparent !text-black/80 !mt-2 !py-2 !px-8 !cursor-pointer hover:text-red-700"
           style={{ all: "unset" }}
           onClick={onClick}
         >

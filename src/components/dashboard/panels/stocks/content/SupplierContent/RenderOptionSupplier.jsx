@@ -1,10 +1,16 @@
 import { useViewSupplierStore } from "../../../../../../store/useViewSupplierStore";
-import { CreateInvoice, CreateSupplier, InvoiceTable } from "./tables";
+import {
+  AccountsPayable,
+  CreateInvoice,
+  CreateSupplier,
+  InvoiceTable,
+} from "./tables";
 const viewMap = {
   invoiceTable: InvoiceTable,
   createInvoice: CreateInvoice,
   creditNote: CreateInvoice,
   createSupplier: CreateSupplier,
+  registerPayment: AccountsPayable,
 };
 
 export const RenderOptionSupplier = () => {
@@ -15,5 +21,5 @@ export const RenderOptionSupplier = () => {
     const DefaultComponent = viewMap["invoiceTable"];
     return <DefaultComponent />;
   }
-  return <Component />;
+  return <Component key={view} />;
 };

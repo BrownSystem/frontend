@@ -3,8 +3,6 @@ export { default as FileUploadCard } from "./FileUploadCard";
 export { default as DepositCard } from "./DepositCard";
 export { default as Search } from "./Search";
 export { default as StockStatus } from "./StockStatus";
-export { default as RemiModal } from "./RemiModal";
 export { default as FiltroDropdown } from "./FiltroDropdown";
-export { default as ConfirmationModalRemito } from "./ConfirmationModalRemito";
 export { default as SupplierOptionCard } from "./SupplierOptionCard";
 export { default as Button } from "./Button";

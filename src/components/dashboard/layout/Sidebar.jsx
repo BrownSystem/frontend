@@ -10,8 +10,8 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="w-[100px] h-full bg-gradient-to-b from-[var(--brown-ligth-400)] to-[var(--brown-dark-800)] rounded-tr-full">
-      <div className="flex flex-col w-full h-full items-end pt-20 gap-[35px]">
+    <div className="fixed z-[99999] top-0 h-[4rem] w-full -gradient-to-b from-[var(--brown-ligth-400)] bg-[var(--brown-dark-800)] shadow-md rounded-bl-4xl rounded-br-4xl">
+      <div className="flex  w-full h-full justify-center items-center px-20 gap-[35px]">
         <div className="cursor-pointer border-none pr-10">
           <figure className="relative z-0 w-[34px] h-[34px] before:content-[''] before:absolute before:bg-white before:w-[40px] before:h-[40px] before:rounded-full before:-z-[99] before:top-[-3.4px] before:right-[-3px]">
             <img
@@ -164,7 +164,7 @@ const Sidebar = () => {
 
         <div
           onClick={() => handleSliderChange("stock")}
-          className="cursor-pointer mt-20 border-none pr-10"
+          className="cursor-pointer border-none pr-10"
         >
           <svg
             width="34"

@@ -8,29 +8,33 @@ const products = [
     code: "PD12949UXLM",
     color: "Rojo",
     priceGene: 300.311,
-    stock: 5,
-    description: "Mesa de Roble Macizo",
+    stock: 0,
+    descripcion: "180 x 180 x 69cm",
+    name: "Mesa de Roble Macizo",
   },
   {
     code: "FS12945UFLM",
     color: "Verde",
     priceGene: 300.311,
     stock: 1,
-    description: "Silla Tapizada de Cuero",
+    descripcion: "180 x 180 x 69cm",
+    name: "Silla Tapizada de Cuero",
   },
   {
     code: "TT32945TMLM",
     color: "Amarillo",
     priceGene: 475.5,
-    stock: 12,
-    description: "Sofá Esquinero de Lino",
+    stock: 1,
+    descripcion: "180 x 180 x 69cm",
+    name: "Sofá Esquinero de Lino",
   },
   {
     code: "FS12945UFLM",
     color: "Rosa",
     priceGene: 300.311,
-    stock: 7,
-    description: "Silla Tapizada de Cuero",
+    stock: 2,
+    descripcion: "180 x 180 x 70cm",
+    name: "Silla Tapizada de Cuero",
   },
 ];
 
@@ -61,7 +65,7 @@ const ProductTable = () => {
                     className="bg-transparent outline-none w-full text-[#5c4c3a] placeholder-[#5c4c3a] text-[15px]"
                   />
                 </div>
-                <FiltroDropdown opciones={opciones} />
+                <FiltroDropdown opciones={opciones} id={"ProductTable"} />
               </div>
             </div>
           </div>
@@ -90,7 +94,7 @@ const ProductTable = () => {
                   } hover:bg-[#fff3e4]`}
                 >
                   <td className="font-medium  pl-2">{product.code}</td>
-                  <td>{product.description}</td>
+                  <td>{product.name}</td>
                   <td className="flex justify-center items-center gap-2">
                     <StockStatus value={product.stock} />
                   </td>

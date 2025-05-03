@@ -1,21 +1,20 @@
 import React from "react";
 import { FiltroDropdown } from "../../../../../widgets";
-import { SearchIcon } from "../../../../../../../assets/icons";
+import { SearchIcon, ShowEyes } from "../../../../../../../assets/icons";
+import InvoiceModal from "../../../../../../common/Modal/InvoiceModal";
 
 const facturas = [
   {
     proveedor: "Tapicerías del Centro",
     factura: "FC1-0000678",
     fecha: "15/04/2025",
-    fecha_venc: "02/04/2025",
     monto: 1540.5,
-    estado: "Pendiente",
+    estado: "Pagada",
   },
   {
     proveedor: "Curtiembre Fina",
     factura: "A0067",
     fecha: "10/04/2025",
-    fecha_venc: "02/04/2025",
     monto: 956.0,
     estado: "Pagada",
   },
@@ -23,33 +22,28 @@ const facturas = [
     proveedor: "Gómez e Hijos",
     factura: "B0004",
     fecha: "02/04/2025",
-    fecha_venc: "02/04/2025",
     monto: 624.19,
     estado: "Pagada",
   },
 ];
 
-const EstadoBadge = ({ estado }) => {
-  const isPagada = estado === "Pagada";
-  return (
-    <span
-      className={`px-3 py-1 rounded-full text-sm font-semibold ${
-        isPagada
-          ? "bg-green-100 text-green-700"
-          : "bg-yellow-100 text-yellow-700"
-      }`}
-    >
-      {estado}
-    </span>
-  );
-};
-
-const opciones = ["Todos", "Pendientes", "Pagadas"];
+const opciones = ["Todos", "Fechas"];
 
 const InvoiceTable = () => {
+  const [showModal, setShowModal] = React.useState(false);
+
   return (
     <>
-      <div className="w-full mt-4">
+      <div className="w-full mt-4 relative">
+        {showModal && (
+          <InvoiceModal
+            onCancel={() => setShowModal(false)}
+            onConfirm={() => {
+              alert("Pedido confirmado");
+              setShowModal(false);
+            }}
+          />
+        )}
         <div className="flex text-[15px] font-medium rounded-t-lg overflow-hidden ">
           <div className="w-full cursor-pointer px-4 py-2 flex items-center justify-center transition-all duration-200 text-xl text-center bg-white text-[#3c2f1c] border-t-2 border-x-2 border-[#e8d5a2] rounded-t-md shadow-md">
             Facturas
@@ -64,7 +58,7 @@ const InvoiceTable = () => {
                   className="bg-transparent outline-none w-full text-[#5c4c3a] placeholder-[#5c4c3a] text-[15px]"
                 />
               </div>
-              <FiltroDropdown opciones={opciones} />
+              <FiltroDropdown opciones={opciones} id={"InvoiceTable"} />
             </div>
           </div>
         </div>
@@ -77,9 +71,9 @@ const InvoiceTable = () => {
               <th>Proveedor</th>
               <th>Factura</th>
               <th>Fecha</th>
-              <th>Vencimiento</th>
               <th>Monto</th>
               <th className="text-center">Pago</th>
+              <th className="text-center">Detalles</th>
             </tr>
           </thead>
           <tbody>
@@ -88,16 +82,12 @@ const InvoiceTable = () => {
                 key={index}
                 className={`grid grid-cols-6 items-center px-4 py-3  transition ${
                   index % 2 === 0 ? "bg-white" : "bg-[#f7ecd9]"
-                } ${
-                  factura.estado === "Pendiente"
-                    ? "hover:bg-[#f7eed5] cursor-pointer"
-                    : ""
-                } `}
+                }`}
               >
                 <td className="font-medium pl-2">{factura.proveedor}</td>
                 <td>{factura.factura}</td>
                 <td>{factura.fecha}</td>
-                <td>{factura.fecha_venc}</td>
+
                 <td>
                   $
                   {factura.monto.toLocaleString("es-AR", {
@@ -105,7 +95,15 @@ const InvoiceTable = () => {
                   })}
                 </td>
                 <td className="flex items-center justify-center gap-2">
-                  <EstadoBadge estado={factura.estado} />
+                  <span className="px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-700">
+                    {factura.estado}
+                  </span>
+                </td>
+                <td
+                  className="flex items-center justify-center"
+                  onClick={() => setShowModal(true)}
+                >
+                  <ShowEyes />
                 </td>
               </tr>
             ))}

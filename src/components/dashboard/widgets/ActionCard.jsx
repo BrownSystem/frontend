@@ -11,7 +11,7 @@ const ActionCardComponent = ({
   return (
     <div className="h-full px-4 w-full shadow-md flex flex-col bg-white rounded-lg justify-around">
       <div className="w-full flex gap-14 items-center justify-between">
-        <div className="bg-gradient-to-b from-[var(--brown-ligth-400)] to-[var(--brown-dark-800)] rounded-lg p-2 w-[40px] cursor-pointer shadow-md">
+        <div className="-gradient-to-b from-[var(--brown-ligth-400)] bg-[var(--brown-dark-800)] rounded-lg p-2 w-[40px] cursor-pointer shadow-md">
           {svgAction}
         </div>
         {others && (

@@ -1,9 +1,7 @@
 import React from "react";
 
 const LayoutPanel = ({ children }) => {
-  return (
-    <div className="w-full max-h-full flex flex-col px-5 mt-2">{children}</div>
-  );
+  return <div className="w-full flex flex-col mt-2 px-4">{children}</div>;
 };
 
 export default LayoutPanel;

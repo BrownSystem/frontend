@@ -1,7 +1,8 @@
 // PedidoTable.tsx
 import { useState } from "react";
-import { ConfirmationModalRemito, FiltroDropdown } from "../../../../widgets";
+import { FiltroDropdown } from "../../../../widgets";
 import { SearchIcon, ShowEyes } from "../../../../../../assets/icons";
+import { ConfirmationModalRemito } from "../../../../../common";
 
 const productos = [
   { codigo: "PD12949ULM", descripcion: "Mesa de Roble Macizo", cantidad: 5 },
@@ -58,7 +59,7 @@ const pedidosAConfirmar = [
   },
 ];
 
-const opciones = ["Todos", "Pendiente", "Confirmado", "Por Confirmar"];
+const opciones = ["Todos", "Pendiente", "Confirmado"];
 
 const PedidoTable = () => {
   const [tags, onCambiar] = useState("realizados");
@@ -75,7 +76,7 @@ const PedidoTable = () => {
             className="bg-transparent outline-none w-full text-[#5c4c3a] placeholder-[#5c4c3a] text-[15px]"
           />
         </div>
-        <FiltroDropdown opciones={opciones} />
+        <FiltroDropdown opciones={opciones} id={"PedidoTable"} />
       </div>
 
       <div className="w-full mt-4">
@@ -88,7 +89,7 @@ const PedidoTable = () => {
             }`}
             onClick={() => onCambiar("realizados")}
           >
-            Pedidos realizados
+            Pedidos enviados
           </div>
           <div
             className={`w-full px-4 py-2 transition-all duration-200 text-xl text-center cursor-pointer ${
@@ -98,7 +99,7 @@ const PedidoTable = () => {
             }`}
             onClick={() => onCambiar("confirmar")}
           >
-            Pedidos por confirmar
+            Pedidos recibidos
           </div>
         </div>
       </div>

@@ -24,15 +24,15 @@ const DepositsContent = () => {
   }
 
   return (
-    <>
-      <h1 className="!text-3xl font-normal text-gray-700">
+    <div className="w-full flex flex-col gap-4 bg-white p-4 rounded-lg">
+      <h1 className="!text-3xl font-medium text-[var(--brown-dark-950)]">
         Depósitos{" "}
-        <span className="text-gray-500 text-[20px]">
+        <span className="text-[var(--brown-dark-700)] font-normal text-[20px]">
           (selecciona para gestionar transferencias)
         </span>
       </h1>
 
-      <div className="w-full flex mt-5 gap-4">
+      <div className="w-full flex mt-5 gap-4 ">
         {[
           {
             name: "Hyper",
@@ -63,7 +63,7 @@ const DepositsContent = () => {
           />
         ))}
       </div>
-    </>
+    </div>
   );
 };
 

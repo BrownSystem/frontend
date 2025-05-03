@@ -57,13 +57,13 @@ const RemitoModal = ({ onCancel, onConfirm, productos }) => {
         <div className="flex justify-end gap-3">
           <button
             onClick={onCancel}
-            className="!bg-[#1a1a1a] text-white px-4 py-2 rounded-md hover:bg-[#ede5d9]"
+            className="!bg-[#1a1a1a] text-white px-4 py-2 rounded-md hover:bg-[#ede5d9] cursor-pointer"
           >
             Cancelar
           </button>
           <button
             onClick={onConfirm}
-            className="!bg-[#b68239] text-white px-4 py-2 rounded-md !hover:bg-[#a46f2f]"
+            className="!bg-[#b68239] text-white px-4 py-2 rounded-md !hover:bg-[#a46f2f] cursor-pointer"
           >
             Confirmar
           </button>
