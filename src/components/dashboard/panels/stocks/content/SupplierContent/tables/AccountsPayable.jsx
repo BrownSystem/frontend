@@ -9,6 +9,7 @@ const facturas = [
     fecha: "15/04/2025",
     fecha_venc: "02/05/2025",
     monto: 1540.5,
+    montoPagado: 1000,
     estado: "Pendiente",
   },
   {
@@ -17,6 +18,7 @@ const facturas = [
     fecha: "10/04/2025",
     fecha_venc: "22/04/2025",
     monto: 956.0,
+    montoPagado: 0,
     estado: "Pendiente",
   },
   {
@@ -25,6 +27,7 @@ const facturas = [
     fecha: "02/04/2025",
     fecha_venc: "22/05/2025",
     monto: 624.19,
+    montoPagado: 0,
     estado: "Pendiente",
   },
 ];
@@ -46,10 +49,12 @@ const calcularEstado = (factura) => {
 const opciones = ["Todos", "Vencida", "Disponible", "Por vencer"];
 
 const AccountsPayable = () => {
+  const [show, setShow] = React.useState(false);
+
   return (
     <>
-      <InvoicePaymentModal />
-      <div className="w-full mt-4">
+      {show ? <InvoicePaymentModal onClose={() => setShow(false)} /> : <></>}
+      <div className="w-full mt-1">
         <div className="flex text-[15px] font-medium rounded-t-lg overflow-hidden ">
           <div className="w-full cursor-pointer px-4 py-2 flex items-center justify-center transition-all duration-200 text-xl text-center bg-white text-[#3c2f1c] border-t-2 border-x-2 border-[#e8d5a2] rounded-t-md shadow-md">
             Facturas por pagar
@@ -78,7 +83,7 @@ const AccountsPayable = () => {
               <th>Factura</th>
               <th>Fecha</th>
               <th>Vencimiento</th>
-              <th>Monto</th>
+              <th>Monto/Abonado </th>
               <th className="text-center">Estado</th>
               <th className="text-center">Detalles</th>
             </tr>
@@ -103,7 +108,14 @@ const AccountsPayable = () => {
                     {factura.monto.toLocaleString("es-AR", {
                       minimumFractionDigits: 2,
                     })}
+                    /
+                    <span className="text-green-700">
+                      {factura.montoPagado.toLocaleString("es-AR", {
+                        minimumFractionDigits: 2,
+                      })}
+                    </span>
                   </td>
+
                   <td className="flex items-center justify-center gap-2">
                     {estado === "Vencida" && (
                       <span className="px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-700">
@@ -121,7 +133,10 @@ const AccountsPayable = () => {
                       </span>
                     )}
                   </td>
-                  <td className="flex justify-center">
+                  <td
+                    className="flex justify-center"
+                    onClick={() => setShow(true)}
+                  >
                     <ShowEyes />
                   </td>
                 </tr>

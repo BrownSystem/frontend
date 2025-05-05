@@ -35,7 +35,7 @@ const DepositsContent = () => {
       <div className="w-full flex mt-5 gap-4 ">
         {[
           {
-            name: "Hyper",
+            name: "Hiper",
             location: "Córdoba",
             productsTotal: 1,
             canTransfer: false,

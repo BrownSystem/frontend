@@ -1,8 +1,8 @@
 import React from "react";
-import { useViewSupplierStore } from "../../../store/useViewSupplierStore";
+import { useViewStore } from "../../../store/useViewStore";
 
 const SupplierOptionCard = ({ children, text, onClick, name }) => {
-  const currentView = useViewSupplierStore((state) => state.currentView);
+  const currentView = useViewStore((state) => state.currentView);
 
   const isActive = currentView === name;
 

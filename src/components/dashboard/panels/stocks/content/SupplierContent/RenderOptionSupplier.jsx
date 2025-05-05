@@ -1,4 +1,4 @@
-import { useViewSupplierStore } from "../../../../../../store/useViewSupplierStore";
+import { useViewStore } from "../../../../../../store/useViewStore";
 import {
   AccountsPayable,
   CreateInvoice,
@@ -6,19 +6,24 @@ import {
   InvoiceTable,
 } from "./tables";
 const viewMap = {
-  invoiceTable: InvoiceTable,
-  createInvoice: CreateInvoice,
-  creditNote: CreateInvoice,
-  createSupplier: CreateSupplier,
-  registerPayment: AccountsPayable,
+  invoiceTable: () => <InvoiceTable />,
+  createSupplier: () => <CreateSupplier />,
+  registerPayment: () => <AccountsPayable />,
+  createInvoice: () => (
+    <CreateInvoice tipoOperacion="compra" tipoComprobante="factura" />
+  ),
+  creditNote: () => (
+    <CreateInvoice tipoOperacion="compra" tipoComprobante="notaCredito" />
+  ),
 };
 
 export const RenderOptionSupplier = () => {
-  const view = useViewSupplierStore((state) => state.currentView);
+  const view = useViewStore((state) => state.currentView);
+  const currentView = useViewStore((state) => (state.view = "invoiceTable"));
 
   const Component = viewMap[view];
   if (!Component) {
-    const DefaultComponent = viewMap["invoiceTable"];
+    const DefaultComponent = viewMap[currentView];
     return <DefaultComponent />;
   }
   return <Component key={view} />;

@@ -17,6 +17,8 @@ const viewMap = {
 export const RenderView = () => {
   const view = useStockViewStore((state) => state.view);
 
+  console.log(view);
+
   const Component = viewMap[view?.name];
   if (!Component) {
     const DefaultComponent = viewMap["productos"];

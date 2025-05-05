@@ -5,12 +5,12 @@ import {
   SearchIcon,
   Ventas,
 } from "../../../../../../assets/icons";
-import { useViewSupplierStore } from "../../../../../../store/useViewSupplierStore";
+import { useViewStore } from "../../../../../../store/useViewStore";
 import { SupplierOptionCard } from "../../../../widgets";
 import { RenderOptionSupplier } from "./RenderOptionSupplier";
 
 const SuppliersContent = () => {
-  const setView = useViewSupplierStore((state) => state.setView);
+  const setView = useViewStore((state) => state.setView);
 
   return (
     <>

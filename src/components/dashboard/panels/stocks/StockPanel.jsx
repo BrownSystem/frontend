@@ -31,7 +31,7 @@ const StockPanel = () => {
       <div className="w-full flex max-h-full roundend-lg">
         <div className="w-full flex h-[120px] gap-5">
           <ActionCard
-            svgAction={<Danger />}
+            svgAction={<Danger color={"#ffff"} />}
             action={"Ingresar"}
             onClick={handleViewProductos}
             title={"Productos agotados"}

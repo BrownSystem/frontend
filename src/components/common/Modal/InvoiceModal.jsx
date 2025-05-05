@@ -13,7 +13,7 @@ const productos = [
     codigo: "FS12945ULFM",
     descripcion: "Silla Tapizada de Cuero",
     cantidad: 1,
-    precio: 3000,
+    precio: 500000,
     iva: 10.5,
   },
   {
@@ -27,121 +27,193 @@ const productos = [
 
 const factura = {
   numero: "00001",
+  tipo: "A",
   fecha: "12/04/2025",
   cliente: "Juan Perez",
   direccion: "Calle 123, Ciudad, País",
   total: 1000,
 };
 
+const pago = {
+  formaDePago: "Transferencia Bancaria",
+  fechaPago: "12/04/2025",
+  montoPagado: 550000,
+  saldoRestante: 4300,
+  banco: "Banco Nación",
+  numeroOperacion: "TRF-84930203",
+  observaciones: "Pago parcial con transferencia, pendiente de saldo.",
+  registradoPor: "admin@empresa.com",
+};
+
 const InvoiceModal = ({ onCancel, onConfirm }) => {
   return (
     <div className="fixed inset-0 bg-[var(--brown-ligth-400)]/20 flex items-center justify-center z-50 top-8">
-      <div className="bg-[#fefcf9] rounded-2xl shadow-lg w-[600px]  p-6 border border-[#e0d2bb]">
-        {/* Encabezado */}
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center gap-2">
-            <div className="bg-[#b68239] text-white p-2 rounded-lg">
-              <i className="fas fa-warehouse"></i>
-            </div>
-            <span className="font-bold text-[#5b3e0f]">
-              FACTURA N°:{" "}
-              <span className="text-[var(--brown-ligth-400)]">
-                {factura.numero}
+      <div className="bg-[#fefcf9] rounded-2xl shadow-lg w-[900px] p-6 border border-[#e0d2bb]">
+        <div className="grid grid-cols-2 gap-6">
+          {/* Columna izquierda */}
+          <div className="flex flex-col gap-4 mt-3">
+            {/* Encabezado */}
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <div className="bg-[#b68239] text-white p-2 rounded-lg">
+                  <i className="fas fa-warehouse"></i>
+                </div>
+                <span className="font-bold text-[#5b3e0f]">
+                  FACTURA ({factura.tipo}) N°:{" "}
+                  <span className="text-[var(--brown-ligth-400)]">
+                    {factura.numero}
+                  </span>
+                </span>
+              </div>
+              <span className="font-bold text-[#5b3e0f]">
+                FECHA:{" "}
+                <span className="text-[var(--brown-ligth-400)]">
+                  {factura.fecha}
+                </span>
               </span>
-            </span>
+            </div>
+
+            {/* Origen y destino */}
+            <div className="text-md">
+              <p className="font-semibold text-[#3a2b19]">
+                Hyper S.A{" "}
+                <span className="text-[#c49653]">(Res. Inscripto)</span>
+              </p>
+              <p className="text-[#3a2b19]">
+                Gran Empresa S.A{" "}
+                <span className="text-[#c49653]">(Res. Inscripto)</span>
+              </p>
+            </div>
+
+            {/* Detalles del pago */}
+            <div className="bg-[#fcf5e9] border border-[#f5e6c9] rounded-md p-4 flex flex-col">
+              <h3 className="font-semibold text-[#5b3e0f] mb-2">
+                Detalles del Pago
+              </h3>
+              <div className="flex flex-col gap-1 text-[#3a2b19] text-sm">
+                <p>
+                  <strong>Fecha de Pago:</strong> {pago.fechaPago}
+                </p>
+                <p>
+                  <strong>Forma de Pago:</strong> {pago.formaDePago}
+                </p>
+                <p className="text-green-700">
+                  <strong className="text-[#3a2b19]">Monto Pagado:</strong> $
+                  {pago.montoPagado.toFixed(2)}
+                </p>
+                <p className="text-red-700">
+                  <strong className="text-[#3a2b19]">Saldo Restante:</strong> $
+                  {pago.saldoRestante.toFixed(2)}
+                </p>
+                <p>
+                  <strong>Banco / Medio:</strong> {pago.banco}
+                </p>
+                <p>
+                  <strong>Nº de Operación:</strong> {pago.numeroOperacion}
+                </p>
+                <p className="col-span-2">
+                  <strong>Observaciones:</strong> {pago.observaciones}
+                </p>
+                <p className="col-span-2">
+                  <strong>Registrado por:</strong> {pago.registradoPor}
+                </p>
+              </div>
+            </div>
           </div>
-          <span className="font-bold text-[#5b3e0f]">
-            FECHA:{" "}
-            <span className="text-[var(--brown-ligth-400)]">
-              {factura.fecha}
-            </span>
-          </span>
-        </div>
 
-        {/* Origen y destino */}
-        <div className="mb-4 text-MD">
-          <p className="font-semibold text-[#3a2b19]">
-            Hyper S.A <span className="text-[#c49653]">(Res. Inscripto)</span>
-          </p>
-          <p className="text-[#3a2b19]">
-            Gran Empresa S.A{" "}
-            <span className="text-[#c49653]">(Res. Inscripto)</span>
-          </p>
-        </div>
+          {/* Columna derecha - Productos y totales */}
+          <div className="flex flex-col justify-between h-full">
+            <div>
+              <table className="w-full text-left text-md mb-4">
+                <thead>
+                  <tr className="border-b border-[#ddd] grid grid-cols-5 items-center">
+                    <th className="py-2 text-[#3a2b19]">Producto</th>
+                    <th className="py-2 text-center text-[#3a2b19]">
+                      Cantidad
+                    </th>
+                    <th className="py-2 text-center text-[#3a2b19]">Precio</th>
+                    <th className="py-2 text-center text-[#3a2b19]">Iva</th>
+                    <th className="py-2 text-center text-[#3a2b19]">
+                      Subtotal
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {productos.map((p, i) => (
+                    <tr
+                      key={i}
+                      className="border-b border-[#eee] grid grid-cols-5 items-center"
+                    >
+                      <td className="py-2">
+                        <div className="font-medium text-[#3a2b19]">
+                          {p.codigo}
+                        </div>
+                        <div className="text-[#6d5b3e]">{p.descripcion}</div>
+                      </td>
+                      <td className="py-2 text-right text-[#3a2b19]">
+                        <p className="flex justify-center">{p.cantidad}</p>
+                      </td>
+                      <td className="py-2 text-center text-[#3a2b19]">
+                        $
+                        {p.precio.toLocaleString("es-AR", {
+                          minimumFractionDigits: 2,
+                        })}
+                      </td>
+                      <td className="py-2 text-center text-[#3a2b19]">
+                        {p.iva}%
+                      </td>
+                      <td className="py-2 text-center text-[#3a2b19]">
+                        $
+                        {(p.precio * p.cantidad * (1 + p.iva / 100))
+                          .toFixed(2)
+                          .toLocaleString("es-AR", {
+                            minimumFractionDigits: 2,
+                          })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-        {/* Tabla de productos */}
-        <table className="w-full text-left text-md mb-4">
-          <thead className=" ">
-            <tr className="border-b border-[#ddd] grid grid-cols-5 items-center">
-              <th className="py-2 text-[#3a2b19]">Producto</th>
-              <th className="py-2 text-center text-[#3a2b19]">Cantidad</th>
-              <th className="py-2 text-center text-[#3a2b19]">Precio</th>
-              <th className="py-2 text-center text-[#3a2b19]">Iva</th>
-              <th className="py-2 text-center text-[#3a2b19]">Subtotal</th>
-            </tr>
-          </thead>
-          <tbody>
-            {productos.map((p, i) => (
-              <tr
-                key={i}
-                className="border-b border-[#eee] grid grid-cols-5 items-center  "
-              >
-                <td className="py-2">
-                  <div className="font-medium text-[#3a2b19]">{p.codigo}</div>
-                  <div className="text-[#6d5b3e]">{p.descripcion}</div>
-                </td>
-                <td className="py-2 text-right font-normal text-[#3a2b19]">
-                  <p className="flex justify-center items-center gap-2">
-                    {p.cantidad}
-                  </p>
-                </td>
-                <td className="py-2 text-center font-normal text-[#3a2b19]">
-                  <p className="flex justify-center items-center gap-2">
-                    ${p.precio}
-                  </p>
-                </td>
-                <td className="py-2 text-center font-normal text-[#3a2b19]">
-                  <p className="flex justify-center items-center gap-2">
-                    {p.iva}%
-                  </p>
-                </td>
-
-                <td className="py-2 text-center font-normal text-[#3a2b19]">
-                  <p className="flex justify-center items-center gap-2">
-                    ${(p.precio * p.cantidad * (1 + p.iva / 100)).toFixed(2)}
-                  </p>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* Botones */}
-        <div className="flex justify-between items-center gap-2">
-          <p className="font-medium text-[var(--brown-dark-950)] text-xl">
-            Total:{" "}
-            <span className="text-[#b68239] text-[18px] font-medium">
-              ${productos.reduce((acc, p) => acc + p.precio, 0)}
-            </span>
-          </p>
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={onCancel}
-              className="!bg-[#1a1a1a] text-white px-4 py-2 rounded-md hover:bg-[#ede5d9] cursor-pointer"
-            >
-              Cerrar
-            </button>
-            <button
-              onClick={onConfirm}
-              className="!bg-[#b68239] text-white px-4 py-2 rounded-md !hover:bg-[#a46f2f] flex gap-1 cursor-pointer"
-            >
-              <Download />
-              Descargar PDF
-            </button>
+            {/* Total y botones */}
+            <div className="flex justify-between items-center mt-2">
+              <p className="font-medium text-[var(--brown-dark-950)] text-lg">
+                Total:{" "}
+                <span className="text-[#b68239] text-[18px] font-medium">
+                  $
+                  {productos
+                    .reduce(
+                      (acc, p) =>
+                        acc + p.precio * p.cantidad * (1 + p.iva / 100),
+                      0
+                    )
+                    .toLocaleString("es-AR", {
+                      minimumFractionDigits: 2,
+                    })}
+                </span>
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={onCancel}
+                  className="bg-[#1a1a1a] text-white px-4 py-2 rounded-md hover:bg-[#ede5d9] cursor-pointer"
+                >
+                  Cerrar
+                </button>
+                <button
+                  onClick={onConfirm}
+                  className="bg-[#b68239] text-white px-4 py-2 rounded-md hover:bg-[#a46f2f] flex gap-1 cursor-pointer"
+                >
+                  <Download />
+                  Descargar PDF
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 };
+
 export default InvoiceModal;
