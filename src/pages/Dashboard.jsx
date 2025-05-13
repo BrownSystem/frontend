@@ -1,6 +1,7 @@
+/* eslint-disable no-constant-condition */
 import { Outlet } from "react-router-dom";
 import { useProductModal } from "../store/ProductModalContext";
-import { noImage, sofa } from "../assets";
+import { noImage } from "../assets";
 import { Close } from "../assets/icons";
 import { StockIcon } from "../assets/icons/Icon";
 // import TopBar from "../components/dashboard/layout/TopBar";
@@ -34,7 +35,7 @@ const Dashboard = () => {
 
         <Modal isOpen={isOpen}>
           <div className="flex">
-            <div className="flex w-[500px] h-auto p-4 flex-col items-center ">
+            <div className="flex w-[500px] p-4 flex-col justify-center items-center ">
               <img
                 src={`${product?.image || noImage}`}
                 alt="Mesa de Roble Macizo"

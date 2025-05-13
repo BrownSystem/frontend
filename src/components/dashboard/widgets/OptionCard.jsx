@@ -1,10 +1,12 @@
 import React from "react";
 import { useViewStore } from "../../../store/useViewStore";
 
-const SupplierOptionCard = ({ children, text, onClick, name }) => {
+const OptionCard = ({ children, text, onClick, name }) => {
   const currentView = useViewStore((state) => state.currentView);
 
   const isActive = currentView === name;
+
+  console.log(currentView, name);
 
   return (
     <div
@@ -25,4 +27,4 @@ const SupplierOptionCard = ({ children, text, onClick, name }) => {
   );
 };
 
-export default SupplierOptionCard;
+export default OptionCard;

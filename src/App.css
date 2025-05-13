@@ -5,15 +5,21 @@
   --font-outfit: "Outfit", sans-serif;
 
   /* COLORS */
-  --brown-dark-950: #361c12;
-  --brown-dark-900: #5e3625;
-  --brown-dark-800: #6e4025;
-  --brown-dark-700: #834c25;
-  --brown-dark-700: #a3682b;
-  --brown-dark-500: #bd8535;
-  --brown-ligth-400: #cb963b;
-  --brown-ligth-300: #d9b66b;
-  --brown-ligth-200: #e7d3a1;
-  --brown-ligth-100: #f2e9cf;
-  --brown-ligth-50: #faf6ec;
+  --brown-dark-950: #0a0e5c;
+  --brown-dark-900: #00047a;
+  --brown-dark-800: #000595;
+  --brown-dark-700: #0003b4;
+  --brown-dark-600: #0006df;
+  --brown-dark-500: #0016ff;
+  --brown-ligth-400: #2040ff;
+  --brown-ligth-300: #6d81ff;
+  --brown-ligth-200: #b2bbff;
+  --brown-ligth-100: #dcdeff;
+  --brown-ligth-50: #eeefff;
+  --bg-state-red: #ffc9c9;
+  --text-state-red: #82181a;
+  --bg-state-yellow: #fff085;
+  --text-state-yellow: #733e0a;
+  --bg-state-green: #b9f8cf;
+  --text-state-green: #0d542b;
 }

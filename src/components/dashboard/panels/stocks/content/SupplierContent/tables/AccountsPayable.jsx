@@ -118,17 +118,17 @@ const AccountsPayable = () => {
 
                   <td className="flex items-center justify-center gap-2">
                     {estado === "Vencida" && (
-                      <span className="px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-700">
+                      <span className="px-3 py-1 rounded-full text-sm font-semibold bg-[var(--bg-state-red)] text-[var(--text-state-red)]">
                         {estado}
                       </span>
                     )}
                     {estado === "Por vencer" && (
-                      <span className="px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-700">
+                      <span className="px-3 py-1 rounded-full text-sm font-semibold bg-[var(--bg-state-yellow)] text-[var(--text-state-yellow)]">
                         {estado}
                       </span>
                     )}
                     {estado === "Disponible" && (
-                      <span className="px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-700">
+                      <span className="px-3 py-1 rounded-full text-sm font-semibold bg-[var(--bg-state-green)] text-[var(--text-state-green)]">
                         {estado}
                       </span>
                     )}

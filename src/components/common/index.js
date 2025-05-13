@@ -4,3 +4,4 @@ export { default as RemiModal } from "./Modal/RemiModal";
 export { default as ConfirmationModalRemito } from "./Modal/ConfirmationModalRemito";
 export { default as InvoicePaymentModal } from "./Modal/InvoicePaymentModal";
 export { default as InvoiceModal } from "./Modal/InvoiceModal";
+export { default as EditProductModal } from "./Modal/EditProductModal";

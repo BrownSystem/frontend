@@ -4,7 +4,11 @@ import {
   ProductTable,
   ProductTableDeposit,
 } from "./content/tables";
-import { DepositsContent, SuppliersContent } from "./content";
+import {
+  DepositsContent,
+  MoreOptionsContent,
+  SuppliersContent,
+} from "./content";
 
 const viewMap = {
   productos: ProductTable,
@@ -12,6 +16,7 @@ const viewMap = {
   proveedores: SuppliersContent,
   products_of_deposit: ProductTableDeposit,
   pedidos: PedidoTable,
+  masOpciones: MoreOptionsContent,
 };
 
 export const RenderView = () => {

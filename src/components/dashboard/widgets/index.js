@@ -4,5 +4,7 @@ export { default as DepositCard } from "./DepositCard";
 export { default as Search } from "./Search";
 export { default as StockStatus } from "./StockStatus";
 export { default as FiltroDropdown } from "./FiltroDropdown";
-export { default as SupplierOptionCard } from "./SupplierOptionCard";
+export { default as OptionCard } from "./OptionCard";
 export { default as Button } from "./Button";
+export { default as RenderOptions } from "./RenderOptions";
+export { default as CreateInvoice } from "./GenerateInvoice";

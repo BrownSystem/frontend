@@ -59,7 +59,7 @@ const InvoicePaymentModal = ({
 
   return (
     <div className=" fixed z-[1000000] inset-0 flex gap-2 justify-center items-start bg-[var(--brown-ligth-400)]/20 bg-opacity-30 ">
-      <div className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-lg mt-[6rem]">
+      <div className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-lg mt-[5rem]">
         <h2 className="text-xl font-bold text-[var(--brown-dark-950)] flex justify-between items-start">
           <span>
             Pago de factura: {factura.numero}
@@ -155,6 +155,15 @@ const InvoicePaymentModal = ({
           </div>
         </div>
 
+        <div className="mb-4">
+          <textarea
+            name="observaciones"
+            placeholder="Observaciones (opcional)"
+            className="w-full p-2 border rounded border-[var(--brown-dark-500)]"
+            onChange={handleInputChange}
+          />
+        </div>
+
         <button
           onClick={handleSubmit}
           className={`bg-[var(--brown-dark-800)] text-white px-4 py-2 rounded w-full hover:opacity-50 cursor-pointer ${
@@ -170,7 +179,7 @@ const InvoicePaymentModal = ({
         </button>
       </div>
       {metodo !== "Efectivo" && (
-        <div className="bg-white p-6 rounded-2xl shadow-lg w-full  max-w-lg mt-[6rem]">
+        <div className="bg-white p-6 rounded-2xl shadow-lg w-full  max-w-lg mt-[5rem]">
           <div className="flex flex-col items-end h-full">
             {metodo === "Cheques" && (
               <>

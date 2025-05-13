@@ -1,38 +1,43 @@
-import { useState } from "react";
-import { FaChevronDown } from "react-icons/fa";
 import { useFiltersStore } from "../../../store/useFiltersStore";
 
 const FiltroDropdown = ({ opciones, id }) => {
-  const [abierto, setAbierto] = useState(false);
   const { filters, setFilter } = useFiltersStore();
 
-  const manejarSeleccion = (opcion) => {
-    setFilter(id, opcion);
-    setAbierto(false);
+  const manejarSeleccion = (e) => {
+    setFilter(id, e.target.value);
   };
 
   return (
-    <div className="relative text-[15px] font-medium">
-      <div
-        onClick={() => setAbierto(!abierto)}
-        className="flex items-center justify-between w-40 px-4 py-2 bg-[#fcf5e9] border-[2px] border-[#f5e6c9] rounded-md text-[#4d2e11] cursor-pointer"
+    <div className="relative w-40">
+      <select
+        value={filters[id] || ""}
+        onChange={manejarSeleccion}
+        className="w-full appearance-none px-4 py-2 text-[15px] font-medium text-[var(--brown-dark-900)] bg-[var(--brown-ligth-100)] border-[2px] border-[var(--brown-ligth-300)] rounded-md cursor-pointer focus:outline-none"
       >
-        {filters[id] || "Filtrar"}
-        <FaChevronDown className="ml-2 text-[#4d2e11] text-sm" />
+        <option value="" disabled>
+          Seleccionar
+        </option>
+        {opciones.map((opcion) => (
+          <option key={opcion} value={opcion}>
+            {opcion}
+          </option>
+        ))}
+      </select>
+
+      {/* Flecha SVG como ícono */}
+      <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
+        <svg
+          className="w-5 h-5 text-[var(--brown-dark-900)]"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fillRule="evenodd"
+            d="M5.23 7.21a.75.75 0 011.06.02L10 11.292l3.71-4.06a.75.75 0 111.08 1.04l-4.25 4.65a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"
+            clipRule="evenodd"
+          />
+        </svg>
       </div>
-      {abierto && (
-        <div className="fixed  w-40 bg-white border border-[#f5e6c9] rounded-md shadow-lg">
-          {opciones.map((opcion) => (
-            <div
-              key={opcion}
-              className="px-4 py-2 hover:bg-[#fdf0d9] text-[#4d2e11] cursor-pointer"
-              onClick={() => manejarSeleccion(opcion)}
-            >
-              {opcion}
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 };

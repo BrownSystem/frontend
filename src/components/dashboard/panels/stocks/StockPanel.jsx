@@ -1,7 +1,13 @@
 import { useCallback } from "react";
 import { useStockViewStore } from "@store/useStockViewStore"; // Asegúrate de que el path sea correcto
 import { ActionCard } from "../../widgets";
-import { Danger, Home, Pedidos, Proveedores } from "../../../../assets/icons";
+import {
+  Danger,
+  Home,
+  MenuKebab,
+  Pedidos,
+  Proveedores,
+} from "../../../../assets/icons";
 import { RenderView } from "./RenderContent";
 
 const StockPanel = () => {
@@ -26,6 +32,10 @@ const StockPanel = () => {
     setView({ name: "pedidos" });
   }, [setView]);
 
+  const handleViewMoreOptions = useCallback(() => {
+    setView({ name: "masOpciones" });
+  }, [setView]);
+
   return (
     <>
       <div className="w-full flex max-h-full roundend-lg">
@@ -43,14 +53,14 @@ const StockPanel = () => {
             action={"Ingresar"}
             onClick={handleViewDepositos}
             title={"Depositos"}
-            others={true}
+            others={false}
             hasNotifications={false}
           />
           <ActionCard
             svgAction={<Proveedores />}
             action={"Ingresar"}
             onClick={handleViewProveedores}
-            title={"Proveedores"}
+            title={"Compras"}
             others={false}
             hasNotifications={false}
           />
@@ -61,6 +71,14 @@ const StockPanel = () => {
             title={"Pedidos"}
             others={false}
             hasNotifications={true}
+          />
+          <ActionCard
+            svgAction={<MenuKebab />}
+            action={"Administracion"}
+            onClick={handleViewMoreOptions}
+            title={"Mas opciones"}
+            others={false}
+            hasNotifications={false}
           />
         </div>
       </div>

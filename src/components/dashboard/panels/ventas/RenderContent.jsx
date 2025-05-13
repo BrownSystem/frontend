@@ -1,17 +1,10 @@
 import { useShopViewStore } from "@store/useShopViewStore";
-import ProfContent from "./content/Prof/ProfContent";
 
-const viewMap = {
-  prof: ProfContent,
-  cashClosing: () => <div>Cierre de caja</div>,
-};
-
-export const RenderView = () => {
+export const RenderView = ({ viewMap }) => {
   const view = useShopViewStore((state) => state.view);
-  console.log("view", view);
   const Component = viewMap[view?.name];
 
-  const FallbackComponent = viewMap["prof"];
+  const FallbackComponent = viewMap["registerSales"];
 
   const SafeComponent = Component || FallbackComponent;
 

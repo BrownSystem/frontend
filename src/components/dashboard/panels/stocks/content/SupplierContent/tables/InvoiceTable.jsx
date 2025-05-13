@@ -57,20 +57,24 @@ const InvoiceTable = () => {
       )}
 
       <div className="w-full mt-4 relative">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-2xl font-bold text-[#3c2f1c]">
-            Facturas Pagadas
-          </h2>
-          <div className="flex gap-2">
-            <div className="flex items-center bg-[#fcf5e9] border-[2px] border-[#f5e6c9] rounded-md px-3 py-1 w-[280px] font-medium">
-              <SearchIcon color="#5c4c3a" />
-              <input
-                type="text"
-                placeholder="Buscar facturas"
-                className="bg-transparent outline-none w-full text-[#5c4c3a] placeholder-[#5c4c3a] text-[15px]"
-              />
+        <div className="w-full mt-1 mb-3">
+          <div className="flex text-[15px] font-medium rounded-t-lg overflow-hidden ">
+            <div className="w-full cursor-pointer px-4 py-2 flex items-center justify-center transition-all duration-200 text-xl text-center bg-white text-[#3c2f1c] border-t-2 border-x-2 border-[#e8d5a2] rounded-t-md shadow-md">
+              Facturas pagadas
             </div>
-            <FiltroDropdown opciones={opciones} id="InvoiceTable" />
+            <div className="w-full cursor-pointer px-4 py-2 transition-all duration-200 text-xl text-cente text-[#3c2f1c] border-b-2 border-[#e8d5a2] rounded-t-md shadow-md ">
+              <div className="w-full flex items-center  justify-between gap-2">
+                <div className="flex items-center bg-[#fcf5e9] border-[2px] border-[#f5e6c9] rounded-md px-3 py-1 w-[280px] font-medium">
+                  <SearchIcon color="#5c4c3a" className="text-[#5c4c3a]" />
+                  <input
+                    type="text"
+                    placeholder="Buscar facturas"
+                    className="bg-transparent outline-none w-full text-[#5c4c3a] placeholder-[#5c4c3a] text-[15px]"
+                  />
+                </div>
+                <FiltroDropdown opciones={opciones} id={"AccountsPayable"} />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -120,7 +124,7 @@ const InvoiceTable = () => {
                     })}
                   </td>
                   <td className="">
-                    <span className="px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-700">
+                    <span className="px-3 py-1 rounded-full text-sm font-semibold bg-[var(--bg-state-green)] text-[var(--text-state-green)]">
                       {factura.formaDePago}
                     </span>
                   </td>
@@ -128,8 +132,8 @@ const InvoiceTable = () => {
                     <span
                       className={`px-3 py-1 rounded-full text-sm font-semibold ${
                         factura.estado === "Pagada"
-                          ? "bg-green-200 text-green-900"
-                          : "bg-yellow-200 text-yellow-900"
+                          ? "bg-[var(--bg-state-green)] text-[var(--text-state-green)]"
+                          : "bg-[var(--bg-state-yellow)] text-[var(--text-state-yellow)]"
                       }`}
                     >
                       {factura.estado}

@@ -1,24 +1,23 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-import { Button } from "../../../../../widgets";
 
-const CreateSupplier = () => {
+const CreateClient = () => {
   const { register, handleSubmit } = useForm();
 
   const onSubmit = (data) => {
-    console.log("Nuevo proveedor:", data);
+    console.log("Nuevo cliente:", data);
   };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="mx-auto px-2">
-      {/* Inputs */}
+    <form onSubmit={handleSubmit(onSubmit)} className="mx-auto px-2 max-h-auto">
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-brown-800 font-medium mb-1">
-            Codigo
+            Código
           </label>
           <input
             type="text"
-            {...register("nombre")}
+            {...register("codigo")}
             className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2"
             placeholder="00034"
           />
@@ -31,12 +30,38 @@ const CreateSupplier = () => {
             type="text"
             {...register("nombre")}
             className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2"
-            placeholder="Nombre del proveedor"
+            placeholder="Nombre del cliente"
           />
         </div>
         <div>
           <label className="block text-brown-800 font-medium mb-1">
-            CUIT / CUIL
+            Razon Social
+          </label>
+          <input
+            type="text"
+            {...register("nombre")}
+            className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2"
+            placeholder="Razon social del cliente"
+          />
+        </div>
+        <div>
+          <label className="block text-brown-800 font-medium mb-1">
+            Condición frente al IVA
+          </label>
+          <select
+            {...register("condicionIva")}
+            className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-white"
+          >
+            <option value="">Seleccione una opción</option>
+            <option value="responsable_inscripto">Responsable Inscripto</option>
+            <option value="monotributista">Monotributista</option>
+            <option value="exento">Exento</option>
+            <option value="consumidor_final">Consumidor Final</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-brown-800 font-medium mb-1">
+            CUIT / CUIL / DNI
           </label>
           <input
             type="text"
@@ -62,7 +87,7 @@ const CreateSupplier = () => {
             type="email"
             {...register("email")}
             className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2"
-            placeholder="proveedor@mail.com"
+            placeholder="cliente@mail.com"
           />
         </div>
         <div>
@@ -76,14 +101,18 @@ const CreateSupplier = () => {
             placeholder="Calle, Número, Ciudad"
           />
         </div>
+        {/* Botón Guardar */}
       </div>
-
-      {/* Botón Guardar */}
-      <div className="text-left pt-1">
-        <Button text={"Guardar Proveedor"} />
+      <div className="text-center mt-7 ">
+        <button
+          type="submit"
+          className="bg-[var(--brown-ligth-100)] w-full cursor-pointer border-[1px] border-[var(--brown-ligth-400)] text-[var(--brown-dark-950)] px-6 py-2 rounded hover:bg-[var(--brown-ligth-200)]"
+        >
+          Guardar Cliente
+        </button>
       </div>
     </form>
   );
 };
 
-export default CreateSupplier;
+export default CreateClient;

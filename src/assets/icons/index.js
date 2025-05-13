@@ -16,3 +16,7 @@ export { default as Download } from "./Download";
 export { default as CreditNote } from "./CreditNote";
 export { default as Wallet } from "./Wallet";
 export { default as Delete } from "./Delete";
+export { default as MenuKebab } from "./MenuKebab";
+export { default as Edit } from "./Edit";
+export { default as Buy } from "./Buy";
+export { default as Folder } from "./Folder";

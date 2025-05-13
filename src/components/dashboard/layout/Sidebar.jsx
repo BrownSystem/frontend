@@ -1,5 +1,5 @@
 import React from "react";
-import { Ventas } from "../../../assets/icons";
+import { Buy, Ventas } from "../../../assets/icons";
 import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
@@ -60,7 +60,7 @@ const Sidebar = () => {
           onClick={() => handleSliderChange("ventas")}
           className="cursor-pointer border-none pr-10"
         >
-          {<Ventas x={"34"} y={"34"} />}
+          {<Buy x={"34"} y={"34"} />}
         </div>
 
         <div

@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
-import { Delete } from "../../../../../../../assets/icons";
-import { Button } from "../../../../../widgets";
+import { Delete } from "../../../assets/icons";
+import Button from "./Button";
 
 // Props: tipoOperacion: 'compra' | 'venta', tipoComprobante: 'factura' | 'notaCredito'
 const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {

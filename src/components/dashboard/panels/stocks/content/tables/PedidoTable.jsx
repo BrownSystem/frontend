@@ -33,6 +33,20 @@ const pedidosRealizados = [
     productos: 4,
     estado: "Pendiente",
   },
+  {
+    fecha: "16/04/2025",
+    origen: "Depósito Alta Córdoba",
+    destino: "Depósito Hyper",
+    productos: 4,
+    estado: "Pendiente",
+  },
+  {
+    fecha: "16/04/2025",
+    origen: "Depósito Alta Córdoba",
+    destino: "Depósito Hyper",
+    productos: 4,
+    estado: "Confirmado",
+  },
 ];
 
 const pedidosAConfirmar = [
@@ -42,6 +56,13 @@ const pedidosAConfirmar = [
     destino: "Depósito Jesús María",
     productos: 2,
     estado: "Pendiente",
+  },
+  {
+    fecha: "12/04/2025",
+    origen: "Hyper ",
+    destino: "Depósito Jesús María",
+    productos: 2,
+    estado: "Confirmado",
   },
   {
     fecha: "16/04/2025",
@@ -68,7 +89,7 @@ const PedidoTable = () => {
   return (
     <div className="w-full h-full bg-white rounded-lg shadow overflow-x-auto p-4">
       <div className="w-full flex justify-between">
-        <div className="flex items-center bg-[#fcf5e9] border-[2px] border-[#f5e6c9] rounded-md px-3 py-2 w-[280px] font-medium">
+        <div className="flex items-center bg-[var(--brown-ligth-50)] border-[2px] border-[#f5e6c9] rounded-md px-3 py-2 w-[280px] font-medium">
           <SearchIcon color="#5c4c3a" className="text-[#5c4c3a]" />
           <input
             type="text"
@@ -141,8 +162,8 @@ const PedidoTable = () => {
                       <span
                         className={`text-sm font-semibold px-3 py-1 rounded-full ${
                           pedido.estado === "Confirmado"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-yellow-100 text-yellow-800"
+                            ? "bg-[var(--bg-state-green)] text-[var(--text-state-green)]"
+                            : "bg-[var(--bg-state-yellow)] text-[var(--text-state-yellow)]"
                         }`}
                       >
                         {pedido.estado}
@@ -179,8 +200,8 @@ const PedidoTable = () => {
                       <span
                         className={`text-sm font-semibold px-3 py-1 rounded-full ${
                           pedido.estado === "Confirmado"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-yellow-100 text-yellow-800"
+                            ? "bg-[var(--bg-state-green)] text-[var(--text-state-green)]"
+                            : "bg-[var(--bg-state-yellow)] text-[var(--text-state-yellow)]"
                         }`}
                       >
                         {pedido.estado}
