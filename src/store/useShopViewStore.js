@@ -3,7 +3,7 @@ import { create } from "zustand";
 export const useShopViewStore = create((set, get) => ({
   // state
   view: {
-    name: "registerSales",
+    name: "productos",
   },
   // actions
   setViewSafe: (newView) => {

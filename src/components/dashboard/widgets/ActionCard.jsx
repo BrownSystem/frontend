@@ -9,8 +9,8 @@ const ActionCardComponent = ({
   hasNotifications,
 }) => {
   return (
-    <div className="h-full px-4 w-full shadow-md flex flex-col bg-white rounded-lg justify-around">
-      <div className="w-full flex gap-14 items-center justify-between">
+    <div className="px-8 w-auto gap-6  shadow-md flex items-center bg-[var(--brown-ligth-100)] rounded-lg ">
+      <div>
         <div className="-gradient-to-b from-[var(--brown-ligth-400)] bg-[var(--brown-dark-800)] rounded-lg p-2 w-[40px] cursor-pointer shadow-md">
           {svgAction}
         </div>

@@ -63,6 +63,7 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
       return [
         { value: "A", label: "Factura A" },
         { value: "B", label: "Factura B" },
+        { value: "P", label: "P" },
       ];
     }
     return [

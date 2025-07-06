@@ -1,10 +1,8 @@
 /* eslint-disable no-constant-condition */
 import { Outlet } from "react-router-dom";
 import { useProductModal } from "../store/ProductModalContext";
-import { noImage } from "../assets";
 import { Close } from "../assets/icons";
 import { StockIcon } from "../assets/icons/Icon";
-// import TopBar from "../components/dashboard/layout/TopBar";
 import Sidebar from "../components/dashboard/layout/Sidebar";
 import LayoutPanel from "../components/dashboard/layout/LayoutPanel";
 import { Modal, TextModal } from "../components/common";
@@ -20,12 +18,12 @@ const Dashboard = () => {
   return (
     <div className="font-outfit">
       <div
-        className="bg-[var(--brown-ligth-100)] flex relative"
+        className="bg-[var(--brown-ligth-50)] flex relative"
         style={{ gridTemplateColumns: "75% 25%" }}
       >
         <div className="w-full h-full flex flex-col">
           {/* <TopBar className="hidden" /> */}
-          <div className="h-full w-full flex mt-[4rem] mb-4">
+          <div className="h-full w-full flex ">
             <Sidebar />
             <LayoutPanel>
               <Outlet />
@@ -35,14 +33,7 @@ const Dashboard = () => {
 
         <Modal isOpen={isOpen}>
           <div className="flex">
-            <div className="flex w-[500px] p-4 flex-col justify-center items-center ">
-              <img
-                src={`${product?.image || noImage}`}
-                alt="Mesa de Roble Macizo"
-                className="rounded-xl object-cover w-[300px]"
-              />
-            </div>
-            <div className="w-1/2 p-2 relative">
+            <div className="w-full p-2 relative">
               <div
                 className="absolute top-[-18px] flex justify-end w-full cursor-pointer"
                 onClick={closeModal}

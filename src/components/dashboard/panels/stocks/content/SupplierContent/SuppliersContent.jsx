@@ -26,9 +26,9 @@ const SuppliersContent = () => {
 
   return (
     <>
-      <div className="w-auto h-full bg-white rounded-lg  p-4">
-        <div className="flex">
-          <div className="w-[90%] flex items-center gap-4">
+      <div className="w-full h-full  rounded-lg  p-4">
+        <div className="flex justify-between items-center">
+          <div className="w-full flex  gap-4">
             <OptionCard
               text={"Consultar pagos"}
               onClick={() => setView("invoiceTable")}
@@ -71,7 +71,7 @@ const SuppliersContent = () => {
           </div>
         </div>
 
-        <div className="w-full  bg-white px-4 py-2 mt-2 rounded-xl border border-[var(--brown-ligth-100)]">
+        <div className="w-full   px-4 py-2 mt-2 rounded-xl ">
           <RenderOptions viewMap={viewMap} defaultView={"invoiceTable"} />
         </div>
       </div>

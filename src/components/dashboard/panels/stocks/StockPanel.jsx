@@ -2,23 +2,16 @@ import { useCallback } from "react";
 import { useStockViewStore } from "@store/useStockViewStore"; // Asegúrate de que el path sea correcto
 import { ActionCard } from "../../widgets";
 import {
-  Danger,
+  Folder,
   Home,
   MenuKebab,
-  Pedidos,
   Proveedores,
+  QrCode,
 } from "../../../../assets/icons";
 import { RenderView } from "./RenderContent";
 
 const StockPanel = () => {
   const setView = useStockViewStore((state) => state.setViewSafe);
-
-  const handleViewProductos = useCallback(() => {
-    setView({
-      name: "productos",
-      props: { title: "Productos", span: "proximo a agotarse" },
-    });
-  }, [setView]);
 
   const handleViewDepositos = useCallback(() => {
     setView({ name: "depositos" });
@@ -28,26 +21,18 @@ const StockPanel = () => {
     setView({ name: "proveedores" });
   }, [setView]);
 
-  const handleViewPedidos = useCallback(() => {
-    setView({ name: "pedidos" });
+  const handleViewQrCode = useCallback(() => {
+    setView({ name: "qrcode" });
   }, [setView]);
 
-  const handleViewMoreOptions = useCallback(() => {
-    setView({ name: "masOpciones" });
+  const handleViewManagementContent = useCallback(() => {
+    setView({ name: "management" });
   }, [setView]);
 
   return (
     <>
-      <div className="w-full flex max-h-full roundend-lg">
-        <div className="w-full flex h-[120px] gap-5">
-          <ActionCard
-            svgAction={<Danger color={"#ffff"} />}
-            action={"Ingresar"}
-            onClick={handleViewProductos}
-            title={"Productos agotados"}
-            others={false}
-            hasNotifications={false}
-          />
+      <div className="w-full  flex  max-h-full roundend-lg">
+        <div className="w-full flex justify-center h-[70px] gap-5">
           <ActionCard
             svgAction={<Home />}
             action={"Ingresar"}
@@ -65,24 +50,24 @@ const StockPanel = () => {
             hasNotifications={false}
           />
           <ActionCard
-            svgAction={<Pedidos />}
-            action={"Visualizar"}
-            onClick={handleViewPedidos}
-            title={"Pedidos"}
+            svgAction={<QrCode size={24} />}
+            action={"Imprimir"}
+            onClick={handleViewQrCode}
+            title={"Código QR"}
             others={false}
-            hasNotifications={true}
+            hasNotifications={false}
           />
           <ActionCard
             svgAction={<MenuKebab />}
-            action={"Administracion"}
-            onClick={handleViewMoreOptions}
-            title={"Mas opciones"}
+            action={"Ingresar"}
+            onClick={handleViewManagementContent}
+            title={"Gestión"}
             others={false}
             hasNotifications={false}
           />
         </div>
       </div>
-      <div className="mt-5 w-full h-full">
+      <div className="mt-2 w-full">
         <RenderView />
       </div>
     </>

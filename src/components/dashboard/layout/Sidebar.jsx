@@ -1,114 +1,29 @@
 import React from "react";
-import { Buy, Ventas } from "../../../assets/icons";
+import { Buy, Logout } from "../../../assets/icons";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../../api/auth/auth.store";
 
 const Sidebar = () => {
+  const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
 
   const handleSliderChange = (href) => {
     navigate(href);
   };
 
+  // Aquí podés definir qué mostrar según el rol
+  const isAdmin = user?.role === "ADMIN";
+  const isManagement = user?.role === "MANAGEMENT";
+
   return (
-    <div className="fixed z-[99999] top-0 h-[4rem] w-full -gradient-to-b from-[var(--brown-ligth-400)] bg-[var(--brown-dark-800)] shadow-md rounded-bl-4xl rounded-br-4xl">
-      <div className="flex  w-full h-full justify-center items-center px-20 gap-[35px]">
-        <div className="cursor-pointer border-none pr-10">
-          <figure className="relative z-0 w-[34px] h-[34px] before:content-[''] before:absolute before:bg-white before:w-[40px] before:h-[40px] before:rounded-full before:-z-[99] before:top-[-3.4px] before:right-[-3px]">
-            <img
-              className="w-full h-full rounded-full"
-              src="https://cdn.openart.ai/published/8JqfATdLo1NjxWjt7ir8/J_TwrUIs_LXma_1024.webp"
-              alt=""
-            />
-          </figure>
-        </div>
-
-        <div
-          onClick={() => handleSliderChange("")}
-          className="cursor-pointer border-none pr-10"
-        >
-          <svg
-            width="34"
-            height="34"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+    <div className="fixed z-[99999] top-0 h-full w-[4rem] bg-[var(--brown-dark-800)] shadow-md">
+      <div className="flex flex-col w-full h-full justify-center items-center pt-10 gap-[60px]">
+        {/* Dashboard - ADMIN y MANAGEMENT */}
+        {(isAdmin || isManagement) && (
+          <div
+            onClick={() => handleSliderChange("/")}
+            className="group relative cursor-pointer border-none"
           >
-            <path
-              d="M8 2.75H5C3.75736 2.75 2.75 3.75736 2.75 5V8C2.75 9.24264 3.75736 10.25 5 10.25H8C9.24264 10.25 10.25 9.24264 10.25 8V5C10.25 3.75736 9.24264 2.75 8 2.75Z"
-              stroke="#fff"
-              strokeWidth="1.5"
-            ></path>
-            <path
-              d="M19 2.75H16C14.7574 2.75 13.75 3.75736 13.75 5V8C13.75 9.24264 14.7574 10.25 16 10.25H19C20.2426 10.25 21.25 9.24264 21.25 8V5C21.25 3.75736 20.2426 2.75 19 2.75Z"
-              stroke="#fff"
-              strokeWidth="1.5"
-            ></path>
-            <path
-              d="M19 13.75H16C14.7574 13.75 13.75 14.7574 13.75 16V19C13.75 20.2426 14.7574 21.25 16 21.25H19C20.2426 21.25 21.25 20.2426 21.25 19V16C21.25 14.7574 20.2426 13.75 19 13.75Z"
-              stroke="#fff"
-              strokeWidth="1.5"
-            ></path>
-            <path
-              d="M8 13.75H5C3.75736 13.75 2.75 14.7574 2.75 16V19C2.75 20.2426 3.75736 21.25 5 21.25H8C9.24264 21.25 10.25 20.2426 10.25 19V16C10.25 14.7574 9.24264 13.75 8 13.75Z"
-              stroke="#fff"
-              strokeWidth="1.5"
-            ></path>
-          </svg>
-        </div>
-
-        <div
-          onClick={() => handleSliderChange("ventas")}
-          className="cursor-pointer border-none pr-10"
-        >
-          {<Buy x={"34"} y={"34"} />}
-        </div>
-
-        <div
-          onClick={() => handleSliderChange("stock")}
-          className="cursor-pointer border-none pr-10"
-        >
-          <svg
-            width="34"
-            height="34"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M9.45332 3.35117C9.89809 3.25639 10.2965 3.61138 10.2965 4.06614C10.2965 4.44372 10.0176 4.75995 9.64952 4.84431C6.12733 5.65159 3.5 8.80499 3.5 12.572C3.5 16.9505 7.04948 20.5 11.428 20.5C15.19 20.5 18.3399 17.8798 19.1524 14.3647C19.2374 13.9973 19.5533 13.7191 19.9304 13.7191C20.3858 13.7191 20.7409 14.1185 20.6452 14.5637C19.7312 18.8141 15.9516 22 11.428 22C6.22105 22 2 17.779 2 12.572C2 8.04238 5.19439 4.25881 9.45332 3.35117Z"
-              fill="white"
-            />
-            <mask
-              id="mask0_2_766"
-              style={{ maskType: "alpha" }}
-              maskUnits="userSpaceOnUse"
-              x="12"
-              y="2"
-              width="10"
-              height="10"
-            >
-              <path
-                d="M20.0146 12C21.1192 12 22.0348 11.0958 21.8153 10.0133C21.6879 9.38479 21.5 8.76849 21.2534 8.17317C20.7509 6.95991 20.0143 5.85752 19.0857 4.92893C18.1571 4.00035 17.0547 3.26375 15.8415 2.7612C15.2462 2.51461 14.6299 2.32674 14.0014 2.19934C12.9188 1.97989 12.0146 2.89543 12.0146 4V10C12.0146 11.1046 12.9101 12 14.0146 12H20.0146Z"
-                fill="white"
-              />
-            </mask>
-            <g mask="url(#mask0_2_766)">
-              <path
-                d="M20.0146 12C21.1192 12 22.0348 11.0958 21.8153 10.0133C21.6879 9.38479 21.5 8.76849 21.2534 8.17317C20.7509 6.95991 20.0143 5.85752 19.0857 4.92893C18.1571 4.00035 17.0547 3.26375 15.8415 2.7612C15.2462 2.51461 14.6299 2.32674 14.0014 2.19934C12.9188 1.97989 12.0146 2.89543 12.0146 4V10C12.0146 11.1046 12.9101 12 14.0146 12H20.0146Z"
-                stroke="white"
-                strokeWidth="3"
-              />
-            </g>
-          </svg>
-        </div>
-
-        <div
-          onClick={() => handleSliderChange("stock")}
-          className="cursor-pointer border-none pr-10"
-        >
-          <div className="relative">
             <svg
               width="34"
               height="34"
@@ -117,81 +32,49 @@ const Sidebar = () => {
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M10.3042 18.7641C9.77927 18.7641 9.3801 19.2534 9.6547 19.7007C10.1383 20.4886 11.0078 21.0141 12.0001 21.0141C12.9923 21.0141 13.8618 20.4886 14.3455 19.7007C14.6201 19.2534 14.2209 18.7641 13.696 18.7641C13.3619 18.7641 13.075 18.9841 12.8238 19.2043C12.6039 19.3972 12.3156 19.5141 12.0001 19.5141C11.6845 19.5141 11.3963 19.3972 11.1763 19.2043C10.9252 18.9841 10.6382 18.7641 10.3042 18.7641Z"
-                fill="white"
-              ></path>
-              <mask
-                id="mask0_2_906"
-                style={{ maskType: "alpha" }}
-                maskUnits="userSpaceOnUse"
-                x="3"
-                y="1"
-                width="18"
-                height="17"
-              >
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M19.5 10.85C19.5 7.86166 18.0167 5.06819 15.5411 3.39434L14.2405 2.51492C12.887 1.59976 11.113 1.59976 9.75949 2.51492L8.45887 3.39433C5.9833 5.06819 4.5 7.86165 4.5 10.85V12.7639C3.88625 13.3132 3.5 14.1115 3.5 15C3.5 16.6569 4.84315 18 6.5 18H17.5C19.1569 18 20.5 16.6569 20.5 15C20.5 14.1115 20.1137 13.3132 19.5 12.7639V10.85Z"
-                  fill="white"
-                ></path>
-              </mask>
-              <g mask="url(#mask0_2_906)">
-                <path
-                  d="M15.5411 3.39434L14.7009 4.63695L15.5411 3.39434ZM19.5 10.85H21H19.5ZM14.2405 2.51492L15.0807 1.27231L14.2405 2.51492ZM9.75949 2.51492L8.91931 1.27231L9.75949 2.51492ZM8.45887 3.39433L9.29906 4.63695L8.45887 3.39433ZM4.5 10.85H6H4.5ZM4.5 12.7639L5.50037 13.8816L6 13.4344V12.7639H4.5ZM19.5 12.7639H18V13.4344L18.4996 13.8816L19.5 12.7639ZM14.7009 4.63695C16.7639 6.03182 18 8.35971 18 10.85H21C21 7.3636 19.2695 4.10455 16.3813 2.15172L14.7009 4.63695ZM13.4003 3.75753L14.7009 4.63695L16.3813 2.15172L15.0807 1.27231L13.4003 3.75753ZM10.5997 3.75753C11.4456 3.18556 12.5544 3.18556 13.4003 3.75753L15.0807 1.27231C13.2196 0.0139666 10.7804 0.0139663 8.91931 1.27231L10.5997 3.75753ZM9.29906 4.63695L10.5997 3.75753L8.91931 1.27231L7.61868 2.15172L9.29906 4.63695ZM6 10.85C6 8.35971 7.23608 6.03182 9.29906 4.63695L7.61868 2.15172C4.73051 4.10455 3 7.3636 3 10.85H6ZM6 12.7639V10.85H3V12.7639H6ZM5 15C5 14.5559 5.1911 14.1584 5.50037 13.8816L3.49963 11.6462C2.5814 12.468 2 13.6671 2 15H5ZM6.5 16.5C5.67157 16.5 5 15.8284 5 15H2C2 17.4853 4.01472 19.5 6.5 19.5V16.5ZM17.5 16.5H6.5V19.5H17.5V16.5ZM19 15C19 15.8284 18.3284 16.5 17.5 16.5V19.5C19.9853 19.5 22 17.4853 22 15H19ZM18.4996 13.8816C18.8089 14.1584 19 14.5559 19 15H22C22 13.6671 21.4186 12.468 20.5004 11.6462L18.4996 13.8816ZM18 10.85V12.7639H21V10.85H18Z"
-                  fill="white"
-                ></path>
-              </g>
+                d="M8 2.75H5C3.75736 2.75 2.75 3.75736 2.75 5V8C2.75 9.24264 3.75736 10.25 5 10.25H8C9.24264 10.25 10.25 9.24264 10.25 8V5C10.25 3.75736 9.24264 2.75 8 2.75Z"
+                stroke="#fff"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M19 2.75H16C14.7574 2.75 13.75 3.75736 13.75 5V8C13.75 9.24264 14.7574 10.25 16 10.25H19C20.2426 10.25 21.25 9.24264 21.25 8V5C21.25 3.75736 20.2426 2.75 19 2.75Z"
+                stroke="#fff"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M19 13.75H16C14.7574 13.75 13.75 14.7574 13.75 16V19C13.75 20.2426 14.7574 21.25 16 21.25H19C20.2426 21.25 21.25 20.2426 21.25 19V16C21.25 14.7574 20.2426 13.75 19 13.75Z"
+                stroke="#fff"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M8 13.75H5C3.75736 13.75 2.75 14.7574 2.75 16V19C2.75 20.2426 3.75736 21.25 5 21.25H8C9.24264 21.25 10.25 20.2426 10.25 19V16C10.25 14.7574 9.24264 13.75 8 13.75Z"
+                stroke="#fff"
+                strokeWidth="1.5"
+              />
             </svg>
-            <span className="absolute top-0 right-1">
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 2 2"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M1 2C1.55228 2 2 1.55228 2 1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1C0 1.55228 0.447715 2 1 2Z"
-                  fill="#e7d3a1"
-                ></path>
-              </svg>
+            <span className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 text-sm text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
+              Dashboard
             </span>
           </div>
+        )}
+
+        {/* Ventas */}
+        <div
+          onClick={() => handleSliderChange("ventas")}
+          className="group relative cursor-pointer border-none"
+        >
+          <Buy x={"34"} y={"34"} />
+          <span className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 text-sm text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
+            Ventas
+          </span>
         </div>
 
-        <div
-          onClick={() => handleSliderChange("stock")}
-          className="cursor-pointer border-none pr-10"
-        >
-          <svg
-            width="34"
-            height="34"
-            viewBox="0 0 30 30"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M21 0H9C4.02944 0 0 4.02944 0 9V21C0 25.9706 4.02944 30 9 30H21C25.9706 30 30 25.9706 30 21V9C30 4.02944 25.9706 0 21 0Z"
-              fill="#E7D3A1"
-              fillOpacity="0.67"
-            ></path>
-            <path
-              d="M5.90029 10.7596L6.78029 9.23542C7.30029 8.33476 8.46641 8.01498 9.37574 8.53998C10.9432 9.44498 12.2241 8.70646 12.221 6.8918C12.2207 5.85238 13.0742 4.99413 14.1222 4.9988L16.1155 5.00643C17.0346 4.9944 17.778 5.74689 17.79 6.66605L17.7903 6.88559C17.7847 8.69525 19.0664 9.43525 20.6395 8.53059L20.8297 8.42105C21.6318 7.97189 22.6551 8.2394 23.1043 9.04143L24.1075 10.7638C24.6356 11.6691 24.3191 12.8374 23.4187 13.3568C21.8456 14.2615 21.8465 15.74 23.414 16.645C24.3147 17.165 24.6345 18.3311 24.1095 19.2404L23.2295 20.7646C22.7095 21.6653 21.5433 21.9851 20.634 21.4601C19.0665 20.5551 17.7856 21.2936 17.7887 23.1082C17.7841 24.1563 16.9356 25.0059 15.8875 25.0013L13.8943 24.9936C12.9751 25.0057 12.2318 24.2532 12.2197 23.334L12.2195 23.1145C12.2251 21.3048 10.9433 20.5648 9.37026 21.4695L9.18 21.579C8.37797 22.0282 7.35462 21.7607 6.90546 20.9586L5.90224 19.2363C5.37415 18.3309 5.69069 17.1627 6.59102 16.6432C8.1641 15.7386 8.16324 14.2601 6.59574 13.3551C5.68641 12.8301 5.38029 11.6603 5.90029 10.7596Z"
-              stroke="white"
-              strokeWidth="1.5"
-              strokeMiterlimit="10"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            ></path>
-            <path
-              d="M18.25 15C18.25 13.2051 16.7949 11.75 15 11.75C13.2051 11.75 11.75 13.2051 11.75 15C11.75 16.7949 13.2051 18.25 15 18.25C16.7949 18.25 18.25 16.7949 18.25 15Z"
-              stroke="white"
-              strokeWidth="1.5"
-            ></path>
-          </svg>
+        {/* Logout */}
+        <div className="group relative cursor-pointer border-none">
+          <Logout />
+          <span className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 text-sm text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
+            Salir
+          </span>
         </div>
       </div>
     </div>

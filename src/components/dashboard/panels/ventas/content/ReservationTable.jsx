@@ -1,8 +1,8 @@
 import React from "react";
-import { SearchIcon, ShowEyes } from "../../../../../assets/icons";
-import { FiltroDropdown } from "../../../widgets";
+import { SearchIcon } from "../../../../../assets/icons";
+import { GenericTable } from "../../../widgets";
 
-const products = [
+const reservas = [
   {
     code: "PD12949UXLM",
     color: "0030854",
@@ -75,88 +75,75 @@ const products = [
   },
 ];
 
-const options = [
-  "Cliente",
-  "Fecha",
-  "Codigo de Producto",
-  "Nombre",
-  "Pendiente",
-  "Entregado",
-];
-
 const ReservationTable = () => {
-  return (
-    <>
-      <div className="w-full h-full bg-white rounded-lg shadow overflow-x-auto p-1">
-        <div className="w-full mt-2">
-          <div className="flex text-[15px] font-medium rounded-t-lg overflow-hidden ">
-            <div className="w-full cursor-pointer px-4 py-2 flex items-center justify-center transition-all duration-200 text-xl text-center bg-white text-[#3c2f1c] border-t-2 border-x-2 border-[#e8d5a2] rounded-t-md shadow-md">
-              Productos Reservados
-            </div>
-            <div className="w-full cursor-pointer px-4 py-2 transition-all duration-200 text-xl text-center text-[#3c2f1c] border-b-2 border-[#e8d5a2] rounded-t-md shadow-md ">
-              <div className="w-full flex items-center justify-end gap-2">
-                <div className="flex items-center bg-[#fcf5e9] border-[2px] border-[#f5e6c9] rounded-md px-3 py-1 w-[280px] font-medium">
-                  <SearchIcon color="#5c4c3a" className="text-[#5c4c3a]" />
-                  <input
-                    type="text"
-                    placeholder="Buscar "
-                    className="bg-transparent outline-none w-full text-[#5c4c3a] placeholder-[#5c4c3a] text-[15px]"
-                  />
-                </div>
-                <FiltroDropdown opciones={options} />
-              </div>
-            </div>
-          </div>
+  const columns = [
+    {
+      key: "fechaReserva",
+      label: "FECHA",
+      className: "text-center",
+      render: (_, row) => row.entrega.fechaReserva,
+    },
+    {
+      key: "cliente",
+      label: "CLIENTE",
+      className: "text-center",
+      render: (_, row) => (
+        <div className="flex flex-col">
+          <span>{row.entrega.cliente}</span>
         </div>
+      ),
+    },
+    {
+      key: "name",
+      label: "DESCRIPCIÓN",
+      className: "text-center",
+    },
+    {
+      key: "cantidad",
+      label: "CANTIDAD",
+      className: "text-center",
+      render: (_, row) => row.entrega.cantidad,
+    },
+    {
+      key: "color",
+      label: "COLOR",
+      className: "text-center",
+    },
+    {
+      key: "estado",
+      label: "ENTREGA",
+      className: "text-center",
+      render: (_, row) => (
+        <span
+          className={`text-sm font-semibold px-3 py-1 rounded-full ${
+            row.entrega.estado === "Pendiente"
+              ? "bg-[var(--bg-state-red)] text-[var(--text-state-red)]"
+              : "bg-[var(--bg-state-green)] text-[var(--text-state-green)]"
+          }`}
+        >
+          {row.entrega.estado}
+        </span>
+      ),
+    },
+  ];
 
-        {/* Tabla */}
-        <div className="bg-white px-4 mt-3 rounded-b-lg shadow-sm ">
-          <table className="w-full s text-[#3c2f1c] text-md text-center">
-            <thead>
-              <tr className="grid grid-cols-6   font-medium px-4 py-2 border-b border-[#e6d8be] bg-white">
-                <th>Fecha</th>
-                <th>Reservado Por</th>
-                <th>Descripción</th>
-                <th>Cantidad</th>
-                <th>Color de tela</th>
-                <th>Entrega</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((product, index) => (
-                <tr
-                  key={index}
-                  className={`grid grid-cols-6 items-center px-4 py-3 ${
-                    index % 2 === 0 ? "bg-white" : "bg-[#fefaf3]"
-                  }`}
-                >
-                  <td>{product.entrega.fechaReserva}</td>
-                  <td>
-                    <div className="flex flex-col">
-                      <span>→ {product.entrega.cliente}</span>
-                    </div>
-                  </td>
-                  <td>{product.name}</td>
-                  <td>{product.entrega.cantidad}</td>
-                  <td>{product.color}</td>
-                  <td>
-                    <span
-                      className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                        product.entrega.estado === "Pendiente"
-                          ? "bg-[var(--bg-state-red)] text-[var(--text-state-red)]"
-                          : "bg-[var(--bg-state-green)] text-[var(--text-state-green)]"
-                      }`}
-                    >
-                      {product.entrega.estado}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+  return (
+    <div className="w-full h-full rounded-lg shadow overflow-x-auto p-1">
+      {/* Título y Buscador */}
+      <div className="flex flex-col md:flex-row justify-center items-center w-full px-4 ">
+        <h2 className="text-2xl  font-semibold text-[#2c2b2a]">RESERVAS</h2>
       </div>
-    </>
+
+      {/* Tabla */}
+      <div className="bg-white px-4 mt-3 rounded-b-lg shadow-sm">
+        <GenericTable
+          columns={columns}
+          data={reservas}
+          enablePagination={true}
+          enableFilter={true}
+        />
+      </div>
+    </div>
   );
 };
 

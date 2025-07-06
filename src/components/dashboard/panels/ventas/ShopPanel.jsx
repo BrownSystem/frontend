@@ -11,21 +11,27 @@ import { useShopViewStore } from "@store/useShopViewStore";
 import { RenderView } from "./RenderContent";
 import {
   ClientContent,
+  ProductTable,
   RegisterSalesContent,
   SalesInvoiceTable,
 } from "./content";
 import ReservationTable from "./content/ReservationTable";
 
 const viewMap = {
-  registerSales: () => <RegisterSalesContent />,
-  salesInquiry: () => <SalesInvoiceTable />,
-  reservationTable: () => <ReservationTable />,
-  generatedClient: () => <ClientContent />,
+  productos: ProductTable,
+  registerSales: RegisterSalesContent,
+  salesInquiry: SalesInvoiceTable,
+  reservationTable: ReservationTable,
+  generatedClient: ClientContent,
 };
 
 const ShopPanel = () => {
   const setView = useShopViewStore((state) => state.setViewSafe);
-
+  const handleViewProductos = useCallback(() => {
+    setView({
+      name: "productos",
+    });
+  }, [setView]);
   const handlerViewRegisterSales = useCallback(() => {
     setView({ name: "registerSales" });
   }, [setView]);
@@ -44,8 +50,16 @@ const ShopPanel = () => {
 
   return (
     <>
-      <div className="w-full flex max-h-full roundend-lg">
-        <div className="w-full flex h-[120px] gap-5">
+      <div className="w-full flex justify-center max-h-full roundend-lg">
+        <div className="w-full flex justify-center h-[70px] gap-5">
+          <ActionCard
+            svgAction={<Folder color={"#ffff"} />}
+            action={"Ver"}
+            onClick={handleViewProductos}
+            title={"Productos"}
+            others={false}
+            hasNotifications={false}
+          />
           <ActionCard
             svgAction={<Comprobantes />}
             action={"Ingresar"}
@@ -57,7 +71,7 @@ const ShopPanel = () => {
           <ActionCard
             svgAction={<SearchIcon color={"#ffff"} x={"24"} y={"24"} />}
             action={"Consultar"}
-            title={"Ventas / Pagos"}
+            title={"Pagos / Ventas"}
             onClick={handlerViewSalesInquiry}
             others={false}
             hasNotifications={false}
@@ -81,7 +95,7 @@ const ShopPanel = () => {
           />
         </div>
       </div>
-      <div className="mt-5 bg-white p-1 w-full rounded-lg border-transparent">
+      <div className="mt-1 bg-white p-1 w-full rounded-lg border-transparent">
         <RenderView viewMap={viewMap} defaultView={"registerSales"} />
       </div>
     </>

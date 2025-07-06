@@ -6,8 +6,6 @@ const OptionCard = ({ children, text, onClick, name }) => {
 
   const isActive = currentView === name;
 
-  console.log(currentView, name);
-
   return (
     <div
       onClick={onClick}

@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { SearchIcon } from "../../../../../../assets/icons";
-import { FiltroDropdown } from "../../../../widgets";
-import ConsultingInvoiceCard from "./tables/ConsultingInvoiceCard";
+import { useState } from "react";
+import { SearchIcon, ShowEyes } from "../../../../../../assets/icons";
 import InvoiceModal from "../../../../../common/Modal/InvoiceModal";
 import InvoicePaymentModal from "../../../../../common/Modal/InvoicePaymentModal";
+import { GenericTable } from "../../../../widgets";
+import { BsEye } from "react-icons/bs";
 
 const facturasVentas = [
   {
@@ -111,13 +111,122 @@ const facturasPago = [
   },
 ];
 
-const opciones = ["Fecha", "Cliente"];
-
 const SalesInvoiceTable = () => {
   const [showModal, setShowModal] = useState(false);
   const [showModalRegisterPayment, setShowModalRegisterPayment] =
     useState(false);
-  const [tags, onCambiar] = useState("pagos");
+  const [tags, setTags] = useState("pagos");
+
+  const columnsVentas = [
+    { key: "fecha", label: "FECHA", className: "text-center" },
+    { key: "cliente", label: "CLIENTE", className: "text-center" },
+    {
+      key: "monto",
+      label: "MONTO",
+      className: "text-center",
+      render: (value) =>
+        `$${value.toLocaleString("es-AR", { minimumFractionDigits: 2 })}`,
+    },
+    {
+      key: "montoPagado",
+      label: "MONTO ABONADO",
+      className: "text-center",
+      render: (value) => (
+        <span className="text-green-700">
+          ${value.toLocaleString("es-AR", { minimumFractionDigits: 2 })}
+        </span>
+      ),
+    },
+    {
+      key: "estado",
+      label: "ESTADO",
+      className: "text-center",
+      render: (value) => (
+        <span
+          className={`px-3 py-1 rounded-full text-sm font-semibold ${
+            value === "Pagada"
+              ? "bg-[var(--bg-state-green)] text-[var(--text-state-green)]"
+              : "bg-[var(--bg-state-yellow)] text-[var(--text-state-yellow)]"
+          }`}
+        >
+          {value}
+        </span>
+      ),
+    },
+    {
+      key: "acciones",
+      label: "DETALLES",
+      className: "text-center",
+      render: (_, row) => (
+        <div
+          className="flex items-center justify-center cursor-pointer"
+          onClick={() => setShowModal(true)}
+        >
+          <BsEye className="h-6 w-6" />
+        </div>
+      ),
+    },
+  ];
+
+  const columnsPagos = [
+    { key: "fecha", label: "FECHA", className: "text-center" },
+    { key: "cliente", label: "CLIENTE", className: "text-center" },
+    {
+      key: "monto",
+      label: "MONTO",
+      className: "text-center",
+      render: (value) =>
+        `$${value.toLocaleString("es-AR", { minimumFractionDigits: 2 })}`,
+    },
+    {
+      key: "montoPagado",
+      label: "MONTO ABONADO",
+      className: "text-center",
+      render: (value) => (
+        <span className="text-green-700">
+          ${value.toLocaleString("es-AR", { minimumFractionDigits: 2 })}
+        </span>
+      ),
+    },
+    {
+      key: "saldo",
+      label: "SALDO",
+      className: "text-center",
+      render: (_, row) =>
+        `$${(row.monto - row.montoPagado).toLocaleString("es-AR", {
+          minimumFractionDigits: 2,
+        })}`,
+    },
+    {
+      key: "estado",
+      label: "ESTADO",
+      className: "text-center",
+      render: (value) => (
+        <span
+          className={`px-3 py-1 rounded-full text-sm font-semibold ${
+            value === "Pendiente"
+              ? "bg-[var(--bg-state-red)] text-[var(--text-state-red)]"
+              : "bg-[var(--bg-state-yellow)] text-[var(--text-state-yellow)]"
+          }`}
+        >
+          {value}
+        </span>
+      ),
+    },
+    {
+      key: "acciones",
+      label: "DETALLES",
+      className: "text-center",
+      render: (_, row) => (
+        <div
+          className="flex items-center justify-center cursor-pointer"
+          onClick={() => setShowModalRegisterPayment(true)}
+        >
+          <BsEye className="h-6 w-6" />
+        </div>
+      ),
+    },
+  ];
 
   return (
     <>
@@ -141,86 +250,43 @@ const SalesInvoiceTable = () => {
         />
       )}
 
-      <div className="w-full h-full bg-white rounded-lg shadow overflow-x-auto p-4">
-        <div className="w-full flex gap-1 items-center">
-          <div className="flex items-center bg-[#fcf5e9] border-[2px] border-[#f5e6c9] rounded-md px-3 py-2 w-[280px] font-medium">
-            <SearchIcon color="#5c4c3a" className="text-[#5c4c3a]" />
-            <input
-              type="text"
-              placeholder="Buscar"
-              className="bg-transparent outline-none w-full text-[#5c4c3a] placeholder-[#5c4c3a] text-[15px]"
-            />
-          </div>
-          <FiltroDropdown opciones={opciones} id={"PedidoTable"} />
-        </div>
+      <div className="w-full h-full bg-white rounded-lg shadow p-4">
+        {/* Buscador */}
 
+        {/* Tabs */}
         <div className="w-full mt-4">
-          <div className="flex text-[15px] font-medium rounded-t-lg overflow-hidden bg-[#ffefd4]">
+          <div className="flex text-[15px] font-medium rounded-t-lg overflow-hidden bg-[var(--brown-ligth-200)]">
             <div
               className={`w-full cursor-pointer px-4 py-2 transition-all duration-200 text-xl text-center ${
                 tags === "ventas"
-                  ? "text-[#8a775a] border-b-2 border-[#e8d5a2]"
-                  : "bg-white text-[#3c2f1c] border-t-2 border-x-2 border-[#e8d5a2] rounded-t-md shadow-md"
+                  ? "text-[var(--brown-ligth-400)] border-b-2 border-[var(--brown-dark-600)]"
+                  : "bg-white text-[var(--brown-dark-700)] border-t-2 border-x-2 border-[var(--brown-dark-600)] rounded-t-md shadow-md"
               }`}
-              onClick={() => onCambiar("pagos")}
+              onClick={() => setTags("pagos")}
             >
               Pagos Pendientes
             </div>
             <div
               className={`w-full px-4 py-2 transition-all duration-200 text-xl text-center cursor-pointer ${
                 tags === "pagos"
-                  ? "text-[#8a775a] border-b-2 border-[#e8d5a2]"
-                  : "bg-white text-[#3c2f1c] border-t-2 border-x-2 border-[#e8d5a2] rounded-t-md shadow-md"
+                  ? "text-[var(--brown-ligth-400)] border-b-2 border-[var(--brown-dark-600)]"
+                  : "bg-white text-[var(--brown-dark-700)] border-t-2 border-x-2 border-[var(--brown-dark-600)] rounded-t-md shadow-md"
               }`}
-              onClick={() => onCambiar("ventas")}
+              onClick={() => setTags("ventas")}
             >
               Ventas Finalizadas
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-b-lg shadow-sm">
-          <table className="w-full text-left text-[#3c2f1c] text-md">
-            <thead>
-              <tr
-                className={`grid ${
-                  tags === "pagos" ? "grid-cols-7" : "grid-cols-6"
-                } font-medium px-4 py-2 border-b border-[#e6d8be] bg-white`}
-              >
-                <th className="text-center">Fecha</th>
-                <th className="text-center">Cliente</th>
-                <th className="text-center">Monto</th>
-                <th className="text-center">Monto Abonado</th>
-                {tags === "pagos" ? <th className="text-center">Saldo</th> : ""}
-
-                <th className="text-center">Estado</th>
-                <th className="text-center">Detalles</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tags !== "pagos"
-                ? facturasVentas.map((factura, index) => {
-                    return (
-                      <ConsultingInvoiceCard
-                        key={index}
-                        factura={factura}
-                        index={index}
-                        onShowModal={() => setShowModal(true)}
-                      />
-                    );
-                  })
-                : facturasPago.map((factura, index) => {
-                    return (
-                      <ConsultingInvoiceCard
-                        key={index}
-                        factura={factura}
-                        index={index}
-                        onShowModal={() => setShowModalRegisterPayment(true)}
-                      />
-                    );
-                  })}
-            </tbody>
-          </table>
+        {/* Tabla */}
+        <div className="mt-4">
+          <GenericTable
+            columns={tags === "pagos" ? columnsPagos : columnsVentas}
+            data={tags === "pagos" ? facturasPago : facturasVentas}
+            enablePagination={true}
+            enableFilter={true}
+          />
         </div>
       </div>
     </>

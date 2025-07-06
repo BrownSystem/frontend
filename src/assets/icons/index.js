@@ -20,3 +20,5 @@ export { default as MenuKebab } from "./MenuKebab";
 export { default as Edit } from "./Edit";
 export { default as Buy } from "./Buy";
 export { default as Folder } from "./Folder";
+export { default as QrCode } from "./QrCode";
+export { default as Logout } from "./Logout";

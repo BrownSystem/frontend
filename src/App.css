@@ -4,18 +4,16 @@
   /* FONTS */
   --font-outfit: "Outfit", sans-serif;
 
-  /* COLORS */
-  --brown-dark-950: #0a0e5c;
-  --brown-dark-900: #00047a;
-  --brown-dark-800: #000595;
-  --brown-dark-700: #0003b4;
-  --brown-dark-600: #0006df;
-  --brown-dark-500: #0016ff;
-  --brown-ligth-400: #2040ff;
-  --brown-ligth-300: #6d81ff;
-  --brown-ligth-200: #b2bbff;
-  --brown-ligth-100: #dcdeff;
-  --brown-ligth-50: #eeefff;
+  --brown-dark-950: #000000;
+  --brown-dark-900: #3d3d3d;
+  --brown-dark-800: #292929;
+  --brown-dark-700: #4f4f4f;
+  --brown-dark-500: #6d6d6d;
+  --brown-ligth-400: #888888;
+  --brown-ligth-300: #b0b0b0;
+  --brown-ligth-200: #d1d1d1;
+  --brown-ligth-100: #e7e7e7;
+  --brown-ligth-50: #f6f6f6;
   --bg-state-red: #ffc9c9;
   --text-state-red: #82181a;
   --bg-state-yellow: #fff085;
