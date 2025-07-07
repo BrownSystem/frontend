@@ -16,7 +16,7 @@ const PrintQrCodeContent = () => {
 
   const { mutate: downloadPdf, isPending } = useDownloadPdfQrs();
 
-  const limit = 6;
+  const limit = 4;
 
   const {
     data: products,
@@ -171,13 +171,13 @@ const PrintQrCodeContent = () => {
   }
 
   return (
-    <div className="w-full flex flex-col gap-4 p-4 rounded-lg">
+    <div className="w-full flex flex-col gap-4 py-2 rounded-lg">
       <div className="w-full mt-1 flex justify-around items-center">
         <div className="text-3xl font-semibold text-[#3c2f1c]">
-          IMPRIMIR QR
+          DESCARGAR QR
           <span className="text-[18px] text-[var(--brown-ligth-400)]">
             {" "}
-            (Seleccionar para imprimir)
+            (Seleccionar para crear pdf)
           </span>
         </div>
         <button
@@ -242,7 +242,7 @@ const PrintQrCodeContent = () => {
                 disabled={isPending}
                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
               >
-                {isPending ? "Generando..." : "Confirmar impresión"}
+                {isPending ? "Generando..." : "Confirmar descarga"}
               </button>
             </div>
           </div>

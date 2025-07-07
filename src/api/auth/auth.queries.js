@@ -17,12 +17,7 @@ export const useLogin = () => {
 
       queryClient.invalidateQueries(); // opcional
     },
-    onError: (error) => {
-      console.error(
-        "Error de login:",
-        error.response?.data?.message || error.message
-      );
-    },
+    onError: (error) => {},
   });
 };
 

@@ -15,8 +15,8 @@ const GenericTable = ({
   currentPage = 1,
   totalPages = 1,
   onPageChange = () => {},
-  paginationDisabled = false, // ✅ NUEVO
-  isLoading = false, // ✅ NUEVO
+  paginationDisabled = false,
+  isLoading = false,
 }) => {
   const [searchText, setSearchText] = useState("");
   const [localPage, setLocalPage] = useState(1);
@@ -63,26 +63,26 @@ const GenericTable = ({
   }, [currentData, onVisibleDataChange]);
 
   return (
-    <div className="w-full flex justify-center rounded-lg p-4">
+    <div className="w-full flex justify-center rounded-lg py-4">
       <div className="w-[90%]">
-        {enableFilter && !externalPagination && (
-          <div className="flex justify-between gap-4">
-            <input
-              type="text"
-              value={searchText}
-              onChange={handleSearch}
-              placeholder="Buscar..."
-              className="w-full h-[40px] border px-2 rounded"
-            />
+        {(enableFilter || showAddButton) && !externalPagination && (
+          <div className="flex justify-between gap-4 mb-4">
+            {enableFilter && (
+              <input
+                type="text"
+                value={searchText}
+                onChange={handleSearch}
+                placeholder="Buscar..."
+                className="w-full h-[40px] border px-2 rounded"
+              />
+            )}
             {showAddButton && onAddRow && (
-              <div className="mb-2 flex justify-end">
-                <button
-                  onClick={onAddRow}
-                  className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
-                  +<span>Añadir</span>
-                </button>
-              </div>
+              <button
+                onClick={onAddRow}
+                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                +<span>Añadir</span>
+              </button>
             )}
           </div>
         )}
@@ -129,12 +129,20 @@ const GenericTable = ({
                 <tr
                   key={index}
                   onClick={() => !row.isEditing && onRowClick?.(row)}
+                  title={row[columns[1].key]}
                   className={`grid grid-cols-[repeat(auto-fit,_minmax(100px,_1fr))] px-2 py-3 hover:bg-gray-200 ${
                     index % 2 === 0 ? "bg-gray-100" : "bg-white"
                   }`}
                 >
-                  {columns.map((col) => (
-                    <td key={col.key} className="px-2 text-center">
+                  {columns.map((col, colIndex) => (
+                    <td
+                      key={col.key}
+                      className={`px-2 text-center ${
+                        colIndex === 1
+                          ? "truncate whitespace-nowrap overflow-hidden"
+                          : ""
+                      }`}
+                    >
                       {row.isEditing && col.editable ? (
                         <input
                           type="text"

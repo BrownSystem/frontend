@@ -1,81 +1,91 @@
-import { useState } from "react";
 import { useStockViewStore } from "@store/useStockViewStore";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  useCreateBranch,
+  useFindAllBranch,
+  useUpdateBranch,
+} from "../../../../../../api/branch/branch.queries";
 import { BsEye } from "react-icons/bs";
 import { GenericTable } from "../../../../widgets";
 
 const DepositsContent = () => {
-  const [selectedDeposit, setSelectedDeposit] = useState(null);
-  const [deposits, setDeposits] = useState([
-    {
-      name: "Hiper",
-      location: "Córdoba",
-      productsTotal: 1,
-      canTransfer: false,
-      wasRecentlyRestocked: true,
-    },
-    {
-      name: "Castro barros",
-      location: "Córdoba",
-      productsTotal: 2,
-      canTransfer: true,
-      wasRecentlyRestocked: false,
-    },
-    {
-      name: "Jesús María",
-      location: "Córdoba",
-      productsTotal: 4,
-      canTransfer: true,
-      wasRecentlyRestocked: true,
-    },
-  ]);
-
+  const queryClient = useQueryClient();
+  const { data: branches = [], isLoading } = useFindAllBranch();
   const setView = useStockViewStore((state) => state.setViewSafe);
   const renderContent = useStockViewStore((state) => state.renderContent);
 
-  const handleRowClick = (deposit) => {
-    setSelectedDeposit(deposit);
-    setView({
-      name: "products_of_deposit",
-      props: {
-        title: deposit?.name,
-        span: deposit?.location,
-        backTo: true,
-      },
-    });
-  };
+  const createBranchMutation = useCreateBranch();
+  const updateBranchMutation = useUpdateBranch();
 
   const handleAddDeposit = () => {
     const newDeposit = {
+      _id: `temp-${Date.now()}`,
       name: "",
       location: "",
       productsTotal: 0,
       canTransfer: false,
       wasRecentlyRestocked: false,
       isEditing: true,
+      isNew: true,
     };
 
-    setDeposits((prev) => [newDeposit, ...prev]);
+    queryClient.setQueryData(["branch"], (old = []) => [
+      newDeposit,
+      ...(old || []),
+    ]);
   };
 
-  const handleEditCell = (index, key, value) => {
-    setDeposits((prev) => {
-      const updated = [...prev];
-      updated[index][key] = value;
-      return updated;
+  const handleEditCell = (id, key, value) => {
+    queryClient.setQueryData(["branch"], (old = []) =>
+      old.map((item) => (item._id === id ? { ...item, [key]: value } : item))
+    );
+  };
+
+  const handleSaveRow = async (row) => {
+    const { name, location } = row;
+    if (row.isNew) {
+      await createBranchMutation.mutateAsync({
+        name: name,
+        location: location,
+      });
+    } else {
+      await updateBranchMutation.mutateAsync({
+        name: name,
+        location: location,
+      });
+    }
+
+    queryClient.invalidateQueries(["branch"]);
+  };
+
+  const handleCancelEdit = (row) => {
+    if (row.isNew) {
+      queryClient.setQueryData(["branch"], (old = []) =>
+        old.filter((item) => item._id !== row._id)
+      );
+    } else {
+      queryClient.invalidateQueries(["branch"]);
+    }
+  };
+
+  const handleRowClick = (deposit) => {
+    console.log(deposit);
+    if (deposit.isEditing) return;
+    setView({
+      name: "products_of_deposit",
+      props: {
+        title: deposit?.name,
+        span: deposit?.location,
+        backTo: true,
+        branchId: deposit?.id,
+      },
     });
   };
 
-  const handleSaveRow = (index) => {
-    setDeposits((prev) => {
-      const updated = [...prev];
-      updated[index].isEditing = false;
-      return updated;
-    });
-  };
-
-  const handleCancelAdd = (index) => {
-    setDeposits((prev) => prev.filter((_, i) => i !== index));
-  };
+  const deposits = branches.map((branch) => ({
+    ...branch,
+    isEditing: branch.isEditing || false,
+  }));
 
   const columns = [
     { key: "name", label: "NOMBRE", editable: true },
@@ -83,40 +93,38 @@ const DepositsContent = () => {
     {
       key: "actions",
       label: "INSPECCIONAR",
-      render: (_, row, index) => (
-        <span className="flex justify-center gap-2">
-          {row.isEditing ? (
-            <>
-              <button
-                onClick={() => handleSaveRow(index)}
-                className="text-green-600 text-xl cursor-pointer"
-                title="Guardar"
-              >
-                ✔
-              </button>
-              <button
-                onClick={() => handleCancelAdd(index)}
-                className="text-red-600 text-xl cursor-pointer"
-                title="Cancelar"
-              >
-                ✖
-              </button>
-            </>
-          ) : (
-            <BsEye
-              className="w-6 h-6 cursor-pointer"
-              onClick={() => handleRowClick(row)}
-            />
-          )}
-        </span>
-      ),
+      render: (_, row) =>
+        row.isEditing ? (
+          <>
+            <button
+              onClick={() => handleSaveRow(row)}
+              disabled={
+                createBranchMutation.isLoading || updateBranchMutation.isLoading
+              }
+              className="text-green-600 text-xl cursor-pointer"
+              title="Guardar"
+            >
+              ✔
+            </button>
+            <button
+              onClick={() => handleCancelEdit(row)}
+              className="text-red-600 text-xl cursor-pointer"
+              title="Cancelar"
+            >
+              ✖
+            </button>
+          </>
+        ) : (
+          <BsEye
+            className="w-6 h-6 cursor-pointer"
+            onClick={() => handleRowClick(row)}
+          />
+        ),
     },
   ];
 
-  if (selectedDeposit) return renderContent();
-
   return (
-    <div className="w-full  flex flex-col gap-4  p-4 rounded-lg">
+    <div className="w-full flex flex-col gap-4 p-4 rounded-lg">
       <div className="w-full mt-1 flex flex-col justify-center items-center">
         <div className="text-3xl font-semibold text-[#3c2f1c]">
           DEPOSITOS{" "}
@@ -133,9 +141,15 @@ const DepositsContent = () => {
         enablePagination={true}
         showAddButton={true}
         onAddRow={handleAddDeposit}
-        onEditCell={handleEditCell}
-        onSaveRow={handleSaveRow}
-        onRowClick={handleRowClick}
+        onEditCell={(index, key, value) => {
+          const row = deposits[index];
+          handleEditCell(row._id, key, value);
+        }}
+        isLoading={
+          isLoading ||
+          createBranchMutation.isLoading ||
+          updateBranchMutation.isLoading
+        }
       />
     </div>
   );

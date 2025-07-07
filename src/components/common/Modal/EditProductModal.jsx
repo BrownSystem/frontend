@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import noImage from "../../../assets/images/sin-imagen.png";
-import Modal from "./Modal";
 import { Close } from "../../../assets/icons";
 
 const EditProductModal = ({ onClose, product, onSubmitEdit }) => {

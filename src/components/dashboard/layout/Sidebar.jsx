@@ -11,6 +11,10 @@ const Sidebar = () => {
     navigate(href);
   };
 
+  const handleLogout = () => {
+    navigate("/"); // Redirigir a login
+  };
+
   // Aquí podés definir qué mostrar según el rol
   const isAdmin = user?.role === "ADMIN";
   const isManagement = user?.role === "MANAGEMENT";
@@ -70,7 +74,10 @@ const Sidebar = () => {
         </div>
 
         {/* Logout */}
-        <div className="group relative cursor-pointer border-none">
+        <div
+          className="group relative cursor-pointer border-none"
+          onClick={handleLogout}
+        >
           <Logout />
           <span className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 text-sm text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
             Salir
