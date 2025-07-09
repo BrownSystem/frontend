@@ -15,9 +15,20 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     const checkToken = async () => {
       if (hasValidated) return;
 
+      const token = localStorage.getItem("token");
+
+      // Si no hay token, evitamos la verificación
+      if (!token) {
+        setUser(null);
+        setIsValidToken(false);
+        setHasValidated(true);
+        setIsLoading(false);
+        return;
+      }
+
       try {
         const { user: validatedUser } = await verifyToken();
-        setUser(validatedUser); // actualiza user en el store
+        setUser(validatedUser);
         setIsValidToken(true);
       } catch (error) {
         setUser(null);
@@ -31,10 +42,10 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     checkToken();
   }, [hasValidated, setUser]);
 
-  // Redirección si token inválido
+  if (isLoading) return null;
+
   if (!isValidToken) return <Navigate to="/" replace />;
 
-  // Redirección si rol no permitido
   if (user && allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to="/dashboard/ventas" replace />;
   }
