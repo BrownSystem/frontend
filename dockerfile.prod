@@ -9,6 +9,6 @@ RUN npm ci
 COPY . .
 
 # Expone el puerto típico de desarrollo, como 5173 (Vite), 3000 (React), 4200 (Angular)
-EXPOSE 4173
+EXPOSE 5173
 
 CMD ["npm", "run", "dev", "--", "--host"]
