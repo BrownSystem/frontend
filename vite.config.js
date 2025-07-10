@@ -14,4 +14,7 @@ export default defineConfig({
       "@pages": path.resolve(__dirname, "src/pages"),
     },
   },
+  server: {
+    allowedHosts: ["localhost", "bosquesrl.com"],
+  },
 });
