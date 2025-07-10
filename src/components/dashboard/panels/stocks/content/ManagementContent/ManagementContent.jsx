@@ -20,7 +20,7 @@ const MoreOptionsContent = () => {
 
   return (
     <>
-      <div className="w-auto h-full bg-white rounded-lg  p-4">
+      <div className="w-auto h-full bg-white   p-4">
         <div className="flex">
           <div className="w-[90%] flex items-center gap-4">
             <OptionCard
@@ -49,7 +49,7 @@ const MoreOptionsContent = () => {
           </div>
         </div>
 
-        <div className="w-full  bg-white px-4 mt-1 rounded-xl border border-[var(--brown-ligth-100)]">
+        <div className="w-full  bg-white px-4 mt-1 ">
           <RenderOptions viewMap={viewMap} defaultView={"createUser"} />
         </div>
       </div>

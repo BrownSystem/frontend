@@ -50,8 +50,8 @@ const ShopPanel = () => {
 
   return (
     <>
-      <div className="w-full flex justify-center max-h-full roundend-lg">
-        <div className="w-full flex justify-center h-[70px] gap-5">
+      <div className="w-full flex justify-center max-h-full">
+        <div className="w-auto flex  justify-center h-[70px] gap-2">
           <ActionCard
             svgAction={<Folder color={"#ffff"} />}
             action={"Ver"}
@@ -76,26 +76,18 @@ const ShopPanel = () => {
             others={false}
             hasNotifications={false}
           />
-          <ActionCard
-            svgAction={<Folder color={"#ffff"} x={"24"} y={"24"} />}
-            action={"Visualizar"}
-            title={"Reservas"}
-            onClick={handlerViewReserationTable}
-            others={false}
-            hasNotifications={false}
-          />
 
           <ActionCard
             svgAction={<CreateUser color={"#ffff"} x={"24"} y={"24"} />}
-            action={"Generar"}
-            title={"Clientes"}
+            action={"Visualizar"}
+            title={"Reservas"}
             onClick={handlerViewGeneratedClient}
             others={false}
             hasNotifications={false}
           />
         </div>
       </div>
-      <div className="mt-1 bg-white p-1 w-full rounded-lg border-transparent">
+      <div className="mt-1 bg-white p-1 w-full ">
         <RenderView viewMap={viewMap} defaultView={"registerSales"} />
       </div>
     </>

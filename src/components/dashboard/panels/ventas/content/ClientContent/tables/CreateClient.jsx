@@ -9,7 +9,10 @@ const CreateClient = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="mx-auto px-2 max-h-auto">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="mx-auto px-2 mt-2 max-h-auto"
+    >
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-brown-800 font-medium mb-1">

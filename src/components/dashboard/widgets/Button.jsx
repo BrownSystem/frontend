@@ -4,7 +4,7 @@ const Button = ({ text }) => {
   return (
     <button
       type="submit"
-      className="bg-[var(--brown-ligth-50)] cursor-pointer border-[1px] border-[var(--brown-ligth-400)] text-[var(--brown-dark-950)] px-6 py-2 rounded hover:bg-[var(--brown-ligth-200)]"
+      className="bg-[var(--brown-ligth-50)] cursor-pointer border-[1px] border-[var(--brown-ligth-400)] text-[var(--brown-dark-950)] px-6 py-2 rounded hover:bg-[var(--brown-ligth-200)] w-full"
     >
       {text}
     </button>
