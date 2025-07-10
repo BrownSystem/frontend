@@ -15,6 +15,6 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ["localhost", "bosquesrl.com"],
+    allowedHosts: ["localhost", "bosquesrl.com", "bosquesrl.online"],
   },
 });
