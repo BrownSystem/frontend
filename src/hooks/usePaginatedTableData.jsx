@@ -11,7 +11,7 @@ export const usePaginatedTableData = ({
 }) => {
   const [page, setPage] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const offset = (page - 1) * limit + 1;
+  const offset = page;
 
   useEffect(() => {
     const timeout = setTimeout(() => {

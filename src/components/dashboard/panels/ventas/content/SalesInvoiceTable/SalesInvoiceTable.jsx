@@ -1,150 +1,68 @@
-import { useState } from "react";
-import { SearchIcon, ShowEyes } from "../../../../../../assets/icons";
-import InvoiceModal from "../../../../../common/Modal/InvoiceModal";
-import InvoicePaymentModal from "../../../../../common/Modal/InvoicePaymentModal";
+import { useEffect, useState } from "react";
+import { useSearchVouchers } from "../../../../../../api/vouchers/vouchers.queries";
 import { GenericTable } from "../../../../widgets";
+import { InvoiceModal, InvoicePaymentModal } from "../../../../../common";
 import { BsEye } from "react-icons/bs";
-
-const facturasVentas = [
-  {
-    factura: "FC1-0000678",
-    fecha: "15/04/2025",
-    fechaPago: "20/04/2025",
-    monto: 1540.5,
-    montoPagado: 1540.5,
-    formaDePago: "Cheque",
-    estado: "Pagada",
-    cliente: "Lucía M.",
-  },
-  {
-    factura: "A0067",
-    fecha: "10/04/2025",
-    fechaPago: "18/04/2025",
-    monto: 956.0,
-    montoPagado: 956.0,
-    formaDePago: "Cheque de Tercero",
-    estado: "Pagada",
-    cliente: "Carlos B.",
-  },
-  {
-    factura: "FC1-0000679",
-    fecha: "17/04/2025",
-    fechaPago: "19/04/2025",
-    monto: 1280.75,
-    montoPagado: 1280.75,
-    formaDePago: "Transferencia",
-    estado: "Pagada",
-    cliente: "Sandra L.",
-  },
-  {
-    factura: "A0068",
-    fecha: "18/04/2025",
-    fechaPago: "22/04/2025",
-    monto: 875.0,
-    montoPagado: 875.0,
-    formaDePago: "Efectivo",
-    estado: "Pagada",
-    cliente: "Martín R.",
-  },
-  {
-    factura: "FC1-0000680",
-    fecha: "20/04/2025",
-    fechaPago: "27/04/2025",
-    monto: 1940.0,
-    montoPagado: 1940.0,
-    formaDePago: "Tarjeta",
-    estado: "Pagada",
-    cliente: "Valeria G.",
-  },
-];
-
-const facturasPago = [
-  {
-    factura: "B0004",
-    fecha: "02/04/2025",
-    fechaPago: "25/04/2025",
-    monto: 624.19,
-    montoPagado: 0,
-    formaDePago: "Efectivo",
-    estado: "Pendiente",
-    cliente: "Ana R.",
-  },
-  {
-    factura: "B0005",
-    fecha: "02/04/2025",
-    fechaPago: "25/04/2025",
-    monto: 600.19,
-    montoPagado: 0,
-    formaDePago: "Transferencia",
-    estado: "Pendiente",
-    cliente: "Pedro T.",
-  },
-  {
-    factura: "B0006",
-    fecha: "05/04/2025",
-    fechaPago: "28/04/2025",
-    monto: 715.0,
-    montoPagado: 0,
-    formaDePago: "Cheque",
-    estado: "Pendiente",
-    cliente: "Laura S.",
-  },
-  {
-    factura: "B0007",
-    fecha: "09/04/2025",
-    fechaPago: "30/04/2025",
-    monto: 890.5,
-    montoPagado: 400.0,
-    formaDePago: "Transferencia",
-    estado: "Parcial",
-    cliente: "Julián M.",
-  },
-  {
-    factura: "B0008",
-    fecha: "12/04/2025",
-    fechaPago: "12/04/2025",
-    monto: 320.0,
-    montoPagado: 200.0,
-    formaDePago: "Efectivo",
-    estado: "Parcial",
-    cliente: "Camila Z.",
-  },
-];
+import { useAuthStore } from "../../../../../../api/auth/auth.store";
 
 const SalesInvoiceTable = () => {
   const [showModal, setShowModal] = useState(false);
+  const user = useAuthStore((state) => state.user);
   const [showModalRegisterPayment, setShowModalRegisterPayment] =
     useState(false);
-  const [tags, setTags] = useState("pagos");
+  const [tags, setTags] = useState("ventas");
+  const [searchText, setSearchText] = useState("");
+  const [comprobanteSeleccionado, setComprobanteSeleccionado] = useState(null);
+  const [debouncedSearch, setDebouncedSearch] = useState(searchText);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchText);
+    }, 300); // espera 300ms
+
+    return () => clearTimeout(handler);
+  }, [searchText]);
+
+  const conditionPaymentMap = {
+    pagos: "CASH",
+    ventas: "CREDIT",
+  };
+
+  const { data, isLoading } = useSearchVouchers({
+    emissionBranchId: user?.branchId,
+    conditionPayment: conditionPaymentMap[tags],
+    limit: 5,
+    offset: 1,
+    search: debouncedSearch,
+  });
+
+  const vouchers = data?.data || [];
+
+  const totalAdeudado = vouchers
+    .filter((v) =>
+      v.contactName?.toLowerCase().includes(searchText.toLowerCase())
+    )
+    .reduce((acc, curr) => acc + (curr.remainingAmount || 0), 0);
 
   const columnsVentas = [
-    { key: "fecha", label: "FECHA", className: "text-center" },
-    { key: "cliente", label: "CLIENTE", className: "text-center" },
+    { key: "emissionDate", label: "FECHA", className: "text-center" },
+    { key: "contactName", label: "CLIENTE", className: "text-center" },
     {
-      key: "monto",
+      key: "totalAmount",
       label: "MONTO",
       className: "text-center",
       render: (value) =>
         `$${value.toLocaleString("es-AR", { minimumFractionDigits: 2 })}`,
     },
+
     {
-      key: "montoPagado",
-      label: "MONTO ABONADO",
-      className: "text-center",
-      render: (value) => (
-        <span className="text-green-700">
-          ${value.toLocaleString("es-AR", { minimumFractionDigits: 2 })}
-        </span>
-      ),
-    },
-    {
-      key: "estado",
+      key: "status",
       label: "ESTADO",
       className: "text-center",
       render: (value) => (
         <span
           className={`px-3 py-1 rounded-full text-sm font-semibold ${
-            value === "Pagada"
+            value === "PAGADO"
               ? "bg-[var(--bg-state-green)] text-[var(--text-state-green)]"
               : "bg-[var(--bg-state-yellow)] text-[var(--text-state-yellow)]"
           }`}
@@ -160,7 +78,11 @@ const SalesInvoiceTable = () => {
       render: (_, row) => (
         <div
           className="flex items-center justify-center cursor-pointer"
-          onClick={() => setShowModal(true)}
+          onClick={() => {
+            setShowModal(true);
+            setComprobanteSeleccionado(row); // ← guardás el comprobante
+            setShowModal(true);
+          }}
         >
           <BsEye className="h-6 w-6" />
         </div>
@@ -169,17 +91,17 @@ const SalesInvoiceTable = () => {
   ];
 
   const columnsPagos = [
-    { key: "fecha", label: "FECHA", className: "text-center" },
-    { key: "cliente", label: "CLIENTE", className: "text-center" },
+    { key: "emissionDate", label: "FECHA", className: "text-center" },
+    { key: "contactName", label: "CLIENTE", className: "text-center" },
     {
-      key: "monto",
+      key: "totalAmount",
       label: "MONTO",
       className: "text-center",
       render: (value) =>
         `$${value.toLocaleString("es-AR", { minimumFractionDigits: 2 })}`,
     },
     {
-      key: "montoPagado",
+      key: "paidAmount",
       label: "MONTO ABONADO",
       className: "text-center",
       render: (value) => (
@@ -189,22 +111,20 @@ const SalesInvoiceTable = () => {
       ),
     },
     {
-      key: "saldo",
+      key: "remainingAmount",
       label: "SALDO",
       className: "text-center",
-      render: (_, row) =>
-        `$${(row.monto - row.montoPagado).toLocaleString("es-AR", {
-          minimumFractionDigits: 2,
-        })}`,
+      render: (value) =>
+        `$${value.toLocaleString("es-AR", { minimumFractionDigits: 2 })}`,
     },
     {
-      key: "estado",
+      key: "status",
       label: "ESTADO",
       className: "text-center",
       render: (value) => (
         <span
           className={`px-3 py-1 rounded-full text-sm font-semibold ${
-            value === "Pendiente"
+            value === "PENDIENTE"
               ? "bg-[var(--bg-state-red)] text-[var(--text-state-red)]"
               : "bg-[var(--bg-state-yellow)] text-[var(--text-state-yellow)]"
           }`}
@@ -220,7 +140,10 @@ const SalesInvoiceTable = () => {
       render: (_, row) => (
         <div
           className="flex items-center justify-center cursor-pointer"
-          onClick={() => setShowModalRegisterPayment(true)}
+          onClick={() => {
+            setComprobanteSeleccionado(row);
+            setShowModalRegisterPayment(true);
+          }}
         >
           <BsEye className="h-6 w-6" />
         </div>
@@ -230,62 +153,151 @@ const SalesInvoiceTable = () => {
 
   return (
     <>
-      {showModal && (
+      {showModal && comprobanteSeleccionado && (
         <InvoiceModal
           onCancel={() => setShowModal(false)}
           onConfirm={() => {
             alert("Pago confirmado");
             setShowModal(false);
           }}
+          factura={{
+            numero: comprobanteSeleccionado.number ?? "—",
+            tipo: comprobanteSeleccionado.type ?? "—",
+            fecha: new Date(
+              comprobanteSeleccionado.emissionDate
+            ).toLocaleDateString("es-AR"),
+            cliente: comprobanteSeleccionado.contactName ?? "—",
+            direccion: comprobanteSeleccionado.contactAddress ?? "—",
+            total: comprobanteSeleccionado.totalAmount ?? 0,
+          }}
+          productos={(comprobanteSeleccionado.products ?? []).map((p) => ({
+            codigo: p.productCode ?? "—",
+            descripcion: p.description ?? "—",
+            cantidad: p.quantity,
+            precio: p.price,
+            iva: p.iva ?? 21.5,
+          }))}
+          pago={{
+            formaDePago: comprobanteSeleccionado.initialPayment?.method ?? "—",
+            fechaPago: comprobanteSeleccionado.initialPayment?.receivedAt
+              ? new Date(
+                  comprobanteSeleccionado.initialPayment.receivedAt
+                ).toLocaleDateString("es-AR")
+              : "—",
+            montoPagado: comprobanteSeleccionado.paidAmount ?? 0,
+            saldoRestante: comprobanteSeleccionado.remainingAmount ?? 0,
+            banco: comprobanteSeleccionado.initialPayment?.bankName ?? "—",
+            numeroOperacion:
+              comprobanteSeleccionado.initialPayment?.chequeNumber ?? "—",
+            observaciones:
+              comprobanteSeleccionado.observation ?? "Sin observaciones.",
+            registradoPor: comprobanteSeleccionado.createdBy ?? "—",
+          }}
         />
       )}
 
-      {showModalRegisterPayment && (
+      {showModalRegisterPayment && comprobanteSeleccionado && (
         <InvoicePaymentModal
           onClose={() => setShowModalRegisterPayment(false)}
-          onConfirm={() => {
-            alert("Pago confirmado");
-            setShowModalRegisterPayment(false);
+          factura={{
+            id: comprobanteSeleccionado.id,
+            numero: comprobanteSeleccionado.number ?? "—",
+            proveedor: comprobanteSeleccionado.contactName ?? "—",
+            total: comprobanteSeleccionado.totalAmount ?? 0,
+            abonado: comprobanteSeleccionado.paidAmount ?? 0,
+            saldoPendiente: comprobanteSeleccionado.remainingAmount ?? 0,
+            vencimiento:
+              comprobanteSeleccionado.dueDate &&
+              new Date(comprobanteSeleccionado.dueDate) < new Date()
+                ? "Vencida"
+                : "En plazo",
+            pagosAnteriores: Array.isArray(
+              comprobanteSeleccionado.initialPayment
+            )
+              ? comprobanteSeleccionado.initialPayment.map((p) => ({
+                  fecha: p.receivedAt
+                    ? new Date(p.receivedAt).toLocaleDateString("es-AR")
+                    : "—",
+                  monto: p.amount ?? 0,
+                  metodo: p.method ?? "—",
+                  banco: p.bankName ?? undefined,
+                  numeroOperacion: p.chequeNumber ?? undefined,
+                }))
+              : comprobanteSeleccionado.initialPayment
+              ? [
+                  {
+                    fecha: comprobanteSeleccionado.initialPayment.receivedAt
+                      ? new Date(
+                          comprobanteSeleccionado.initialPayment.receivedAt
+                        ).toLocaleDateString("es-AR")
+                      : "—",
+                    monto: comprobanteSeleccionado.initialPayment.amount ?? 0,
+                    metodo:
+                      comprobanteSeleccionado.initialPayment.method ?? "—",
+                    banco:
+                      comprobanteSeleccionado.initialPayment.bankName ??
+                      undefined,
+                    numeroOperacion:
+                      comprobanteSeleccionado.initialPayment.chequeNumber ??
+                      undefined,
+                  },
+                ]
+              : [],
           }}
         />
       )}
 
       <div className="w-full h-full bg-white rounded-lg shadow p-4">
-        {/* Buscador */}
-
-        {/* Tabs */}
-        <div className="w-full mt-4">
-          <div className="flex text-[15px] font-medium rounded-t-lg overflow-hidden bg-[var(--brown-ligth-200)]">
-            <div
-              className={`w-full cursor-pointer px-4 py-2 transition-all duration-200 text-xl text-center ${
-                tags === "ventas"
-                  ? "text-[var(--brown-ligth-400)] border-b-2 border-[var(--brown-dark-600)]"
-                  : "bg-white text-[var(--brown-dark-700)] border-t-2 border-x-2 border-[var(--brown-dark-600)] rounded-t-md shadow-md"
-              }`}
-              onClick={() => setTags("pagos")}
-            >
-              Pagos Pendientes
-            </div>
-            <div
-              className={`w-full px-4 py-2 transition-all duration-200 text-xl text-center cursor-pointer ${
-                tags === "pagos"
-                  ? "text-[var(--brown-ligth-400)] border-b-2 border-[var(--brown-dark-600)]"
-                  : "bg-white text-[var(--brown-dark-700)] border-t-2 border-x-2 border-[var(--brown-dark-600)] rounded-t-md shadow-md"
-              }`}
-              onClick={() => setTags("ventas")}
-            >
-              Ventas Finalizadas
-            </div>
+        <div className="flex text-[15px] font-medium rounded-t-lg overflow-hidden bg-[var(--brown-ligth-200)] mt-4">
+          <div
+            className={`w-full cursor-pointer px-4 py-2 text-xl text-center ${
+              tags === "pagos"
+                ? "text-[var(--brown-ligth-400)] border-b-2 border-[var(--brown-dark-600)]"
+                : "bg-white text-[var(--brown-dark-700)] border-t-2 border-x-2 border-[var(--brown-dark-600)] rounded-t-md shadow-md"
+            }`}
+            onClick={() => setTags("ventas")}
+          >
+            Pagos Pendientes
+          </div>
+          <div
+            className={`w-full px-4 py-2 text-xl text-center cursor-pointer ${
+              tags === "ventas"
+                ? "text-[var(--brown-ligth-400)] border-b-2 border-[var(--brown-dark-600)]"
+                : "bg-white text-[var(--brown-dark-700)] border-t-2 border-x-2 border-[var(--brown-dark-600)] rounded-t-md shadow-md"
+            }`}
+            onClick={() => setTags("pagos")}
+          >
+            Ventas Finalizadas
           </div>
         </div>
 
-        {/* Tabla */}
         <div className="mt-4">
+          <div className="mt-6 ">
+            <input
+              type="text"
+              placeholder="Buscar comprobante..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md text-[15px]"
+            />
+          </div>
+          {searchText && (
+            <div className="mb-2 text-right text-[17px] ">
+              Total adeudado por coincidencias:{" "}
+              <span className="text-red-700 font-medium">
+                $
+                {totalAdeudado.toLocaleString("es-AR", {
+                  minimumFractionDigits: 2,
+                })}
+              </span>
+            </div>
+          )}
           <GenericTable
-            columns={tags === "pagos" ? columnsPagos : columnsVentas}
-            data={tags === "pagos" ? facturasPago : facturasVentas}
+            columns={tags === "pagos" ? columnsVentas : columnsPagos}
+            data={vouchers}
             enablePagination={true}
-            enableFilter={true}
+            enableFilter={false}
+            isLoading={isLoading}
           />
         </div>
       </div>

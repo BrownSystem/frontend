@@ -6,13 +6,15 @@ import {
   useUpdateBranch,
 } from "../../../../../../api/branch/branch.queries";
 import { BsEye } from "react-icons/bs";
-import { GenericTable } from "../../../../widgets";
+import { GenericTable, Message } from "../../../../widgets";
+import { useState } from "react";
 
 const DepositsContent = () => {
   const queryClient = useQueryClient();
   const { data: branches = [], isLoading } = useFindAllBranch();
   const setView = useStockViewStore((state) => state.setViewSafe);
   const renderContent = useStockViewStore((state) => state.renderContent);
+  const [message, setMessage] = useState({ text: "", type: "success" });
 
   const createBranchMutation = useCreateBranch();
   const updateBranchMutation = useUpdateBranch();
@@ -48,6 +50,10 @@ const DepositsContent = () => {
         name: name,
         location: location,
       });
+      setMessage({
+        text: "Sucursal o Deposito Creado.",
+        type: "success",
+      });
     } else {
       await updateBranchMutation.mutateAsync({
         name: name,
@@ -69,7 +75,6 @@ const DepositsContent = () => {
   };
 
   const handleRowClick = (deposit) => {
-    console.log(deposit);
     if (deposit.isEditing) return;
     setView({
       name: "products_of_deposit",
@@ -125,6 +130,12 @@ const DepositsContent = () => {
 
   return (
     <div className="w-full flex flex-col gap-4 p-4 rounded-lg">
+      <Message
+        message={message.text}
+        type={message.type}
+        onClose={() => setMessage({ text: "" })}
+        duration={3000}
+      />
       <div className="w-full mt-1 flex flex-col justify-center items-center">
         <div className="text-3xl font-semibold text-[#3c2f1c]">
           DEPOSITOS{" "}

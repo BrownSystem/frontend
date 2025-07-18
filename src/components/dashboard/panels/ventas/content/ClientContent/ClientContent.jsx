@@ -1,12 +1,10 @@
 import React from "react";
 import { useViewStore } from "@store/useViewStore";
-import { CreateUser, Edit, Folder } from "../../../../../../assets/icons";
+import { Edit, Folder } from "../../../../../../assets/icons";
 import { OptionCard, RenderOptions } from "../../../../widgets";
-import { CreateClient, EditClient, ReservationTable } from "./tables";
+import { EditClient, ReservationTable } from "./tables";
 
 const viewMap = {
-  createClient: () => <CreateClient />,
-
   editClient: () => <EditClient />,
 
   reservation: () => <ReservationTable />,
@@ -24,13 +22,6 @@ const ClientContent = () => {
             name="reservation"
           >
             <Folder color={"#fff"} />
-          </OptionCard>
-          <OptionCard
-            text={"Cargar Cliente"}
-            onClick={() => setView("createClient")}
-            name="createClient"
-          >
-            <CreateUser color={"#fff"} />
           </OptionCard>
 
           <OptionCard

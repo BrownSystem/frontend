@@ -8,11 +8,13 @@ import {
 import { useViewStore } from "../../../../../../store/useViewStore";
 import { OptionCard, RenderOptions } from "../../../../widgets";
 import { AddBankForm, AddEmployeeForm, EditProductTable } from "./tables";
+import EmployeeTable from "./tables/EmployeeTable";
 
 const viewMap = {
   createUser: AddEmployeeForm,
   addBanks: AddBankForm,
   editProducts: EditProductTable,
+  employeedTable: EmployeeTable,
 };
 
 const MoreOptionsContent = () => {
@@ -30,7 +32,13 @@ const MoreOptionsContent = () => {
             >
               <CreateUser />
             </OptionCard>
-
+            <OptionCard
+              text={"Empleados"}
+              onClick={() => setView("employeedTable")}
+              name="employeedTable"
+            >
+              <CreateUser />
+            </OptionCard>
             <OptionCard
               text={"Añadir Bancos"}
               onClick={() => setView("addBanks")}

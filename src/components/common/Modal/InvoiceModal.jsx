@@ -1,51 +1,11 @@
 import React from "react";
 import { Download } from "../../../assets/icons";
 
-const productos = [
-  {
-    codigo: "PD12949ULM",
-    descripcion: "Mesa de Roble Macizo",
-    cantidad: 5,
-    precio: 3200,
-    iva: 21.5,
-  },
-  {
-    codigo: "FS12945ULFM",
-    descripcion: "Silla Tapizada de Cuero",
-    cantidad: 1,
-    precio: 500000,
-    iva: 10.5,
-  },
-  {
-    codigo: "LK52948ULNM",
-    descripcion: "Lámpara de Pie Minimalista",
-    cantidad: 2,
-    precio: 400,
-    iva: 21.5,
-  },
-];
+const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
+  const calcularSubtotal = (p) => p.precio * p.cantidad;
 
-const factura = {
-  numero: "00001",
-  tipo: "A",
-  fecha: "12/04/2025",
-  cliente: "Juan Perez",
-  direccion: "Calle 123, Ciudad, País",
-  total: 1000,
-};
+  const total = productos.reduce((acc, p) => acc + calcularSubtotal(p), 0);
 
-const pago = {
-  formaDePago: "Transferencia Bancaria",
-  fechaPago: "12/04/2025",
-  montoPagado: 550000,
-  saldoRestante: 4300,
-  banco: "Banco Nación",
-  numeroOperacion: "TRF-84930203",
-  observaciones: "Pago parcial con transferencia, pendiente de saldo.",
-  registradoPor: "admin@empresa.com",
-};
-
-const InvoiceModal = ({ onCancel, onConfirm }) => {
   return (
     <div className="fixed inset-0 bg-[var(--brown-ligth-400)]/20 flex items-center justify-center z-50 top-8">
       <div className="bg-[#fefcf9] rounded-2xl shadow-lg w-[900px] p-6 border border-[#e0d2bb]">
@@ -59,16 +19,16 @@ const InvoiceModal = ({ onCancel, onConfirm }) => {
                   <i className="fas fa-warehouse"></i>
                 </div>
                 <span className="font-bold text-[#5b3e0f]">
-                  FACTURA ({factura.tipo}) N°:{" "}
+                  FACTURA ({factura?.tipo ?? "—"}) N°:{" "}
                   <span className="text-[var(--brown-ligth-400)]">
-                    {factura.numero}
+                    {factura?.numero ?? "—"}
                   </span>
                 </span>
               </div>
               <span className="font-bold text-[#5b3e0f]">
                 FECHA:{" "}
                 <span className="text-[var(--brown-ligth-400)]">
-                  {factura.fecha}
+                  {factura?.fecha ?? "—"}
                 </span>
               </span>
             </div>
@@ -76,12 +36,13 @@ const InvoiceModal = ({ onCancel, onConfirm }) => {
             {/* Origen y destino */}
             <div className="text-md">
               <p className="font-semibold text-[#3a2b19]">
-                Hyper S.A{" "}
-                <span className="text-[#c49653]">(Res. Inscripto)</span>
+                {factura?.origen ?? "—"}
               </p>
               <p className="text-[#3a2b19]">
-                Gran Empresa S.A{" "}
-                <span className="text-[#c49653]">(Res. Inscripto)</span>
+                {factura?.cliente ?? "—"}
+                {factura?.direccion && (
+                  <span className="text-[#c49653]"> ({factura.direccion})</span>
+                )}
               </p>
             </div>
 
@@ -92,30 +53,35 @@ const InvoiceModal = ({ onCancel, onConfirm }) => {
               </h3>
               <div className="flex flex-col gap-1 text-[#3a2b19] text-sm">
                 <p>
-                  <strong>Fecha de Pago:</strong> {pago.fechaPago}
+                  <strong>Fecha de Pago:</strong> {pago?.fechaPago ?? "—"}
                 </p>
                 <p>
-                  <strong>Forma de Pago:</strong> {pago.formaDePago}
+                  <strong>Forma de Pago:</strong> {pago?.formaDePago ?? "—"}
                 </p>
                 <p className="text-green-700">
                   <strong className="text-[#3a2b19]">Monto Pagado:</strong> $
-                  {pago.montoPagado.toFixed(2)}
+                  {(pago?.montoPagado ?? 0).toLocaleString("es-AR", {
+                    minimumFractionDigits: 2,
+                  })}
                 </p>
                 <p className="text-red-700">
                   <strong className="text-[#3a2b19]">Saldo Restante:</strong> $
-                  {pago.saldoRestante.toFixed(2)}
+                  {(pago?.saldoRestante ?? 0).toLocaleString("es-AR", {
+                    minimumFractionDigits: 2,
+                  })}
                 </p>
                 <p>
-                  <strong>Banco / Medio:</strong> {pago.banco}
+                  <strong>Banco / Medio:</strong> {pago?.banco ?? "—"}
                 </p>
                 <p>
-                  <strong>Nº de Operación:</strong> {pago.numeroOperacion}
+                  <strong>Nº de Operación:</strong>{" "}
+                  {pago?.numeroOperacion ?? "—"}
                 </p>
                 <p className="col-span-2">
-                  <strong>Observaciones:</strong> {pago.observaciones}
+                  <strong>Observaciones:</strong> {pago?.observaciones ?? "—"}
                 </p>
                 <p className="col-span-2">
-                  <strong>Registrado por:</strong> {pago.registradoPor}
+                  <strong>Registrado por:</strong> {pago?.registradoPor ?? "—"}
                 </p>
               </div>
             </div>
@@ -126,49 +92,46 @@ const InvoiceModal = ({ onCancel, onConfirm }) => {
             <div>
               <table className="w-full text-left text-md mb-4">
                 <thead>
-                  <tr className="border-b border-[#ddd] grid grid-cols-5 items-center">
+                  <tr className="border-b border-[#ddd] grid grid-cols-4 items-center">
                     <th className="py-2 text-[#3a2b19]">Producto</th>
                     <th className="py-2 text-center text-[#3a2b19]">
                       Cantidad
                     </th>
                     <th className="py-2 text-center text-[#3a2b19]">Precio</th>
-                    <th className="py-2 text-center text-[#3a2b19]">Iva</th>
                     <th className="py-2 text-center text-[#3a2b19]">
                       Subtotal
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {productos.map((p, i) => (
+                  {(productos ?? []).map((p, i) => (
                     <tr
                       key={i}
-                      className="border-b border-[#eee] grid grid-cols-5 items-center"
+                      className="border-b border-[#eee] grid grid-cols-4 items-center"
                     >
                       <td className="py-2">
                         <div className="font-medium text-[#3a2b19]">
-                          {p.codigo}
+                          {p.codigo ?? "—"}
                         </div>
-                        <div className="text-[#6d5b3e]">{p.descripcion}</div>
+                        <div className="text-[#6d5b3e]">
+                          {p.descripcion ?? "—"}
+                        </div>
                       </td>
                       <td className="py-2 text-right text-[#3a2b19]">
                         <p className="flex justify-center">{p.cantidad}</p>
                       </td>
                       <td className="py-2 text-center text-[#3a2b19]">
                         $
-                        {p.precio.toLocaleString("es-AR", {
+                        {(p.precio ?? 0).toLocaleString("es-AR", {
                           minimumFractionDigits: 2,
                         })}
                       </td>
-                      <td className="py-2 text-center text-[#3a2b19]">
-                        {p.iva}%
-                      </td>
+
                       <td className="py-2 text-center text-[#3a2b19]">
                         $
-                        {(p.precio * p.cantidad * (1 + p.iva / 100))
-                          .toFixed(2)
-                          .toLocaleString("es-AR", {
-                            minimumFractionDigits: 2,
-                          })}
+                        {calcularSubtotal(p).toLocaleString("es-AR", {
+                          minimumFractionDigits: 2,
+                        })}
                       </td>
                     </tr>
                   ))}
@@ -182,15 +145,9 @@ const InvoiceModal = ({ onCancel, onConfirm }) => {
                 Total:{" "}
                 <span className="text-[#b68239] text-[18px] font-medium">
                   $
-                  {productos
-                    .reduce(
-                      (acc, p) =>
-                        acc + p.precio * p.cantidad * (1 + p.iva / 100),
-                      0
-                    )
-                    .toLocaleString("es-AR", {
-                      minimumFractionDigits: 2,
-                    })}
+                  {total.toLocaleString("es-AR", {
+                    minimumFractionDigits: 2,
+                  })}
                 </span>
               </p>
               <div className="flex justify-end gap-3">

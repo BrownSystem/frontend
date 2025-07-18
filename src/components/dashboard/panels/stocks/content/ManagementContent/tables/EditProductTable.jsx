@@ -13,7 +13,7 @@ const EditProductTable = () => {
   const user = useAuthStore((state) => state.user);
   const branchId = user?.branchId;
 
-  const limit = 6;
+  const limit = 10;
 
   const {
     data: rawProducts,

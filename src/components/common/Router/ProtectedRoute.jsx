@@ -5,23 +5,16 @@ import { useAuthStore } from "../../../api/auth/auth.store";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [isValidToken, setIsValidToken] = useState(true);
-  const [hasValidated, setHasValidated] = useState(false);
-
-  const user = useAuthStore((state) => state.user);
-  const setUser = useAuthStore((state) => state.setUser);
+  const [isValidToken, setIsValidToken] = useState(null); // null = aún no se sabe
+  const { user, setUser, logout } = useAuthStore();
 
   useEffect(() => {
-    const checkToken = async () => {
-      if (hasValidated) return;
-
+    const validateToken = async () => {
       const token = localStorage.getItem("token");
-
-      // Si no hay token, evitamos la verificación
       if (!token) {
-        setUser(null);
+        console.warn("[ProtectedRoute] No hay token");
+        logout();
         setIsValidToken(false);
-        setHasValidated(true);
         setIsLoading(false);
         return;
       }
@@ -31,20 +24,21 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
         setUser(validatedUser);
         setIsValidToken(true);
       } catch (error) {
-        setUser(null);
+        logout();
         setIsValidToken(false);
       } finally {
-        setHasValidated(true);
         setIsLoading(false);
       }
     };
 
-    checkToken();
-  }, [hasValidated, setUser]);
+    validateToken();
+  }, []);
 
   if (isLoading) return null;
 
-  if (!isValidToken) return <Navigate to="/" replace />;
+  if (!isValidToken) {
+    return <Navigate to="/" replace />;
+  }
 
   if (user && allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to="/dashboard/ventas" replace />;

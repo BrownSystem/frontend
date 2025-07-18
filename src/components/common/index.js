@@ -5,3 +5,6 @@ export { default as ConfirmationModalRemito } from "./Modal/ConfirmationModalRem
 export { default as InvoicePaymentModal } from "./Modal/InvoicePaymentModal";
 export { default as InvoiceModal } from "./Modal/InvoiceModal";
 export { default as EditProductModal } from "./Modal/EditProductModal";
+export { default as RegisterPaymentModal } from "./Modal/RegisterpaymentModal";
+export { default as ContactCreateModal } from "./Modal/ContactCreateModal";
+export { default as ProductSearchModal } from "./Modal/ProductSearchModal";

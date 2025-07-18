@@ -1,16 +1,15 @@
 import React from "react";
 import { useViewStore } from "@store/useViewStore";
 import { CreateInvoice, OptionCard, RenderOptions } from "../../../widgets";
-import { Comprobantes, CreditNote } from "../../../../../assets/icons";
+import { Comprobantes, SearchIcon } from "../../../../../assets/icons";
+import SalesInvoiceTable from "./SalesInvoiceTable/SalesInvoiceTable";
 
 const viewMap = {
   createInvoice: () => (
     <CreateInvoice tipoOperacion="venta" tipoComprobante="factura" />
   ),
 
-  creditNote: () => (
-    <CreateInvoice tipoOperacion="venta" tipoComprobante="notaCredito" />
-  ),
+  salesInquiry: () => <SalesInvoiceTable />,
 };
 
 const RegisterSalesContent = () => {
@@ -28,11 +27,11 @@ const RegisterSalesContent = () => {
           </OptionCard>
 
           <OptionCard
-            text={"Nota de credito"}
-            onClick={() => setView("creditNote")}
-            name="creditNote"
+            text={"Consultar Comprobantes"}
+            onClick={() => setView("salesInquiry")}
+            name="salesInquiry"
           >
-            <CreditNote color={"#fff"} />
+            <SearchIcon color={"#fff"} />
           </OptionCard>
         </div>
       </div>

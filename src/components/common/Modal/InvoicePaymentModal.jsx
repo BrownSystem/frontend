@@ -1,64 +1,81 @@
 import React, { useState } from "react";
 import { Close, Danger } from "../../../assets/icons";
-
-// Datos ficticios de una factura
-const facturaEjemplo = {
-  numero: "FC1-0000678",
-  proveedor: "Tapicerías del Centro",
-  total: 3000.0,
-  abonado: 1000,
-  saldoPendiente: 2000.0,
-  vencimiento: "Vencida",
-  pagosAnteriores: [
-    {
-      fecha: "2025-04-20",
-      monto: 500,
-      metodo: "Efectivo",
-    },
-    {
-      fecha: "2025-04-25",
-      monto: 500,
-      metodo: "Transferencia",
-      banco: "Banco Nación",
-      numeroOperacion: "12345678",
-    },
-  ],
-};
+import { useRegisterPayment } from "../../../api/vouchers/vouchers.queries";
+import { Message } from "../../dashboard/widgets";
+import { useBanks } from "../../../api/banks/banks.queries";
 
 const InvoicePaymentModal = ({
-  factura = facturaEjemplo,
+  factura,
   onClose,
   onRegistrarPago = console.log,
 }) => {
   const [monto, setMonto] = useState(0);
   const [metodo, setMetodo] = useState("Efectivo");
-  const [tipoCheque, setTipoCheque] = useState("");
   const [datosPago, setDatosPago] = useState({});
+  const [message, setMessage] = useState({ text: "", type: "success" });
 
-  const handleMetodoChange = (nuevoMetodo) => {
-    setMetodo(nuevoMetodo);
-    setDatosPago({});
-    setTipoCheque("");
+  const { data: banks } = useBanks();
+
+  const { mutate, isLoading } = useRegisterPayment({
+    onSuccess: (data) => {
+      setMessage({ text: "Pago registrado correctamente ✅", type: "success" });
+      // Cierre de modal, reset de estado, etc.
+    },
+    onError: (error) => {
+      setMessage({
+        text: error.message || "Ocurrió un error al registrar el pago ❌",
+        type: "error",
+      });
+    },
+  });
+
+  const handleSubmit = () => {
+    if (monto > factura.saldoPendiente || !monto) {
+      return setMessage({ text: "El monto no es válido ❌", type: "error" });
+    }
+
+    const nuevoPago = {
+      method:
+        metodo === "Efectivo"
+          ? "EFECTIVO"
+          : metodo === "Transferencia"
+          ? "TRANSFERENCIA"
+          : "CHEQUE",
+      amount: parseFloat(monto),
+      currency: "ARS",
+      bankId:
+        metodo === "Transferencia" || metodo === "Cheque de terceros"
+          ? datosPago.banco ?? undefined
+          : undefined,
+      chequeNumber:
+        metodo === "Cheque de terceros"
+          ? datosPago.numero ?? undefined
+          : undefined,
+      chequeDueDate:
+        metodo === "Cheque de terceros" && datosPago.fecha
+          ? new Date(datosPago.fecha).toISOString()
+          : undefined,
+      chequeStatus: metodo === "Cheque de terceros" ? "PENDIENTE" : undefined,
+      observation: datosPago.observaciones ?? undefined,
+      receivedAt: new Date().toISOString(),
+      voucherId: factura.id,
+    };
+
+    mutate(nuevoPago);
   };
 
   const handleInputChange = (e) => {
     setDatosPago({ ...datosPago, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = () => {
-    const metodoFinal = metodo === "Cheques" ? tipoCheque : metodo;
-    const nuevoPago = {
-      fecha: new Date().toISOString().split("T")[0],
-      monto: parseFloat(monto),
-      metodo: metodoFinal,
-      ...datosPago,
-    };
-    onRegistrarPago(nuevoPago);
-    onClose();
-  };
-
   return (
-    <div className=" fixed z-[1000000] inset-0 flex gap-2 justify-center items-start bg-[var(--brown-ligth-400)]/20 bg-opacity-30 ">
+    <div className="fixed z-[1000000] inset-0 flex gap-4 justify-center items-start bg-[var(--brown-dark-700)]/20 bg-opacity-30 px-4">
+      <Message
+        message={message.text}
+        type={message.type}
+        duration={3000}
+        onClose={() => setMessage({ text: "" })}
+      />
       <div className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-lg mt-[5rem]">
         <h2 className="text-xl font-bold text-[var(--brown-dark-950)] flex justify-between items-start">
           <span>
@@ -78,6 +95,9 @@ const InvoicePaymentModal = ({
 
         <div className="text-sm mb-4 space-y-1">
           <p>Monto total: ${factura.total.toFixed(2)}</p>
+          <p className="text-green-700">
+            Monto abonado: ${factura.abonado.toFixed(2)}
+          </p>
           <p>
             Saldo pendiente:{" "}
             <span className="text-red-700">
@@ -95,11 +115,7 @@ const InvoicePaymentModal = ({
               {factura.pagosAnteriores.map((p, i) => (
                 <li key={i}>
                   {p.fecha}:
-                  {
-                    <span className="text-green-700">
-                      {""} ${p.monto.toFixed(2)}
-                    </span>
-                  }{" "}
+                  <span className="text-green-700"> ${p.monto.toFixed(2)}</span>{" "}
                   (
                   <span className="text-[var(--brown-dark-700)]">
                     {p.metodo}
@@ -139,7 +155,7 @@ const InvoicePaymentModal = ({
             Método de pago
           </label>
           <div className="flex gap-2 mb-2">
-            {["Efectivo", "Cheques", "Transferencia"].map((m) => (
+            {["Efectivo", "Transferencia", "Cheque de terceros"].map((m) => (
               <button
                 key={m}
                 className={`px-3 py-1 rounded-lg border ${
@@ -147,7 +163,7 @@ const InvoicePaymentModal = ({
                     ? "bg-[var(--brown-dark-800)] text-white"
                     : "bg-white text-[var(--brown-dark-800)]"
                 }`}
-                onClick={() => handleMetodoChange(m)}
+                onClick={() => setMetodo(m)}
               >
                 {m}
               </button>
@@ -155,7 +171,59 @@ const InvoicePaymentModal = ({
           </div>
         </div>
 
-        <div className="mb-4">
+        <div className="space-y-2 mb-4">
+          {metodo === "Transferencia" && (
+            <>
+              <select
+                name="banco"
+                className="w-full p-2 border rounded border-[var(--brown-dark-500)]"
+                onChange={handleInputChange}
+              >
+                <option value="">Selecciona el banco</option>
+                {banks?.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                )) || <option value="">Cargando bancos...</option>}
+              </select>
+              <input
+                name="numeroOperacion"
+                placeholder="Número de operación"
+                className="w-full p-2 border rounded border-[var(--brown-dark-500)]"
+                onChange={handleInputChange}
+              />
+            </>
+          )}
+
+          {metodo === "Cheque de terceros" && (
+            <>
+              <input
+                name="numero"
+                placeholder="Número de cheque"
+                className="w-full p-2 border rounded border-[var(--brown-dark-500)]"
+                onChange={handleInputChange}
+              />
+              <input
+                name="banco"
+                placeholder="Banco"
+                className="w-full p-2 border rounded border-[var(--brown-dark-500)]"
+                onChange={handleInputChange}
+              />
+              <input
+                name="titular"
+                placeholder="Titular / CUIT"
+                className="w-full p-2 border rounded border-[var(--brown-dark-500)]"
+                onChange={handleInputChange}
+              />
+              <input
+                name="fecha"
+                type="date"
+                className="w-full p-2 border rounded border-[var(--brown-dark-500)]"
+                onChange={handleInputChange}
+              />
+            </>
+          )}
+
           <textarea
             name="observaciones"
             placeholder="Observaciones (opcional)"
@@ -178,76 +246,6 @@ const InvoicePaymentModal = ({
             : "Registrar pago"}
         </button>
       </div>
-      {metodo !== "Efectivo" && (
-        <div className="bg-white p-6 rounded-2xl shadow-lg w-full  max-w-lg mt-[5rem]">
-          <div className="flex flex-col items-end h-full">
-            {metodo === "Cheques" && (
-              <>
-                <select
-                  className="w-full p-2 mb-2 border rounded border-[var(--brown-dark-500)]"
-                  onChange={(e) => setTipoCheque(e.target.value)}
-                >
-                  <option value="">Selecciona el tipo de cheque</option>
-                  <option value="Cheque propio">Cheque propio</option>
-                  <option value="Cheque de terceros">Cheque de terceros</option>
-                </select>
-              </>
-            )}
-            {tipoCheque && (
-              <div className="space-y-2">
-                <input
-                  name="numero"
-                  placeholder="Número de cheque"
-                  className="w-full p-2 border rounded border-[var(--brown-dark-500)]"
-                  onChange={handleInputChange}
-                />
-                <input
-                  name="banco"
-                  placeholder="Banco"
-                  className="w-full p-2 border rounded border-[var(--brown-dark-500)]"
-                  onChange={handleInputChange}
-                />
-                {tipoCheque === "Cheque de terceros" && (
-                  <input
-                    name="titular"
-                    placeholder="Titular / CUIT"
-                    className="w-full p-2 border rounded border-[var(--brown-dark-500)]"
-                    onChange={handleInputChange}
-                  />
-                )}
-                <input
-                  name="fecha"
-                  type="date"
-                  placeholder="Fecha de vencimiento"
-                  className="w-full p-2 border rounded border-[var(--brown-dark-500)]"
-                  onChange={handleInputChange}
-                />
-              </div>
-            )}
-
-            {metodo === "Transferencia" && (
-              <>
-                <select
-                  name="banco"
-                  className="w-full p-2 mb-2 border rounded border-[var(--brown-dark-500)]"
-                  onChange={handleInputChange}
-                >
-                  <option value="">Selecciona el banco</option>
-                  <option value="Banco Nación">Banco Nación</option>
-                  <option value="Banco Galicia">Banco Galicia</option>
-                  <option value="Mercado Pago">Mercado Pago</option>
-                </select>
-                <input
-                  name="numeroOperacion"
-                  placeholder="Número de operación"
-                  className="w-full p-2 mb-2 border rounded border-[var(--brown-dark-500)]"
-                  onChange={handleInputChange}
-                />
-              </>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

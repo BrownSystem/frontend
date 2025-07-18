@@ -20,7 +20,6 @@ import ReservationTable from "./content/ReservationTable";
 const viewMap = {
   productos: ProductTable,
   registerSales: RegisterSalesContent,
-  salesInquiry: SalesInvoiceTable,
   reservationTable: ReservationTable,
   generatedClient: ClientContent,
 };
@@ -34,10 +33,6 @@ const ShopPanel = () => {
   }, [setView]);
   const handlerViewRegisterSales = useCallback(() => {
     setView({ name: "registerSales" });
-  }, [setView]);
-
-  const handlerViewSalesInquiry = useCallback(() => {
-    setView({ name: "salesInquiry" });
   }, [setView]);
 
   const handlerViewReserationTable = useCallback(() => {
@@ -65,14 +60,6 @@ const ShopPanel = () => {
             action={"Ingresar"}
             title={"Comprobantes"}
             onClick={handlerViewRegisterSales}
-            others={false}
-            hasNotifications={false}
-          />
-          <ActionCard
-            svgAction={<SearchIcon color={"#ffff"} x={"24"} y={"24"} />}
-            action={"Consultar"}
-            title={"Pagos / Ventas"}
-            onClick={handlerViewSalesInquiry}
             others={false}
             hasNotifications={false}
           />

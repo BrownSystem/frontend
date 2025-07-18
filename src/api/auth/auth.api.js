@@ -1,5 +1,18 @@
 import { AxiosInitializer } from "..";
 
+export const getAllUsersApi = async ({ queryKey }) => {
+  const [_key, branchId] = queryKey;
+  const token = localStorage.getItem("token");
+
+  const response = await AxiosInitializer.get(`/auth/users/${branchId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+};
+
 export const loginApi = async ({ email, password }) => {
   const response = await AxiosInitializer.post("/auth/login", {
     email,
@@ -10,6 +23,11 @@ export const loginApi = async ({ email, password }) => {
 
 export const registerApi = async (data) => {
   const response = await AxiosInitializer.post("/auth/register", data);
+  return response.data;
+};
+
+export const updateUserApi = async ({ id, ...data }) => {
+  const response = await AxiosInitializer.post(`/auth/update/${id}`, data);
   return response.data;
 };
 

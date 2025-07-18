@@ -6,13 +6,19 @@ export const useAuthStore = create(
     (set) => ({
       user: null,
       setUser: (user) => set({ user }),
+      setTokenValidated: () => {}, // se remueve del store
+      resetTokenValidation: () => {}, // se remueve del store
       logout: () => {
         localStorage.removeItem("token");
         localStorage.removeItem("auth");
+        set({ user: null });
       },
     }),
     {
-      name: "auth", // clave en localStorage
+      name: "auth",
+      partialize: (state) => ({
+        user: state.user,
+      }),
     }
   )
 );

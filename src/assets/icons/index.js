@@ -22,3 +22,4 @@ export { default as Buy } from "./Buy";
 export { default as Folder } from "./Folder";
 export { default as QrCode } from "./QrCode";
 export { default as Logout } from "./Logout";
+export { default as Foreign } from "./Foreign";

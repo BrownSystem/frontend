@@ -7,3 +7,4 @@ export { default as Button } from "./Button";
 export { default as RenderOptions } from "./RenderOptions";
 export { default as CreateInvoice } from "./GenerateInvoice";
 export { default as GenericTable } from "./GenericTable";
+export { default as Message } from "./Message";
