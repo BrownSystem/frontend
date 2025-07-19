@@ -3,12 +3,15 @@ import { useAuthStore } from "../../../../../../../api/auth/auth.store";
 import { usePaginatedTableData } from "../../../../../../../hooks/usePaginatedTableData";
 import { searchProducts } from "../../../../../../../api/products/products.api";
 import { Edit } from "../../../../../../../assets/icons";
-import { GenericTable } from "../../../../../widgets";
+import { GenericTable, Message } from "../../../../../widgets";
 import { EditProductModal } from "../../../../../../common";
+import { useUploadProducts } from "../../../../../../../api/products/products.queries";
 
 const EditProductTable = () => {
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState("");
+  const [file, setFile] = useState(null);
+  const [message, setMessage] = useState({ text: "", type: "success" });
 
   const user = useAuthStore((state) => state.user);
   const branchId = user?.branchId;
@@ -28,6 +31,21 @@ const EditProductTable = () => {
     branchId,
     limit,
     enabled: !!branchId,
+  });
+
+  const { mutate: uploadProducts } = useUploadProducts({
+    onSuccess: (res) => {
+      setMessage({
+        text: `Archivo subido correctamente ✅`,
+        type: "success",
+      });
+    },
+    onError: (err) => {
+      setMessage({
+        text: `Error al subir archivo ❌`,
+        type: "error",
+      });
+    },
   });
 
   const products = useMemo(() => {
@@ -67,6 +85,12 @@ const EditProductTable = () => {
 
   return (
     <div className="w-full h-full overflow-x-auto py-2">
+      <Message
+        message={message.text}
+        type={message.type}
+        onClose={() => setMessage({ text: "" })}
+        duration={3000}
+      />
       {showModal && <EditProductModal onClose={() => setShowModal(false)} />}
 
       <div className="flex flex-col md:flex-row justify-center items-center w-full px-4">
@@ -75,14 +99,42 @@ const EditProductTable = () => {
         </h2>
       </div>
 
-      <div className="mt-2 flex justify-center">
+      <div className="mt-6 flex justify-around items-center w-[90%]">
         <input
           type="text"
           placeholder="Buscar producto..."
-          className="border px-2 py-1 rounded w-full max-w-md"
+          className="border px-2  rounded w-full max-w-md"
+          style={{ height: "40px" }}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
+
+        <div className="flex items-center justify-center gap-4">
+          <label
+            htmlFor="fileUpload"
+            className={`px-4 py-2 rounded cursor-pointer ${
+              isLoading
+                ? "bg-gray-400 text-white cursor-not-allowed"
+                : "bg-green-600 text-white hover:opacity-80"
+            }`}
+          >
+            {isLoading ? "Subiendo archivo..." : "Subir archivo"}
+          </label>
+
+          <input
+            id="fileUpload"
+            type="file"
+            className="hidden"
+            disabled={isLoading}
+            onChange={(e) => {
+              const selectedFile = e.target.files[0];
+              if (selectedFile) {
+                setFile(selectedFile);
+                uploadProducts(selectedFile);
+              }
+            }}
+          />
+        </div>
       </div>
 
       <div className="mt-4">

@@ -1,5 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createVoucher, registerPayment, searchVoucher } from "./vouchers.api";
+import {
+  createVoucher,
+  registerPayment,
+  searchReservedVouchers,
+  searchVoucher,
+  updateReservedStatus,
+} from "./vouchers.api";
 
 export const useCreateVoucher = ({ onSuccess, onError } = {}) => {
   const queryClient = useQueryClient();
@@ -65,6 +71,42 @@ export const useRegisterPayment = ({ onSuccess, onError } = {}) => {
     onError: (error) => {
       if (onError) onError(error);
       else console.error("Error al registrar pago:", error);
+    },
+  });
+};
+
+export const useSearchReservedVouchers = ({
+  search,
+  emissionBranchId,
+  limit = 10,
+  offset = 1,
+}) => {
+  return useQuery({
+    queryKey: [
+      "reserved-vouchers",
+      search?.trim(),
+      emissionBranchId,
+      limit,
+      offset,
+    ],
+    queryFn: () =>
+      searchReservedVouchers({ search, emissionBranchId, limit, offset }),
+    enabled: !!emissionBranchId && offset >= 1,
+    keepPreviousData: true,
+  });
+};
+
+export const useUpdateReservedStatus = ({ onSuccess, onError } = {}) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateReservedStatus,
+    onSuccess: (data) => {
+      if (onSuccess) onSuccess(data);
+      queryClient.invalidateQueries({ queryKey: ["reserved-vouchers"] });
+    },
+    onError: (error) => {
+      if (onError) onError(error);
+      else console.error("Failed to update reserved status", error);
     },
   });
 };

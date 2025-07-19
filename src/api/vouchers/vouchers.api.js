@@ -19,3 +19,18 @@ export const registerPayment = async (data) => {
   );
   return response.data;
 };
+
+export const searchReservedVouchers = async (params) => {
+  const response = await AxiosInitializer.get(`/voucher/reserved`, {
+    params,
+  });
+  return response.data;
+};
+
+export const updateReservedStatus = async ({ id, isReserved }) => {
+  const response = await AxiosInitializer.patch(
+    `/voucher/reserved-update/${id}`,
+    { isReserved }
+  );
+  return response.data;
+};

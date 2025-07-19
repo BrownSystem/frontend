@@ -1,23 +1,17 @@
 import {
   Comprobantes,
-  CreateUser,
-  CreditNote,
   SearchIcon,
   Ventas,
 } from "../../../../../../assets/icons";
 import { useViewStore } from "../../../../../../store/useViewStore";
 import { CreateInvoice, OptionCard, RenderOptions } from "../../../../widgets";
-import { InvoiceTable, CreateSupplier, AccountsPayable } from "./tables";
+import { InvoiceTable, AccountsPayable } from "./tables";
 
 const viewMap = {
   invoiceTable: () => <InvoiceTable />,
-  createSupplier: () => <CreateSupplier />,
   registerPayment: () => <AccountsPayable />,
   createInvoice: () => (
     <CreateInvoice tipoOperacion="compra" tipoComprobante="factura" />
-  ),
-  creditNote: () => (
-    <CreateInvoice tipoOperacion="compra" tipoComprobante="notaCredito" />
   ),
 };
 
@@ -46,27 +40,11 @@ const SuppliersContent = () => {
             </OptionCard>
 
             <OptionCard
-              text={"Nota de credito"}
-              onClick={() => setView("creditNote")}
-              name="creditNote"
-            >
-              <CreditNote color={"#fff"} />
-            </OptionCard>
-
-            <OptionCard
               text={"Registrar pago"}
               onClick={() => setView("registerPayment")}
               name="registerPayment"
             >
               <Ventas x={"24"} y={"24"} />
-            </OptionCard>
-
-            <OptionCard
-              text={"Añadir Proveedor"}
-              onClick={() => setView("createSupplier")}
-              name="createSupplier"
-            >
-              <CreateUser x={"24"} y={"24"} color={"#fff"} />
             </OptionCard>
           </div>
         </div>

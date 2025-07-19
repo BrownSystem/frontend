@@ -1,80 +1,55 @@
-import React from "react";
-import { GenericTable } from "../../../../../widgets";
-
-const reservas = [
-  {
-    code: "PD12949UXLM",
-    color: "0030854",
-    priceGene: 300.311,
-    stock: 0,
-    descripcion: "180 x 180 x 69cm",
-    name: "Mesa de Roble Macizo",
-    entrega: {
-      cliente: "Juan M.",
-      cantidad: 1,
-      estado: "Pendiente",
-      fechaReserva: "2025-05-01",
-    },
-  },
-  {
-    code: "PD54892LKJE",
-    color: "0047123",
-    priceGene: 499.99,
-    stock: 3,
-    descripcion: "Silla ergonómica de oficina con respaldo alto",
-    name: "Silla Ergonómica Pro",
-    entrega: {
-      cliente: "Lucía F.",
-      cantidad: 2,
-      estado: "Entregado",
-      fechaReserva: "2025-04-28",
-    },
-  },
-  {
-    code: "PD98214XZOT",
-    color: "0078009",
-    priceGene: 1299.0,
-    stock: 5,
-    descripcion: "Sofá de 3 plazas, tapizado en lino gris",
-    name: "Sofá Moderno",
-    entrega: {
-      cliente: "Carlos G.",
-      cantidad: 1,
-      estado: "Pendiente",
-      fechaReserva: "2025-05-03",
-    },
-  },
-  {
-    code: "PD00213RMNS",
-    color: "0056234",
-    priceGene: 215.75,
-    stock: 10,
-    descripcion: "Mesa de noche con dos cajones",
-    name: "Mesa de Noche Clara",
-    entrega: {
-      cliente: "María L.",
-      cantidad: 4,
-      estado: "Entregado",
-      fechaReserva: "2025-04-20",
-    },
-  },
-  {
-    code: "PD77431QLWO",
-    color: "0065411",
-    priceGene: 890.5,
-    stock: 2,
-    descripcion: "Cama King Size de madera natural",
-    name: "Cama Oslo",
-    entrega: {
-      cliente: "Santiago V.",
-      cantidad: 1,
-      estado: "Pendiente",
-      fechaReserva: "2025-05-05",
-    },
-  },
-];
+import React, { useMemo, useState } from "react";
+import { useAuthStore } from "../../../../../../../api/auth/auth.store";
+import { GenericTable, Message } from "../../../../../widgets";
+import { searchReservedVouchers } from "../../../../../../../api/vouchers/vouchers.api";
+import { usePaginatedTableReservationData } from "../../../../../../../hooks/usePaginatedTableReservationData";
+import { useUpdateReservedStatus } from "../../../../../../../api/vouchers/vouchers.queries";
 
 const ReservationTable = () => {
+  const user = useAuthStore((state) => state.user);
+  const { mutate: updateStatus } = useUpdateReservedStatus();
+  const branchId = user?.branchId;
+  const [search, setSearch] = useState("");
+  const [message, setMessage] = useState({ text: "", type: "success" });
+
+  const limit = 4;
+
+  const {
+    data: rawData,
+    offset,
+    setOffset,
+    isLoading,
+    totalPages,
+  } = usePaginatedTableReservationData({
+    fetchFunction: searchReservedVouchers, // debe ser una función normal, no un hook
+    queryKeyBase: "reserved-vouchers",
+    search,
+    limit,
+    additionalParams: { emissionBranchId: branchId },
+    enabled: !!branchId,
+  });
+
+  const reservas = useMemo(() => {
+    if (!Array.isArray(rawData)) return [];
+
+    return rawData.map((r) => ({
+      id: r.id,
+      code: r.productId,
+      color: "—",
+      priceGene: r.price,
+      descripcion: r.description,
+      name: r.description,
+      entrega: {
+        cliente: r.voucher.contactName,
+        cantidad: r.quantity,
+        estado: r.isReserved === true ? "Pendiente" : "Entregado",
+        fechaReserva: new Date(r.voucher.emissionDate).toLocaleDateString(
+          "es-AR"
+        ),
+      },
+    }));
+  }, [rawData]);
+
   const columns = [
     {
       key: "fechaReserva",
@@ -82,64 +57,97 @@ const ReservationTable = () => {
       className: "text-center",
       render: (_, row) => row.entrega.fechaReserva,
     },
+    { key: "name", label: "DESCRIPCIÓN", className: "text-center" },
     {
       key: "cliente",
       label: "CLIENTE",
       className: "text-center",
-      render: (_, row) => (
-        <div className="flex flex-col">
-          <span>{row.entrega.cliente}</span>
-        </div>
-      ),
+      render: (_, row) => <span>{row.entrega.cliente}</span>,
     },
-    {
-      key: "name",
-      label: "DESCRIPCIÓN",
-      className: "text-center",
-    },
+
     {
       key: "cantidad",
       label: "CANTIDAD",
       className: "text-center",
       render: (_, row) => row.entrega.cantidad,
     },
-    {
-      key: "color",
-      label: "COLOR",
-      className: "text-center",
-    },
+    { key: "color", label: "COLOR", className: "text-center" },
     {
       key: "estado",
-      label: "ENTREGA",
+      label: "ESTADO",
       className: "text-center",
       render: (_, row) => (
-        <span
+        <select
+          value={row.entrega.estado}
+          onChange={(e) => {
+            const newEstado = e.target.value;
+            const isReserved = newEstado === "PENDIENTE";
+            updateStatus(
+              {
+                id: row.id, // ensure this is available in the row
+                isReserved,
+              },
+              {
+                onSuccess: () => {
+                  setMessage({
+                    text: "Estado actualizado exitosamente.",
+                    type: "success",
+                  });
+                  // this changes visual immediately
+                },
+              }
+            );
+          }}
           className={`text-sm font-semibold px-3 py-1 rounded-full ${
-            row.entrega.estado === "Pendiente"
-              ? "bg-[var(--bg-state-red)] text-[var(--text-state-red)]"
-              : "bg-[var(--bg-state-green)] text-[var(--text-state-green)]"
+            row.entrega.estado === "PENDIENTE"
+              ? "bg-[var(--bg-state-green)] text-[var(--text-state-green)]"
+              : "bg-[var(--bg-state-red)] text-[var(--text-state-red)]"
           }`}
         >
-          {row.entrega.estado}
-        </span>
+          <option value="PENDIENTE">PENDIENTE</option>
+          <option value="ENTREGADO">ENTREGADO</option>
+        </select>
       ),
     },
   ];
 
   return (
-    <div className="w-full h-full overflow-x-auto p-1">
-      {/* Título y Buscador */}
-      <div className="flex flex-col md:flex-row justify-center items-center w-full ">
-        <h2 className="text-2xl  font-semibold text-[#2c2b2a]">RESERVAS</h2>
+    <div className="w-full h-full rounded-lg shadow overflow-x-auto p-2">
+      <Message
+        message={message.text}
+        type={message.type}
+        onClose={() => setMessage({ text: "" })}
+        duration={3000}
+      />
+      <div className="flex flex-col md:flex-row justify-center items-center w-full px-4 mb-4">
+        <h2 className="text-2xl font-semibold text-[#2c2b2a]">RESERVAS</h2>
       </div>
 
-      {/* Tabla */}
-      <div className="bg-white rounded-b-lg shadow-sm">
+      <div className="flex justify-center mb-4">
+        <input
+          type="text"
+          placeholder="Buscar reserva..."
+          className="border px-3 py-2 rounded w-full max-w-md"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
+        />
+      </div>
+
+      <div className="bg-white px-4 py-2 rounded-b-lg shadow-sm">
         <GenericTable
           columns={columns}
           data={reservas}
           enablePagination={true}
-          enableFilter={true}
+          enableFilter={false}
+          externalPagination={true}
+          currentPage={offset}
+          totalPages={totalPages}
+          onPageChange={setOffset}
+          paginationDisabled={isLoading}
+          isLoading={isLoading}
         />
       </div>
     </div>

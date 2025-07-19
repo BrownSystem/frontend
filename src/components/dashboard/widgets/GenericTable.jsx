@@ -30,6 +30,7 @@ const GenericTable = ({
   };
 
   const filteredData = useMemo(() => {
+    if (!Array.isArray(data)) return [];
     return data.filter((row) =>
       Object.values(row).some((value) =>
         normalizeText(String(value)).includes(searchText)

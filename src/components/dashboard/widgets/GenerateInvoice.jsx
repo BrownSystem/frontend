@@ -33,6 +33,7 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
       productos: [
         {
           descripcion: "",
+          isReserved: false,
           precio: 0,
           quantity: 1,
         },
@@ -57,14 +58,11 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
       return [
         { value: "P", label: "P" },
         { value: "REMITO", label: "REMITO" },
-        // { value: "A", label: "FACTURA A" },
-        // { value: "B", label: "FACTURA B" },
+        { value: "FACTURA_A", label: "FACTURA A" },
+        { value: "FACTURA_B", label: "FACTURA B" },
+        { value: "NOTA_CREDITO", label: "NOTA DE CREDITO" },
       ];
     }
-    return [
-      { value: "NCA", label: "Nota de Crédito A" },
-      { value: "NCB", label: "Nota de Crédito B" },
-    ];
   }, [tipoComprobante]);
 
   const campoEntidad = tipoOperacion === "venta" ? "cliente" : "proveedor";
@@ -99,7 +97,14 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
   const setUser = useAuthStore((state) => state.user);
   const { data: branches = [] } = useFindAllBranch();
   const { mutate: createVoucher, isPending: savingInvoice } = useCreateVoucher({
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (data.data.status >= 400) {
+        setMessage({
+          text: data.data.message,
+          type: "error",
+        });
+        return;
+      }
       setMessage({ text: "Factura creada correctamente", type: "success" });
       // reset(); si querés limpiar el formulario
     },
@@ -219,6 +224,7 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
       products: data.productos.map((p) => ({
         branchId: p.branchId,
         productId: p.productId,
+        isReserved: p.isReserved,
         description: p.descripcion,
         quantity: parseFloat(p.quantity),
         price: parseFloat(p.precio),
@@ -393,17 +399,18 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
         </div>
 
         <div className="space-y-2 px-5">
-          <div className="grid grid-cols-4 gap-2 font-medium text-black bg-[#FDF7F1] rounded-t-md px-4 py-2 border border-[var(--brown-ligth-400)]">
+          <div className="grid grid-cols-5 gap-2 font-medium text-black bg-[#FDF7F1] rounded-t-md px-4 py-2 border border-[var(--brown-ligth-400)]">
             <div className="text-start">DESCRIPCIÓN</div>
             <div className="text-end">PRECIO</div>
             <div className="text-end">CANTIDAD</div>
+            <div className="text-end">RESERVAR</div>
             <div className="text-center">BORRAR</div>
           </div>
 
           {fields.map((item, index) => (
             <div
               key={item.id}
-              className="relative grid grid-cols-5 gap-2 items-center"
+              className="relative grid grid-cols-6 gap-2 items-center"
             >
               <div className="col-span-2">
                 <button
@@ -437,6 +444,11 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
                 })}
                 className="border border-[var(--brown-ligth-400)] rounded px-2 py-1 text-right"
               />
+              <input
+                type="checkbox"
+                {...register(`productos.${index}.isReserved`)}
+                className="border border-[var(--brown-ligth-400)] rounded px-2 py-1 text-right"
+              />
               <button
                 type="button"
                 onClick={() => remove(index)}
@@ -451,7 +463,12 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
             <button
               type="button"
               onClick={() =>
-                append({ descripcion: "", precio: 0, quantity: 1 })
+                append({
+                  descripcion: "",
+                  precio: 0,
+                  quantity: 1,
+                  isReserved: false,
+                })
               }
               className="text-brown-800 border border-[var(--brown-ligth-400)] rounded-full w-8 h-8 flex items-center justify-center hover:bg-brown-100"
             >

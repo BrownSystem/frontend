@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { useSearchVouchers } from "../../../../../../api/vouchers/vouchers.queries";
 import { GenericTable } from "../../../../widgets";
 import { InvoiceModal, InvoicePaymentModal } from "../../../../../common";
 import { BsEye } from "react-icons/bs";
 import { useAuthStore } from "../../../../../../api/auth/auth.store";
+import { useSearchVouchers } from "../../../../../../api/vouchers/vouchers.queries";
 
 const SalesInvoiceTable = () => {
   const [showModal, setShowModal] = useState(false);
@@ -45,7 +45,17 @@ const SalesInvoiceTable = () => {
     .reduce((acc, curr) => acc + (curr.remainingAmount || 0), 0);
 
   const columnsVentas = [
-    { key: "emissionDate", label: "FECHA", className: "text-center" },
+    {
+      key: "emissionDate",
+      label: "FECHA",
+      className: "text-center",
+      render: (value) =>
+        new Date(value).toLocaleDateString("es-AR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }),
+    },
     { key: "contactName", label: "CLIENTE", className: "text-center" },
     {
       key: "totalAmount",
@@ -91,7 +101,17 @@ const SalesInvoiceTable = () => {
   ];
 
   const columnsPagos = [
-    { key: "emissionDate", label: "FECHA", className: "text-center" },
+    {
+      key: "emissionDate",
+      label: "FECHA",
+      className: "text-center",
+      render: (value) =>
+        new Date(value).toLocaleDateString("es-AR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }),
+    },
     { key: "contactName", label: "CLIENTE", className: "text-center" },
     {
       key: "totalAmount",

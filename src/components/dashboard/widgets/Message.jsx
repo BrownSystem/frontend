@@ -24,7 +24,7 @@ const Message = ({ message, type = "info", duration = 3000, onClose }) => {
       className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-4 py-2 border rounded shadow z-[9999] ${variantStyles[type]}`}
     >
       <div className="flex items-center justify-between gap-2">
-        <span>{message}</span>
+        <span className="text-center">{message}</span>
         {onClose && (
           <button
             onClick={onClose}

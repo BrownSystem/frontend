@@ -1,58 +1,48 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-export const usePaginatedTableData = ({
+export const usePaginatedTableReservationData = ({
   fetchFunction,
   queryKeyBase,
   search = "",
-  branchId,
   additionalParams = {},
   limit = 6,
   enabled = true,
 }) => {
-  const [page, setPage] = useState(1);
+  const [offset, setOffset] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const offset = page;
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       setDebouncedSearch(search.trim());
-      setPage(1);
+      setOffset(1); // Reinicia la paginación con cada nueva búsqueda
     }, 400);
     return () => clearTimeout(timeout);
   }, [search]);
 
-  const isEnabled = Boolean(enabled) && Boolean(branchId);
+  const isEnabled = Boolean(enabled);
 
   const query = useQuery({
-    queryKey: [
-      queryKeyBase,
-      debouncedSearch,
-      branchId,
-      limit,
-      offset,
-      additionalParams,
-    ],
-    queryFn: () =>
-      fetchFunction({
+    queryKey: [queryKeyBase, debouncedSearch, limit, offset, additionalParams],
+    queryFn: () => {
+      const params = {
         search: debouncedSearch,
-        branchId,
         limit,
         offset,
         ...additionalParams,
-      }),
+      };
+      return fetchFunction(params);
+    },
     enabled: isEnabled,
     keepPreviousData: true,
   });
-
   return {
     data: query.data?.data || [],
-    page,
-    setPage,
+    offset,
+    setOffset,
     isLoading: query.isLoading,
     isFetching: query.isFetching,
-    totalPages: Math.max(1, Math.ceil(query.data?.meta?.total / limit)) || 1,
-    offset,
+    totalPages: query.data?.lastPage || 1,
     debouncedSearch,
   };
 };

@@ -1,21 +1,11 @@
 import { useCallback } from "react";
 import { ActionCard } from "../../widgets";
-import {
-  Comprobantes,
-  CreateUser,
-  Folder,
-  SearchIcon,
-} from "../../../../assets/icons";
+import { Comprobantes, CreateUser, Folder } from "../../../../assets/icons";
 
 import { useShopViewStore } from "@store/useShopViewStore";
 import { RenderView } from "./RenderContent";
-import {
-  ClientContent,
-  ProductTable,
-  RegisterSalesContent,
-  SalesInvoiceTable,
-} from "./content";
-import ReservationTable from "./content/ReservationTable";
+import { ClientContent, ProductTable, RegisterSalesContent } from "./content";
+import { ReservationTable } from "./content/ClientContent/tables";
 
 const viewMap = {
   productos: ProductTable,

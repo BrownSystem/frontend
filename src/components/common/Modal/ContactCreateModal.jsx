@@ -43,9 +43,29 @@ const ContactCreateModal = ({ isOpen, onClose, tipo, onSelect, branchId }) => {
   });
 
   const saveNewContact = () => {
-    if (!newContact.name || !newContact.documentNumber) {
+    const { name, documentNumber, documentType } = newContact;
+
+    if (!name || !documentNumber) {
       setMessage({
         text: "Nombre y Documento son obligatorios.",
+        type: "error",
+      });
+      return;
+    }
+
+    const dniRegex = /^\d{7,8}$/;
+    const cuitCuilRegex = /^\d{2}-\d{8}-\d{1}$/;
+
+    if (
+      (documentType === "DNI" && !dniRegex.test(documentNumber)) ||
+      ((documentType === "CUIT" || documentType === "CUIL") &&
+        !cuitCuilRegex.test(documentNumber))
+    ) {
+      setMessage({
+        text:
+          documentType === "DNI"
+            ? "El DNI debe tener 7 u 8 dígitos sin guiones."
+            : "El CUIT/CUIL debe tener el formato XX-XXXXXXXX-X (Con Guiones).",
         type: "error",
       });
       return;

@@ -38,3 +38,14 @@ export const downloadPdfQrs = async ({ products }) => {
   link.remove();
   window.URL.revokeObjectURL(url);
 };
+
+export const uploadProducts = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await AxiosInitializer.post("/products/upload", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+  return response.data;
+};
