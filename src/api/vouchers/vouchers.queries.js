@@ -5,7 +5,7 @@ import {
   searchReservedVouchers,
   searchVoucher,
   updateReservedStatus,
-  downloadVoucherPdf,
+  downloadVoucherHtml,
 } from "./vouchers.api";
 
 export const useCreateVoucher = ({ onSuccess, onError } = {}) => {
@@ -112,8 +112,8 @@ export const useUpdateReservedStatus = ({ onSuccess, onError } = {}) => {
   });
 };
 
-export const useDownloadVoucherPdf = () => {
+export const useDownloadVoucherHtml = () => {
   return useMutation({
-    mutationFn: downloadVoucherPdf,
+    mutationFn: downloadVoucherHtml,
   });
 };

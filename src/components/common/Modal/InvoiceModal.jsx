@@ -1,28 +1,35 @@
 import React from "react";
 import { Download } from "../../../assets/icons";
-import { useDownloadVoucherPdf } from "../../../api/vouchers/vouchers.queries";
+import { useDownloadVoucherHtml } from "../../../api/vouchers/vouchers.queries";
+import html2pdf from "html2pdf.js";
 
 const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
-  const { mutate: descargarPdf, isPending } = useDownloadVoucherPdf();
+  const { mutate: descargarHtml } = useDownloadVoucherHtml();
 
   const handleDescargarPDF = () => {
     if (!factura?.id) return;
 
-    descargarPdf(factura.id, {
-      onSuccess: (blob) => {
-        const url = window.URL.createObjectURL(
-          new Blob([blob], { type: "application/pdf" })
-        );
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", `comprobante-${factura.id}.pdf`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+    descargarHtml(factura.id, {
+      onSuccess: (html) => {
+        const container = document.createElement("div");
+        container.innerHTML = html;
+
+        html2pdf()
+          .set({
+            margin: 0.5,
+            filename: `comprobante-${factura.numero}.pdf`,
+            image: { type: "jpeg", quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+          })
+          .from(container)
+          .save();
       },
       onError: () => {
-        console.error("No se pudo descargar el PDF.");
-        // toast.error("Error al descargar el comprobante"); // opcional
+        setMessage({
+          text: "No se pudo generar el comprobante ❌",
+          type: "error",
+        });
       },
     });
   };

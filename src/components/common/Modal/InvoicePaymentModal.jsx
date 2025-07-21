@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Close, Danger } from "../../../assets/icons";
 import {
-  useDownloadVoucherPdf,
+  useDownloadVoucherHtml,
   useRegisterPayment,
 } from "../../../api/vouchers/vouchers.queries";
 import { Message } from "../../dashboard/widgets";
 import { useBanks } from "../../../api/banks/banks.queries";
+import html2pdf from "html2pdf.js";
 
 const InvoicePaymentModal = ({
   factura,
@@ -16,7 +17,7 @@ const InvoicePaymentModal = ({
   const [metodo, setMetodo] = useState("Efectivo");
   const [datosPago, setDatosPago] = useState({});
   const [message, setMessage] = useState({ text: "", type: "success" });
-  const { mutate: descargarPDF } = useDownloadVoucherPdf();
+  const { mutate: descargarHtml } = useDownloadVoucherHtml();
 
   const { data: banks } = useBanks();
 
@@ -36,21 +37,19 @@ const InvoicePaymentModal = ({
   const handleDescargarPDF = () => {
     if (!factura?.id) return;
 
-    descargarPDF(factura.id, {
-      onSuccess: (blob) => {
-        const url = window.URL.createObjectURL(
-          new Blob([blob], { type: "application/pdf" })
-        );
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", `comprobante-${factura.numero}.pdf`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+    descargarHtml(factura.id, {
+      onSuccess: (html) => {
+        const container = document.createElement("div");
+        container.innerHTML = html;
+
+        html2pdf()
+          .set({ filename: `comprobante-${factura.numero}.pdf` })
+          .from(container)
+          .save();
       },
       onError: () => {
         setMessage({
-          text: "Error al descargar el comprobante ❌",
+          text: "Error al generar el comprobante ❌",
           type: "error",
         });
       },
