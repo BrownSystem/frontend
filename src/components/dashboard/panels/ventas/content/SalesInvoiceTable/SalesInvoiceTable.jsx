@@ -181,6 +181,7 @@ const SalesInvoiceTable = () => {
             setShowModal(false);
           }}
           factura={{
+            id: comprobanteSeleccionado.id,
             numero: comprobanteSeleccionado.number ?? "—",
             tipo: comprobanteSeleccionado.type ?? "—",
             fecha: new Date(

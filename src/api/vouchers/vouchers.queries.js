@@ -5,6 +5,7 @@ import {
   searchReservedVouchers,
   searchVoucher,
   updateReservedStatus,
+  downloadVoucherPdf,
 } from "./vouchers.api";
 
 export const useCreateVoucher = ({ onSuccess, onError } = {}) => {
@@ -108,5 +109,11 @@ export const useUpdateReservedStatus = ({ onSuccess, onError } = {}) => {
       if (onError) onError(error);
       else console.error("Failed to update reserved status", error);
     },
+  });
+};
+
+export const useDownloadVoucherPdf = () => {
+  return useMutation({
+    mutationFn: downloadVoucherPdf,
   });
 };

@@ -12,6 +12,7 @@ import { useAuthStore } from "../../../api/auth/auth.store";
 import { useFindAllBranch } from "../../../api/branch/branch.queries";
 import { useCreateVoucher } from "../../../api/vouchers/vouchers.queries";
 import Message from "./Message";
+import { useCreateNotification } from "../../../api/notification/notification.queries";
 
 const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
   const {
@@ -41,6 +42,8 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
     },
   });
 
+  const { mutate: notify } = useCreateNotification();
+
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [pagos, setPagos] = useState([]);
   const [showContactModal, setShowContactModal] = useState(false);
@@ -58,9 +61,6 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
       return [
         { value: "P", label: "P" },
         { value: "REMITO", label: "REMITO" },
-        { value: "FACTURA_A", label: "FACTURA A" },
-        { value: "FACTURA_B", label: "FACTURA B" },
-        { value: "NOTA_CREDITO", label: "NOTA DE CREDITO" },
       ];
     }
   }, [tipoComprobante]);
@@ -135,7 +135,11 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
         });
         return;
       }
-      if (!p.precio || isNaN(p.precio) || p.precio <= 0) {
+      if (
+        (!p.precio && data.tipoFactura !== "REMITO") ||
+        (isNaN(p.precio) && data.tipoFactura !== "REMITO") ||
+        (p.precio <= 0 && data.tipoFactura !== "REMITO")
+      ) {
         setMessage({
           text: `Producto #${i + 1}: El precio debe ser mayor a 0.`,
           type: "error",
@@ -249,7 +253,44 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
       })),
     };
 
-    createVoucher(payload);
+    createVoucher(payload, {
+      onSuccess: (response) => {
+        if (response.data.status >= 400) return;
+
+        const productosAfectados = data.productos;
+
+        // Buscar nombre de sucursal emisora
+        const sucursalOrigen =
+          branches.find((b) => b.id === setUser.branchId)?.name ||
+          "Sucursal origen";
+
+        // Crear una notificación por cada producto
+        productosAfectados.forEach((producto) => {
+          const sucursalProducto =
+            branches.find((b) => b.id === producto.branchId)?.name ||
+            "Sucursal destino";
+
+          // Notificamos a la sucursal propietaria del producto
+          notify({
+            branchId: producto.branchId,
+            type: "PRODUCT_TRANSFER",
+            title: `Producto descontado: ${producto.descripcion}`,
+            message: `El producto "${producto.descripcion}" fue descontado (${producto.quantity}) en una operación emitida desde la sucursal ${sucursalOrigen}.`,
+          });
+
+          // Si el producto viene de otra sucursal, también notificamos a la emisora
+          if (producto.branchId !== setUser.branchId) {
+            notify({
+              branchId: setUser.branchId,
+              type: "PRODUCT_TRANSFER",
+              title: `Uso de producto externo: ${producto.descripcion}`,
+              message: `Se descontó el producto "${producto.descripcion}" perteneciente a la sucursal ${sucursalProducto}.`,
+            });
+          }
+        });
+      },
+    });
+    // Notificación por producto afectado
   };
 
   const { data: entidadesFiltradas = [] } = useSearchContacts({
@@ -428,11 +469,7 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
 
               <input
                 type="number"
-                step="0.01"
-                {...register(`productos.${index}.precio`, {
-                  required: true,
-                  min: 0.01,
-                })}
+                {...register(`productos.${index}.precio`)}
                 className="border border-[var(--brown-ligth-400)] rounded px-2 py-1 text-right"
               />
               <input

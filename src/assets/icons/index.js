@@ -23,3 +23,6 @@ export { default as Folder } from "./Folder";
 export { default as QrCode } from "./QrCode";
 export { default as Logout } from "./Logout";
 export { default as Foreign } from "./Foreign";
+export { default as Notification } from "./Notification";
+export { default as Warning } from "./Warning";
+export { default as TickCircle } from "./TickCircle";

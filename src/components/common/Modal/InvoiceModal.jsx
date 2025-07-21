@@ -1,7 +1,32 @@
 import React from "react";
 import { Download } from "../../../assets/icons";
+import { useDownloadVoucherPdf } from "../../../api/vouchers/vouchers.queries";
 
 const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
+  const { mutate: descargarPdf, isPending } = useDownloadVoucherPdf();
+
+  const handleDescargarPDF = () => {
+    if (!factura?.id) return;
+
+    descargarPdf(factura.id, {
+      onSuccess: (blob) => {
+        const url = window.URL.createObjectURL(
+          new Blob([blob], { type: "application/pdf" })
+        );
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `comprobante-${factura.id}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      },
+      onError: () => {
+        console.error("No se pudo descargar el PDF.");
+        // toast.error("Error al descargar el comprobante"); // opcional
+      },
+    });
+  };
+
   const calcularSubtotal = (p) => p.precio * p.cantidad;
 
   const total = productos.reduce((acc, p) => acc + calcularSubtotal(p), 0);
@@ -19,7 +44,7 @@ const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
                   <i className="fas fa-warehouse"></i>
                 </div>
                 <span className="font-bold text-[#5b3e0f]">
-                  FACTURA ({factura?.tipo ?? "—"}) N°:{" "}
+                  COMPROBANTE ({factura?.tipo ?? "—"}) N°:{" "}
                   <span className="text-[var(--brown-ligth-400)]">
                     {factura?.numero ?? "—"}
                   </span>
@@ -158,7 +183,7 @@ const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
                   Cerrar
                 </button>
                 <button
-                  onClick={onConfirm}
+                  onClick={handleDescargarPDF}
                   className="bg-[#b68239] text-white px-4 py-2 rounded-md hover:bg-[#a46f2f] flex gap-1 cursor-pointer"
                 >
                   <Download />

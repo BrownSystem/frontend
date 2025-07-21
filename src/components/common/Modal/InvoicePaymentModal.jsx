@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Close, Danger } from "../../../assets/icons";
-import { useRegisterPayment } from "../../../api/vouchers/vouchers.queries";
+import {
+  useDownloadVoucherPdf,
+  useRegisterPayment,
+} from "../../../api/vouchers/vouchers.queries";
 import { Message } from "../../dashboard/widgets";
 import { useBanks } from "../../../api/banks/banks.queries";
 
@@ -13,6 +16,7 @@ const InvoicePaymentModal = ({
   const [metodo, setMetodo] = useState("Efectivo");
   const [datosPago, setDatosPago] = useState({});
   const [message, setMessage] = useState({ text: "", type: "success" });
+  const { mutate: descargarPDF } = useDownloadVoucherPdf();
 
   const { data: banks } = useBanks();
 
@@ -28,6 +32,30 @@ const InvoicePaymentModal = ({
       });
     },
   });
+
+  const handleDescargarPDF = () => {
+    if (!factura?.id) return;
+
+    descargarPDF(factura.id, {
+      onSuccess: (blob) => {
+        const url = window.URL.createObjectURL(
+          new Blob([blob], { type: "application/pdf" })
+        );
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `comprobante-${factura.numero}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      },
+      onError: () => {
+        setMessage({
+          text: "Error al descargar el comprobante ❌",
+          type: "error",
+        });
+      },
+    });
+  };
 
   const handleSubmit = () => {
     if (monto > factura.saldoPendiente || !monto) {
@@ -244,6 +272,12 @@ const InvoicePaymentModal = ({
           {monto > factura.saldoPendiente
             ? "Monto mayor al saldo adeudado."
             : "Registrar pago"}
+        </button>
+        <button
+          onClick={handleDescargarPDF}
+          className="mt-3 bg-[#b68239] text-white px-4 py-2 rounded w-full hover:bg-[#a46f2f] flex items-center justify-center gap-2"
+        >
+          <i className="fas fa-download"></i> Descargar comprobante PDF
         </button>
       </div>
     </div>

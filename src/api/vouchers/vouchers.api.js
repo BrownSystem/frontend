@@ -34,3 +34,12 @@ export const updateReservedStatus = async ({ id, isReserved }) => {
   );
   return response.data;
 };
+
+export const downloadVoucherPdf = async (id) => {
+  const response = await AxiosInitializer.get(`/voucher/pdf/${id}`, {
+    responseType: "blob", // 🧠 Muy importante para recibir el PDF como archivo
+    params: { download: true }, // Incluye el parámetro para forzar la descarga
+  });
+
+  return response.data; // Devuelve el blob
+};

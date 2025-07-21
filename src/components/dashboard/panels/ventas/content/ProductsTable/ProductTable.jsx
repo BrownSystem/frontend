@@ -9,7 +9,7 @@ const ProductTable = () => {
   const branchId = user?.branchId;
 
   const [search, setSearch] = useState("");
-  const limit = 6;
+  const limit = 10;
 
   // Usamos hook reutilizable para manejar paginación, búsqueda y peticiones
   const {

@@ -1,11 +1,26 @@
-import React from "react";
-import { Buy, Logout } from "../../../assets/icons";
+import React, { useState } from "react";
+import { Buy, Logout, Notification } from "../../../assets/icons";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../../api/auth/auth.store";
+import { NotificationModal } from "../../common";
+import {
+  useDeleteNotification,
+  useMarkAsRead,
+  useNotifications,
+} from "../../../api/notification/notification.queries";
 
 const Sidebar = () => {
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const { data: notificationsData = [], isLoading } = useNotifications(
+    user?.branchId
+  );
+
+  const { mutate: deleteNotification } = useDeleteNotification();
+  const { mutate: markAsRead } = useMarkAsRead();
+
+  const unreadCount = notificationsData.filter((n) => !n.read).length;
 
   const handleSliderChange = (href) => {
     navigate(href);
@@ -73,6 +88,22 @@ const Sidebar = () => {
           </span>
         </div>
 
+        {/* Notification */}
+        <div
+          onClick={() => setShowNotificationModal(true)}
+          className="group relative cursor-pointer border-none"
+        >
+          <Notification />
+          {unreadCount > 0 && (
+            <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] rounded-full px-[5px]">
+              {unreadCount}
+            </span>
+          )}
+          <span className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 text-sm text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
+            Notificaciones
+          </span>
+        </div>
+
         {/* Logout */}
         <div
           className="group relative cursor-pointer border-none"
@@ -84,6 +115,26 @@ const Sidebar = () => {
           </span>
         </div>
       </div>
+      <NotificationModal
+        isOpen={showNotificationModal}
+        onClose={() => setShowNotificationModal(false)}
+        notifications={notificationsData.map((n) => ({
+          id: n.id,
+          title: n.title,
+          message: n.message,
+          type: n.type || "success",
+          actionLabel: "Ver detalle",
+          action: () => console.log("Ver notificación:", n.id),
+        }))}
+        onMarkAsRead={(notif) => {
+          console.log("📨 Marcar como leído", notif.id);
+          markAsRead(notif.id);
+        }}
+        onDelete={(notif) => {
+          console.log("🗑️ Eliminar", notif.id);
+          deleteNotification(notif.id);
+        }}
+      />
     </div>
   );
 };
