@@ -67,7 +67,9 @@ const InvoicePaymentModal = ({
           ? "EFECTIVO"
           : metodo === "Transferencia"
           ? "TRANSFERENCIA"
-          : "CHEQUE",
+          : metodo === "Cheque de terceros"
+          ? "CHEQUE"
+          : "TARJETA",
       amount: parseFloat(monto),
       currency: "ARS",
       bankId:
@@ -182,24 +184,26 @@ const InvoicePaymentModal = ({
             Método de pago
           </label>
           <div className="flex gap-2 mb-2">
-            {["Efectivo", "Transferencia", "Cheque de terceros"].map((m) => (
-              <button
-                key={m}
-                className={`px-3 py-1 rounded-lg border ${
-                  metodo === m
-                    ? "bg-[var(--brown-dark-800)] text-white"
-                    : "bg-white text-[var(--brown-dark-800)]"
-                }`}
-                onClick={() => setMetodo(m)}
-              >
-                {m}
-              </button>
-            ))}
+            {["Efectivo", "Transferencia", "Cheque de terceros", "Tarjeta"].map(
+              (m) => (
+                <button
+                  key={m}
+                  className={`px-3 py-1 rounded-lg border ${
+                    metodo === m
+                      ? "bg-[var(--brown-dark-800)] text-white"
+                      : "bg-white text-[var(--brown-dark-800)]"
+                  }`}
+                  onClick={() => setMetodo(m)}
+                >
+                  {m}
+                </button>
+              )
+            )}
           </div>
         </div>
 
         <div className="space-y-2 mb-4">
-          {metodo === "Transferencia" && (
+          {(metodo === "Transferencia" || metodo === "Tarjeta") && (
             <>
               <select
                 name="banco"
@@ -213,12 +217,14 @@ const InvoicePaymentModal = ({
                   </option>
                 )) || <option value="">Cargando bancos...</option>}
               </select>
-              <input
-                name="numeroOperacion"
-                placeholder="Número de operación"
-                className="w-full p-2 border rounded border-[var(--brown-dark-500)]"
-                onChange={handleInputChange}
-              />
+              {metodo === "Transferencia" && (
+                <input
+                  name="numeroOperacion"
+                  placeholder="Número de operación"
+                  className="w-full p-2 border rounded border-[var(--brown-dark-500)]"
+                  onChange={handleInputChange}
+                />
+              )}
             </>
           )}
 

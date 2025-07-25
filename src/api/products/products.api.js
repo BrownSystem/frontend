@@ -1,5 +1,10 @@
 import { AxiosInitializer } from "..";
 
+export const createProduct = async (product) => {
+  const response = await AxiosInitializer.post("/products", product);
+  return response.data;
+};
+
 export const searchProducts = async ({
   search,
   branchId,
@@ -14,6 +19,23 @@ export const searchProducts = async ({
   };
 
   const response = await AxiosInitializer.get("/products/search", { params });
+  return response.data;
+};
+
+export const searchProductsByBranches = async ({
+  search,
+  limit = 6,
+  offset,
+}) => {
+  const params = {
+    limit,
+    offset,
+    ...(search?.trim() ? { search: search.trim() } : {}), // no enviar search vacío
+  };
+
+  const response = await AxiosInitializer.get("/products/by-branches", {
+    params,
+  });
   return response.data;
 };
 
@@ -47,5 +69,11 @@ export const uploadProducts = async (file) => {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
+  return response.data;
+};
+
+export const updateProduct = async (product) => {
+  const { id, ...rest } = product;
+  const response = await AxiosInitializer.patch(`/products/update/${id}`, rest);
   return response.data;
 };

@@ -162,8 +162,8 @@ const AddEmployeeForm = () => {
                 {...register("password", {
                   required: "La contraseña es obligatoria",
                   minLength: {
-                    value: 6,
-                    message: "La contraseña debe tener al menos 6 caracteres",
+                    value: 4,
+                    message: "La contraseña debe tener al menos 4 caracteres",
                   },
                 })}
                 className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 pr-10"
@@ -224,7 +224,6 @@ const AddEmployeeForm = () => {
             >
               <option value="">Seleccionar rol</option>
               <option value="ADMIN">Administrador</option>
-              <option value="MANAGER">Supervisor</option>
               <option value="SELLER">Vendedor</option>
             </select>
             {errors.role && (

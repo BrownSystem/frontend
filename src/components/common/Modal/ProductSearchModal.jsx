@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSearchProducts } from "../../../api/products/products.store";
-import { useFindAllBranch } from "../../../api/branch/branch.queries";
+import { useCreateProduct } from "../../../api/products/products.queries";
+import { Edit } from "../../../assets/icons";
 
-const ProductSearchModal = ({ isOpen, onClose, onSelect, index }) => {
+const ProductSearchModal = ({ isOpen, branchId, onClose, onSelect, index }) => {
   const [search, setSearch] = useState("");
-  const [branchId, setBranchId] = useState("");
-  const { data: branches } = useFindAllBranch();
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newDescription, setNewDescription] = useState("");
+
   const { data: productosFiltrados } = useSearchProducts({
     search,
     branchId,
@@ -13,45 +15,58 @@ const ProductSearchModal = ({ isOpen, onClose, onSelect, index }) => {
     offset: 1,
   });
 
-  useEffect(() => {
-    if (branches?.length > 0) {
-      setBranchId(branches[0].id);
+  const createProductMutation = useCreateProduct();
+
+  const handleAddProduct = async () => {
+    if (!newDescription.trim()) return;
+
+    try {
+      const result = await createProductMutation.mutateAsync({
+        description: newDescription,
+      });
+
+      // Seleccionar automáticamente el nuevo producto
+      onSelect(
+        {
+          descripcion: result.description,
+        },
+        index
+      );
+
+      setNewDescription("");
+      setIsAddModalOpen(false);
+      onClose();
+      refetch();
+    } catch (err) {
+      console.error("Error al crear producto:", err);
     }
-  }, [branches]);
+  };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-[rgba(0,0,0,0.7)] flex justify-center items-center z-50">
-      <div className="bg-white rounded-md shadow-lg p-6 w-full max-w-2xl min-h-[300px] max-h-[90vh] overflow-auto transition-all duration-200">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-brown-900">
-            Buscar producto
-          </h2>
+      <div className="bg-white rounded-md shadow-lg py-2 px-6 w-full max-w-2xl min-h-[300px] max-h-[90vh] overflow-auto transition-all duration-200">
+        <div className="flex justify-end items-start mb-1">
           <button onClick={onClose} className="text-red-600 font-bold text-xl">
             ×
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="relative mb-4 w-full">
           <input
             type="text"
             placeholder="Buscar por nombre o código"
-            className="border px-3 py-2 rounded"
+            className="border px-3 py-2 rounded w-full"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <select
-            className="border px-3 py-2 rounded"
-            value={branchId}
-            onChange={(e) => setBranchId(e.target.value)}
+          <span
+            className="absolute right-2 top-2 cursor-pointer"
+            onClick={() => setIsAddModalOpen(true)}
           >
-            {branches?.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
+            <Edit color={"black"} />
+          </span>
         </div>
 
         <div className="min-h-[180px]">
@@ -92,6 +107,36 @@ const ProductSearchModal = ({ isOpen, onClose, onSelect, index }) => {
             </div>
           )}
         </div>
+        {/* Sub-modal para agregar nuevo producto */}
+        {isAddModalOpen && (
+          <div className="fixed inset-0 bg-white flex flex-col justify-center items-center rounded-md px-4 ">
+            <h2 className="text-lg font-bold mb-4">Agregar nuevo producto</h2>
+            <input
+              type="text"
+              placeholder="Descripción del producto"
+              className="border px-3 py-2 rounded mb-3"
+              value={newDescription}
+              onChange={(e) => setNewDescription(e.target.value)}
+            />
+            <div className="flex gap-2">
+              <button
+                className="bg-green-600 text-white px-4 py-2 rounded"
+                onClick={handleAddProduct}
+              >
+                Agregar
+              </button>
+              <button
+                className="bg-gray-400 text-white px-4 py-2 rounded"
+                onClick={() => {
+                  setIsAddModalOpen(false);
+                  setNewDescription("");
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -11,6 +11,12 @@ export const createBranch = async (data) => {
 };
 
 export const updateBranch = async (data) => {
-  const response = await AxiosInitializer.put(`/branch/${data._id}`, data);
+  const { id, ...payload } = data; // Sacamos 'id' del objeto
+
+  const response = await AxiosInitializer.patch(
+    `/branch/update/${id}`,
+    payload // Enviamos el resto del objeto sin 'id'
+  );
+
   return response.data;
 };

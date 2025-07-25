@@ -8,26 +8,28 @@ import {
 import { BsEye } from "react-icons/bs";
 import { GenericTable, Message } from "../../../../widgets";
 import { useState } from "react";
+import { Delete, Edit } from "../../../../../../assets/icons";
 
 const DepositsContent = () => {
   const queryClient = useQueryClient();
   const { data: branches = [], isLoading } = useFindAllBranch();
   const setView = useStockViewStore((state) => state.setViewSafe);
-  const renderContent = useStockViewStore((state) => state.renderContent);
   const [message, setMessage] = useState({ text: "", type: "success" });
 
   const createBranchMutation = useCreateBranch();
   const updateBranchMutation = useUpdateBranch();
 
+  const [editingRowId, setEditingRowId] = useState(null);
+  const [editedRowData, setEditedRowData] = useState({});
+
   const handleAddDeposit = () => {
     const newDeposit = {
-      _id: `temp-${Date.now()}`,
+      id: `temp-${Date.now()}`,
       name: "",
       location: "",
       productsTotal: 0,
       canTransfer: false,
       wasRecentlyRestocked: false,
-      isEditing: true,
       isNew: true,
     };
 
@@ -35,47 +37,75 @@ const DepositsContent = () => {
       newDeposit,
       ...(old || []),
     ]);
+    setEditingRowId(newDeposit.id);
+    setEditedRowData(newDeposit);
   };
 
   const handleEditCell = (id, key, value) => {
-    queryClient.setQueryData(["branch"], (old = []) =>
-      old.map((item) => (item._id === id ? { ...item, [key]: value } : item))
-    );
-  };
-
-  const handleSaveRow = async (row) => {
-    const { name, location } = row;
-    if (row.isNew) {
-      await createBranchMutation.mutateAsync({
-        name: name,
-        location: location,
-      });
-      setMessage({
-        text: "Sucursal o Deposito Creado.",
-        type: "success",
-      });
-    } else {
-      await updateBranchMutation.mutateAsync({
-        name: name,
-        location: location,
-      });
+    if (id === editingRowId) {
+      setEditedRowData((prev) => ({
+        ...prev,
+        [key]: value,
+      }));
     }
-
-    queryClient.invalidateQueries(["branch"]);
   };
 
-  const handleCancelEdit = (row) => {
-    if (row.isNew) {
-      queryClient.setQueryData(["branch"], (old = []) =>
-        old.filter((item) => item._id !== row._id)
-      );
-    } else {
+  const handleSaveRow = async () => {
+    const { name, location, isNew } = editedRowData;
+    try {
+      if (isNew) {
+        await createBranchMutation.mutateAsync({ name, location });
+        setMessage({ text: "Sucursal o Depósito creado.", type: "success" });
+      } else {
+        await updateBranchMutation.mutateAsync({
+          id: editedRowData.id,
+          name,
+          location,
+        });
+        setMessage({
+          text: "Sucursal actualizada correctamente.",
+          type: "success",
+        });
+      }
+    } catch {
+      setMessage({ text: "Error al guardar los datos.", type: "error" });
+    } finally {
+      setEditingRowId(null);
+      setEditedRowData({});
       queryClient.invalidateQueries(["branch"]);
     }
   };
 
+  const handleCancelEdit = () => {
+    if (editedRowData.isNew) {
+      queryClient.setQueryData(["branch"], (old = []) =>
+        old.filter((item) => item.id !== editedRowData.id)
+      );
+    }
+    setEditingRowId(null);
+    setEditedRowData({});
+  };
+
+  const handleEditBranch = (row) => {
+    setEditingRowId(row.id);
+    setEditedRowData({ ...row });
+  };
+
+  const handleDeleteBranch = async (row) => {
+    try {
+      await updateBranchMutation.mutateAsync({ id: row.id, available: false });
+      setMessage({
+        text: "Sucursal eliminada correctamente.",
+        type: "success",
+      });
+      queryClient.invalidateQueries(["branch"]);
+    } catch {
+      setMessage({ text: "Error al eliminar sucursal.", type: "error" });
+    }
+  };
+
   const handleRowClick = (deposit) => {
-    if (deposit.isEditing) return;
+    if (editingRowId === deposit.id) return;
     setView({
       name: "products_of_deposit",
       props: {
@@ -87,22 +117,54 @@ const DepositsContent = () => {
     });
   };
 
-  const deposits = branches.map((branch) => ({
-    ...branch,
-    isEditing: branch.isEditing || false,
-  }));
+  const deposits = branches.map((branch) => {
+    if (branch.id === editingRowId) {
+      return { ...editedRowData };
+    }
+    return branch;
+  });
 
   const columns = [
-    { key: "name", label: "NOMBRE", editable: true },
-    { key: "location", label: "UBICACIÓN", editable: true },
+    {
+      key: "name",
+      label: "NOMBRE",
+      editable: true,
+      render: (_, row) =>
+        row.id === editingRowId ? (
+          <input
+            type="text"
+            className="border rounded px-2 py-1 w-full"
+            value={editedRowData.name || ""}
+            onChange={(e) => handleEditCell(row.id, "name", e.target.value)}
+          />
+        ) : (
+          row.name
+        ),
+    },
+    {
+      key: "location",
+      label: "UBICACIÓN",
+      editable: true,
+      render: (_, row) =>
+        row.id === editingRowId ? (
+          <input
+            type="text"
+            className="border rounded px-2 py-1 w-full"
+            value={editedRowData.location || ""}
+            onChange={(e) => handleEditCell(row.id, "location", e.target.value)}
+          />
+        ) : (
+          row.location
+        ),
+    },
     {
       key: "actions",
       label: "INSPECCIONAR",
       render: (_, row) =>
-        row.isEditing ? (
-          <>
+        row.id === editingRowId ? (
+          <div className="flex justify-center gap-2">
             <button
-              onClick={() => handleSaveRow(row)}
+              onClick={handleSaveRow}
               disabled={
                 createBranchMutation.isLoading || updateBranchMutation.isLoading
               }
@@ -112,18 +174,35 @@ const DepositsContent = () => {
               ✔
             </button>
             <button
-              onClick={() => handleCancelEdit(row)}
+              onClick={handleCancelEdit}
               className="text-red-600 text-xl cursor-pointer"
               title="Cancelar"
             >
               ✖
             </button>
-          </>
+          </div>
         ) : (
-          <BsEye
-            className="w-6 h-6 cursor-pointer"
-            onClick={() => handleRowClick(row)}
-          />
+          <div className="flex gap-2 justify-center items-center">
+            <BsEye
+              className="w-6 h-6 cursor-pointer"
+              onClick={() => handleRowClick(row)}
+              title="Inspeccionar productos"
+            />
+            <button
+              onClick={() => handleDeleteBranch(row)}
+              className="text-red-600"
+              title="Eliminar depósito"
+            >
+              <Delete />
+            </button>
+            <button
+              onClick={() => handleEditBranch(row)}
+              className="text-gray-700"
+              title="Editar depósito"
+            >
+              <Edit color="black" />
+            </button>
+          </div>
         ),
     },
   ];
@@ -138,7 +217,7 @@ const DepositsContent = () => {
       />
       <div className="w-full mt-1 flex flex-col justify-center items-center">
         <div className="text-3xl font-semibold text-[#3c2f1c]">
-          DEPOSITOS{" "}
+          DEPÓSITOS{" "}
           <span className="text-[18px] text-[var(--brown-ligth-400)]">
             (Seleccionar para inspeccionar)
           </span>
@@ -152,10 +231,6 @@ const DepositsContent = () => {
         enablePagination={true}
         showAddButton={true}
         onAddRow={handleAddDeposit}
-        onEditCell={(index, key, value) => {
-          const row = deposits[index];
-          handleEditCell(row._id, key, value);
-        }}
         isLoading={
           isLoading ||
           createBranchMutation.isLoading ||

@@ -3,7 +3,9 @@ import { GenericTable } from "../../../../widgets";
 import { InvoiceModal, InvoicePaymentModal } from "../../../../../common";
 import { BsEye } from "react-icons/bs";
 import { useAuthStore } from "../../../../../../api/auth/auth.store";
-import { useSearchVouchers } from "../../../../../../api/vouchers/vouchers.queries";
+import { usePaginatedTableData } from "../../../../../../hooks/usePaginatedTableData";
+import { searchVoucher } from "../../../../../../api/vouchers/vouchers.api";
+import { Edit } from "../../../../../../assets/icons";
 
 const SalesInvoiceTable = () => {
   const [showModal, setShowModal] = useState(false);
@@ -13,32 +15,33 @@ const SalesInvoiceTable = () => {
   const [tags, setTags] = useState("ventas");
   const [searchText, setSearchText] = useState("");
   const [comprobanteSeleccionado, setComprobanteSeleccionado] = useState(null);
-  const [debouncedSearch, setDebouncedSearch] = useState(searchText);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchText);
-    }, 300); // espera 300ms
-
-    return () => clearTimeout(handler);
-  }, [searchText]);
+  const limit = 8;
 
   const conditionPaymentMap = {
     pagos: "CASH",
     ventas: "CREDIT",
   };
 
-  const { data, isLoading } = useSearchVouchers({
-    emissionBranchId: user?.branchId,
-    conditionPayment: conditionPaymentMap[tags],
-    limit: 5,
-    offset: 1,
-    search: debouncedSearch,
+  const conditionPaymentSelect = conditionPaymentMap[tags];
+
+  const {
+    data: rawVoucher,
+    page,
+    setPage,
+    isLoading,
+    totalPages,
+  } = usePaginatedTableData({
+    fetchFunction: searchVoucher,
+    queryKeyBase: "vouchers",
+    search: searchText,
+    additionalParams: { conditionPayment: conditionPaymentSelect },
+    limit,
+    enabled: true,
   });
 
-  const vouchers = data?.data || [];
+  console.log(rawVoucher);
 
-  const totalAdeudado = vouchers
+  const totalAdeudado = rawVoucher
     .filter((v) =>
       v.contactName?.toLowerCase().includes(searchText.toLowerCase())
     )
@@ -56,7 +59,12 @@ const SalesInvoiceTable = () => {
           year: "numeric",
         }),
     },
-    { key: "contactName", label: "CLIENTE", className: "text-center" },
+    {
+      key: "contactName",
+      label: "CLIENTE",
+      className: "text-center",
+      render: (value) => `-> ${value}`,
+    },
     {
       key: "totalAmount",
       label: "MONTO",
@@ -66,20 +74,10 @@ const SalesInvoiceTable = () => {
     },
 
     {
-      key: "status",
-      label: "ESTADO",
+      key: "emissionBranchName",
+      label: "SUCURSAL",
       className: "text-center",
-      render: (value) => (
-        <span
-          className={`px-3 py-1 rounded-full text-sm font-semibold ${
-            value === "PAGADO"
-              ? "bg-[var(--bg-state-green)] text-[var(--text-state-green)]"
-              : "bg-[var(--bg-state-yellow)] text-[var(--text-state-yellow)]"
-          }`}
-        >
-          {value}
-        </span>
-      ),
+      render: (value) => value,
     },
     {
       key: "acciones",
@@ -131,41 +129,34 @@ const SalesInvoiceTable = () => {
       ),
     },
     {
-      key: "remainingAmount",
-      label: "SALDO",
+      key: "emissionBranchName",
+      label: "SUCURSAL",
       className: "text-center",
-      render: (value) =>
-        `$${value.toLocaleString("es-AR", { minimumFractionDigits: 2 })}`,
-    },
-    {
-      key: "status",
-      label: "ESTADO",
-      className: "text-center",
-      render: (value) => (
-        <span
-          className={`px-3 py-1 rounded-full text-sm font-semibold ${
-            value === "PENDIENTE"
-              ? "bg-[var(--bg-state-red)] text-[var(--text-state-red)]"
-              : "bg-[var(--bg-state-yellow)] text-[var(--text-state-yellow)]"
-          }`}
-        >
-          {value}
-        </span>
-      ),
+      render: (value) => `${value}`,
     },
     {
       key: "acciones",
       label: "DETALLES",
-      className: "text-center",
       render: (_, row) => (
-        <div
-          className="flex items-center justify-center cursor-pointer"
-          onClick={() => {
-            setComprobanteSeleccionado(row);
-            setShowModalRegisterPayment(true);
-          }}
-        >
-          <BsEye className="h-6 w-6" />
+        <div className="flex gap-2 justify-center items-center">
+          <div
+            className="cursor-pointer"
+            onClick={() => {
+              setShowModal(true);
+              setComprobanteSeleccionado(row); // ← guardás el comprobante
+              setShowModal(true);
+            }}
+          >
+            <BsEye className="h-6 w-6" />
+          </div>
+          <div
+            onClick={() => {
+              setComprobanteSeleccionado(row);
+              setShowModalRegisterPayment(true);
+            }}
+          >
+            <Edit color={"black"} />
+          </div>
         </div>
       ),
     },
@@ -278,7 +269,7 @@ const SalesInvoiceTable = () => {
             }`}
             onClick={() => setTags("ventas")}
           >
-            Pagos Pendientes
+            Pagos Parciales
           </div>
           <div
             className={`w-full px-4 py-2 text-xl text-center cursor-pointer ${
@@ -288,7 +279,7 @@ const SalesInvoiceTable = () => {
             }`}
             onClick={() => setTags("pagos")}
           >
-            Ventas Finalizadas
+            Pagos Completos
           </div>
         </div>
 
@@ -315,10 +306,15 @@ const SalesInvoiceTable = () => {
           )}
           <GenericTable
             columns={tags === "pagos" ? columnsVentas : columnsPagos}
-            data={vouchers}
+            data={rawVoucher}
             enablePagination={true}
             enableFilter={false}
             isLoading={isLoading}
+            externalPagination={true}
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={(newPage) => setPage(newPage)}
+            paginationDisabled={isLoading}
           />
         </div>
       </div>

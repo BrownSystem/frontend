@@ -47,17 +47,17 @@ const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
             {/* Encabezado */}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="bg-[#b68239] text-white p-2 rounded-lg">
+                <div className="bg-[#302f2d] text-white p-2 rounded-lg">
                   <i className="fas fa-warehouse"></i>
                 </div>
-                <span className="font-bold text-[#5b3e0f]">
+                <span className="font-bold text-[var(--brown-dark-800)]">
                   COMPROBANTE ({factura?.tipo ?? "—"}) N°:{" "}
                   <span className="text-[var(--brown-ligth-400)]">
                     {factura?.numero ?? "—"}
                   </span>
                 </span>
               </div>
-              <span className="font-bold text-[#5b3e0f]">
+              <span className="font-bold text-[var(--brown-dark-800)]">
                 FECHA:{" "}
                 <span className="text-[var(--brown-ligth-400)]">
                   {factura?.fecha ?? "—"}
@@ -67,23 +67,26 @@ const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
 
             {/* Origen y destino */}
             <div className="text-md">
-              <p className="font-semibold text-[#3a2b19]">
+              <p className="font-semibold text-[var(--brown-dark-950)]">
                 {factura?.origen ?? "—"}
               </p>
-              <p className="text-[#3a2b19]">
+              <p className="text-[var(--brown-dark-950)]">
                 {factura?.cliente ?? "—"}
                 {factura?.direccion && (
-                  <span className="text-[#c49653]"> ({factura.direccion})</span>
+                  <span className="text-[var(--brown-ligth-400)]">
+                    {" "}
+                    ({factura.direccion})
+                  </span>
                 )}
               </p>
             </div>
 
             {/* Detalles del pago */}
-            <div className="bg-[#fcf5e9] border border-[#f5e6c9] rounded-md p-4 flex flex-col">
-              <h3 className="font-semibold text-[#5b3e0f] mb-2">
+            <div className="bg-[var(--brown-ligth-100)] border border-[var(--brown-ligth-200)] rounded-md p-4 flex flex-col">
+              <h3 className="font-semibold text-[var(--brown-dark-900)] mb-2">
                 Detalles del Pago
               </h3>
-              <div className="flex flex-col gap-1 text-[#3a2b19] text-sm">
+              <div className="flex flex-col gap-1 text-[var(--brown-dark-950)] text-sm">
                 <p>
                   <strong>Fecha de Pago:</strong> {pago?.fechaPago ?? "—"}
                 </p>
@@ -91,13 +94,19 @@ const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
                   <strong>Forma de Pago:</strong> {pago?.formaDePago ?? "—"}
                 </p>
                 <p className="text-green-700">
-                  <strong className="text-[#3a2b19]">Monto Pagado:</strong> $
+                  <strong className="text-[var(--brown-dark-950)]">
+                    Monto Pagado:
+                  </strong>{" "}
+                  $
                   {(pago?.montoPagado ?? 0).toLocaleString("es-AR", {
                     minimumFractionDigits: 2,
                   })}
                 </p>
                 <p className="text-red-700">
-                  <strong className="text-[#3a2b19]">Saldo Restante:</strong> $
+                  <strong className="text-[var(--brown-dark-950)]">
+                    Saldo Restante:
+                  </strong>{" "}
+                  $
                   {(pago?.saldoRestante ?? 0).toLocaleString("es-AR", {
                     minimumFractionDigits: 2,
                   })}
@@ -125,12 +134,16 @@ const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
               <table className="w-full text-left text-md mb-4">
                 <thead>
                   <tr className="border-b border-[#ddd] grid grid-cols-4 items-center">
-                    <th className="py-2 text-[#3a2b19]">Producto</th>
-                    <th className="py-2 text-center text-[#3a2b19]">
+                    <th className="py-2 text-[var(--brown-dark-950)]">
+                      Producto
+                    </th>
+                    <th className="py-2 text-center text-[var(--brown-dark-950)]">
                       Cantidad
                     </th>
-                    <th className="py-2 text-center text-[#3a2b19]">Precio</th>
-                    <th className="py-2 text-center text-[#3a2b19]">
+                    <th className="py-2 text-center text-[var(--brown-dark-950)]">
+                      Precio
+                    </th>
+                    <th className="py-2 text-center text-[var(--brown-dark-950)]">
                       Subtotal
                     </th>
                   </tr>
@@ -142,24 +155,24 @@ const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
                       className="border-b border-[#eee] grid grid-cols-4 items-center"
                     >
                       <td className="py-2">
-                        <div className="font-medium text-[#3a2b19]">
+                        <div className="font-medium text-[var(--brown-dark-950)]">
                           {p.codigo ?? "—"}
                         </div>
-                        <div className="text-[#6d5b3e]">
+                        <div className="text-[var(--brown-ligth-500)]">
                           {p.descripcion ?? "—"}
                         </div>
                       </td>
-                      <td className="py-2 text-right text-[#3a2b19]">
+                      <td className="py-2 text-right text-[var(--brown-dark-950)]">
                         <p className="flex justify-center">{p.cantidad}</p>
                       </td>
-                      <td className="py-2 text-center text-[#3a2b19]">
+                      <td className="py-2 text-center text-[var(--brown-dark-950)]">
                         $
                         {(p.precio ?? 0).toLocaleString("es-AR", {
                           minimumFractionDigits: 2,
                         })}
                       </td>
 
-                      <td className="py-2 text-center text-[#3a2b19]">
+                      <td className="py-2 text-center text-[var(--brown-dark-950)]">
                         $
                         {calcularSubtotal(p).toLocaleString("es-AR", {
                           minimumFractionDigits: 2,
@@ -175,7 +188,7 @@ const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
             <div className="flex justify-between items-center mt-2">
               <p className="font-medium text-[var(--brown-dark-950)] text-lg">
                 Total:{" "}
-                <span className="text-[#b68239] text-[18px] font-medium">
+                <span className="text-green-700 text-[18px] font-medium">
                   $
                   {total.toLocaleString("es-AR", {
                     minimumFractionDigits: 2,
@@ -185,13 +198,13 @@ const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
               <div className="flex justify-end gap-3">
                 <button
                   onClick={onCancel}
-                  className="bg-[#1a1a1a] text-white px-4 py-2 rounded-md hover:bg-[#ede5d9] cursor-pointer"
+                  className="bg-[#1a1a1a] text-white px-4 py-2 rounded-md hover:bg-[var(--brown-ligth-400)] cursor-pointer"
                 >
                   Cerrar
                 </button>
                 <button
                   onClick={handleDescargarPDF}
-                  className="bg-[#b68239] text-white px-4 py-2 rounded-md hover:bg-[#a46f2f] flex gap-1 cursor-pointer"
+                  className="bg-[var(--brown-dark-700)] text-white px-4 py-2 rounded-md hover:bg-[var(--brown-dark-800)] flex gap-1 cursor-pointer"
                 >
                   <Download />
                   Descargar PDF

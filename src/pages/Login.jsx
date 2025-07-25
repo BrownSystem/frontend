@@ -22,8 +22,8 @@ const Login = () => {
 
     if (!password.trim()) {
       newErrors.password = "La contraseña es obligatoria.";
-    } else if (password.length < 6) {
-      newErrors.password = "Debe tener al menos 6 caracteres.";
+    } else if (password.length < 4) {
+      newErrors.password = "Debe tener al menos 4 caracteres.";
     }
 
     setErrors(newErrors);

@@ -1,9 +1,9 @@
 import { useState, useMemo } from "react";
 import { useAuthStore } from "../../../../../../api/auth/auth.store";
 import { usePaginatedTableData } from "../../../../../../hooks/usePaginatedTableData";
-import { searchProducts } from "../../../../../../api/products/products.api";
 import { GenericTable, StockStatus } from "../../../../widgets";
-import { ShowEyes } from "../../../../../../assets/icons";
+import { searchProductsByBranches } from "../../../../../../api/products/products.api";
+
 const ProductTable = () => {
   const user = useAuthStore((state) => state.user);
   const branchId = user?.branchId;
@@ -11,7 +11,6 @@ const ProductTable = () => {
   const [search, setSearch] = useState("");
   const limit = 10;
 
-  // Usamos hook reutilizable para manejar paginación, búsqueda y peticiones
   const {
     data: rawProducts,
     page,
@@ -19,43 +18,53 @@ const ProductTable = () => {
     isLoading,
     totalPages,
   } = usePaginatedTableData({
-    fetchFunction: searchProducts,
-    queryKeyBase: "products",
+    fetchFunction: searchProductsByBranches,
+    queryKeyBase: "products-branches",
     search,
     branchId,
     limit,
     enabled: !!branchId,
   });
 
-  // Mapeamos la data para la tabla
+  // Obtenemos nombres únicos de sucursales
+  const branchNames = useMemo(() => {
+    const branches = rawProducts.flatMap(
+      (item) => item.inventoryByBranch || []
+    );
+    return Array.from(new Set(branches.map((b) => b.branchName)));
+  }, [rawProducts]);
+
+  // Mapeamos productos incluyendo inventario por sucursal
   const products = useMemo(() => {
-    return rawProducts.map(({ product, inventory }) => ({
+    return rawProducts.map(({ product, inventoryByBranch }) => ({
       code: product?.code,
       name: product?.description,
-      stock: inventory?.stock ?? 0,
       color: "N/A",
+      inventoryByBranch,
       ...product,
     }));
   }, [rawProducts]);
 
-  const columns = useMemo(
-    () => [
+  // Generamos columnas dinámicas
+  const columns = useMemo(() => {
+    const baseColumns = [
       { key: "code", label: "CÓDIGO" },
       { key: "name", label: "DESCRIPCIÓN" },
-      {
-        key: "stock",
-        label: "STOCK",
-        render: (value) => <StockStatus value={value} />,
+    ];
+
+    const branchColumns = branchNames.map((branchName) => ({
+      key: branchName,
+      label: branchName,
+      render: (_, row) => {
+        const match = row.inventoryByBranch?.find(
+          (b) => b.branchName === branchName
+        );
+        return <StockStatus value={match?.stock ?? "-"} />;
       },
-      { key: "color", label: "COLOR TELA" },
-      {
-        key: "actions",
-        label: "",
-        render: (_, row) => <ShowEyes data={row} />,
-      },
-    ],
-    []
-  );
+    }));
+
+    return [...baseColumns, ...branchColumns];
+  }, [branchNames]);
 
   if (!branchId) {
     return (
@@ -71,7 +80,7 @@ const ProductTable = () => {
         <div className="text-3xl font-semibold text-[#3c2f1c]">
           PRODUCTOS{" "}
           <span className="text-[18px] text-[var(--brown-ligth-400)]">
-            (Seleccionar para inspeccionar)
+            (Stock por sucursal)
           </span>
         </div>
       </div>
@@ -87,7 +96,7 @@ const ProductTable = () => {
       <GenericTable
         columns={columns}
         data={products}
-        enableFilter={false} // Ya hacemos búsqueda fuera, con debounce
+        enableFilter={false}
         enablePagination={true}
         externalPagination={true}
         currentPage={page}

@@ -13,6 +13,7 @@ const GenericTable = ({
   onVisibleDataChange,
   externalPagination = false,
   currentPage = 1,
+  sizeColumn = 20,
   totalPages = 1,
   onPageChange = () => {},
   paginationDisabled = false,
@@ -138,8 +139,8 @@ const GenericTable = ({
                   {columns.map((col, colIndex) => (
                     <td
                       key={col.key}
-                      className={`px-2 text-center ${
-                        colIndex === 1
+                      className={`px-2 text-center text-[${sizeColumn}] ${
+                        colIndex === 0
                           ? "truncate whitespace-nowrap overflow-hidden"
                           : ""
                       }`}

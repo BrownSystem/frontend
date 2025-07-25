@@ -1,10 +1,10 @@
 import { AxiosInitializer } from "..";
 
 export const getAllUsersApi = async ({ queryKey }) => {
-  const [_key, branchId] = queryKey;
+  const [_key] = queryKey;
   const token = localStorage.getItem("token");
 
-  const response = await AxiosInitializer.get(`/auth/users/${branchId}`, {
+  const response = await AxiosInitializer.get(`/auth/users`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

@@ -39,3 +39,11 @@ export const downloadVoucherHtml = async (id) => {
   const response = await AxiosInitializer.get(`/voucher/html/${id}`);
   return response.data; // devuelve string HTML
 };
+
+export const generateVoucherNumber = async (data) => {
+  const response = await AxiosInitializer.post(
+    "/voucher/generate-number",
+    data
+  );
+  return response.data;
+};

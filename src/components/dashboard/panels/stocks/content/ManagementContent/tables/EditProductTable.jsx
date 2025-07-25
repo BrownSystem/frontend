@@ -1,22 +1,30 @@
 import { useMemo, useState } from "react";
 import { useAuthStore } from "../../../../../../../api/auth/auth.store";
 import { usePaginatedTableData } from "../../../../../../../hooks/usePaginatedTableData";
-import { searchProducts } from "../../../../../../../api/products/products.api";
-import { Edit } from "../../../../../../../assets/icons";
+import { Delete, Edit } from "../../../../../../../assets/icons";
 import { GenericTable, Message } from "../../../../../widgets";
-import { EditProductModal } from "../../../../../../common";
-import { useUploadProducts } from "../../../../../../../api/products/products.queries";
+import {
+  useUploadProducts,
+  useUpdateProduct,
+  useCreateProduct,
+} from "../../../../../../../api/products/products.queries";
+import { useQueryClient } from "@tanstack/react-query";
+import { searchProductsByBranches } from "../../../../../../../api/products/products.api";
 
 const EditProductTable = () => {
-  const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState("");
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState({ text: "", type: "success" });
+
+  const [editingRowId, setEditingRowId] = useState(null);
+  const [editedRowData, setEditedRowData] = useState({});
+  const [tempProducts, setTempProducts] = useState([]);
 
   const user = useAuthStore((state) => state.user);
   const branchId = user?.branchId;
 
   const limit = 10;
+  const queryClient = useQueryClient();
 
   const {
     data: rawProducts,
@@ -25,7 +33,7 @@ const EditProductTable = () => {
     isLoading,
     totalPages,
   } = usePaginatedTableData({
-    fetchFunction: searchProducts,
+    fetchFunction: searchProductsByBranches,
     queryKeyBase: "products",
     search,
     branchId,
@@ -34,44 +42,177 @@ const EditProductTable = () => {
   });
 
   const { mutate: uploadProducts } = useUploadProducts({
-    onSuccess: (res) => {
-      setMessage({
-        text: `Archivo subido correctamente ✅`,
-        type: "success",
-      });
+    onSuccess: () => {
+      setMessage({ text: "Archivo subido correctamente ✅", type: "success" });
     },
-    onError: (err) => {
-      setMessage({
-        text: `Error al subir archivo ❌`,
-        type: "error",
-      });
+    onError: () => {
+      setMessage({ text: "Error al subir archivo ❌", type: "error" });
     },
   });
 
+  const createProductMutation = useCreateProduct();
+  const updateProductMutation = useUpdateProduct();
+
+  const handleAddProduct = () => {
+    const tempId = `temp-${Date.now()}`;
+    const newProduct = {
+      id: tempId,
+      description: "",
+      isNew: true,
+    };
+
+    setTempProducts((prev) => [newProduct, ...prev]);
+    setEditingRowId(tempId);
+    setEditedRowData(newProduct);
+  };
+
+  const handleEditCell = (id, key, value) => {
+    if (id === editingRowId) {
+      setEditedRowData((prev) => ({
+        ...prev,
+        [key]: value,
+      }));
+    }
+  };
+
+  const handleEditProduct = (row) => {
+    setEditingRowId(row.id);
+    setEditedRowData({ description: row.description });
+  };
+
+  const handleCancelEdit = () => {
+    if (editedRowData.isNew) {
+      setTempProducts((prev) =>
+        prev.filter((product) => product.id !== editedRowData.id)
+      );
+    }
+
+    setEditingRowId(null);
+    setEditedRowData({});
+  };
+
+  const handleDelete = async (row) => {
+    try {
+      await updateProductMutation.mutateAsync({
+        id: row.id,
+        available: false,
+      });
+
+      setMessage({
+        text: "Producto deshabilitado correctamente ✅",
+        type: "success",
+      });
+
+      queryClient.invalidateQueries(["products"]);
+    } catch (err) {
+      console.log(err);
+      setMessage({
+        text: `${err.response?.data?.message || "Error al eliminar ❌"}`,
+        type: "error",
+      });
+    }
+  };
+
+  const handleSaveProduct = async () => {
+    try {
+      if (editedRowData.isNew) {
+        await createProductMutation.mutateAsync({
+          description: editedRowData.description,
+          available: true,
+        });
+
+        setMessage({
+          text: "Producto creado correctamente ✅",
+          type: "success",
+        });
+
+        // Eliminar el temporal una vez guardado
+        setTempProducts((prev) =>
+          prev.filter((p) => p.id !== editedRowData.id)
+        );
+      } else {
+        await updateProductMutation.mutateAsync({
+          id: editingRowId,
+          description: editedRowData.description,
+        });
+
+        setMessage({
+          text: "Producto actualizado correctamente ✅",
+          type: "success",
+        });
+      }
+
+      queryClient.invalidateQueries(["products"]);
+    } catch (error) {
+      setMessage({ text: "Error al guardar producto ❌", type: "error" });
+    } finally {
+      setEditingRowId(null);
+      setEditedRowData({});
+    }
+  };
+
   const products = useMemo(() => {
-    return rawProducts.map(({ product }) => ({
-      code: product?.code,
-      name: product?.description,
-      color: product?.color || "N/A",
+    const fromApi = rawProducts.map(({ product }) => ({
+      description: product?.description,
       ...product,
     }));
-  }, [rawProducts]);
+
+    return [...tempProducts, ...fromApi];
+  }, [rawProducts, tempProducts]);
 
   const columns = [
-    { key: "code", label: "CÓDIGO" },
-    { key: "name", label: "DESCRIPCIÓN" },
-    { key: "color", label: "COLOR" },
     {
-      key: "ver",
-      label: "EDITAR",
-      render: (_, row) => (
-        <span
-          className="flex items-center justify-center gap-2 cursor-pointer"
-          onClick={() => setShowModal(true)}
-        >
-          <Edit color="#333332" />
-        </span>
-      ),
+      key: "code",
+      label: "CÓDIGO",
+    },
+    {
+      key: "description",
+      label: "DESCRIPCIÓN",
+      render: (_, row) =>
+        row.id === editingRowId ? (
+          <input
+            type="text"
+            className="border px-2 py-1 rounded w-full"
+            value={editedRowData.description || ""}
+            onChange={(e) =>
+              handleEditCell(row.id, "description", e.target.value)
+            }
+          />
+        ) : (
+          row.description
+        ),
+    },
+    {
+      key: "actions",
+      label: "ACCIONES",
+      render: (_, row) =>
+        row.id === editingRowId ? (
+          <div className="flex gap-2 justify-center items-center">
+            <button
+              onClick={handleSaveProduct}
+              className="text-green-600 text-xl"
+              title="Guardar"
+            >
+              ✔
+            </button>
+            <button
+              onClick={handleCancelEdit}
+              className="text-red-600 text-xl"
+              title="Cancelar"
+            >
+              ✖
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-2 justify-center items-center">
+            <button className="text-gray-700" title="Editar producto">
+              <Edit color="black" onClick={() => handleEditProduct(row)} />
+            </button>
+            <button>
+              <Delete onClick={() => handleDelete(row)} />
+            </button>
+          </div>
+        ),
     },
   ];
 
@@ -89,9 +230,8 @@ const EditProductTable = () => {
         message={message.text}
         type={message.type}
         onClose={() => setMessage({ text: "" })}
-        duration={3000}
+        duration={5000}
       />
-      {showModal && <EditProductModal onClose={() => setShowModal(false)} />}
 
       <div className="flex flex-col md:flex-row justify-center items-center w-full px-4">
         <h2 className="text-2xl font-semibold text-[#2c2b2a]">
@@ -103,7 +243,7 @@ const EditProductTable = () => {
         <input
           type="text"
           placeholder="Buscar producto..."
-          className="border px-2  rounded w-full max-w-md"
+          className="border px-2 rounded w-full max-w-md"
           style={{ height: "40px" }}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -134,6 +274,13 @@ const EditProductTable = () => {
               }
             }}
           />
+
+          <button
+            className="bg-[var(--brown-dark-800)] py-2 px-3 rounded text-white cursor-pointer"
+            onClick={handleAddProduct}
+          >
+            + Añadir
+          </button>
         </div>
       </div>
 
@@ -142,8 +289,8 @@ const EditProductTable = () => {
           columns={columns}
           data={products}
           enableFilter={false}
-          enablePagination
-          externalPagination
+          enablePagination={true}
+          externalPagination={true}
           currentPage={page}
           totalPages={totalPages}
           onPageChange={setPage}

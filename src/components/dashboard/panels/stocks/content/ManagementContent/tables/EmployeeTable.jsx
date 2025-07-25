@@ -87,7 +87,11 @@ const EmployeeTable = () => {
   const columns = [
     { key: "name", label: "NOMBRE", render: (_, row) => row.name },
     { key: "email", label: "EMAIL" },
-    { key: "role", label: "ROL" },
+    {
+      key: "role",
+      label: "ROL",
+      render: (_, row) => (row.role === "ADMIN" ? "Administrador" : "Vendedor"),
+    },
     {
       key: "branch",
       label: "SUCURSAL",
@@ -203,8 +207,8 @@ const EmployeeTable = () => {
                 type="password"
                 {...register("password", {
                   minLength: {
-                    value: 6,
-                    message: "La contraseña debe tener al menos 6 caracteres",
+                    value: 4,
+                    message: "La contraseña debe tener al menos 4 caracteres",
                   },
                 })}
                 className="w-full border rounded px-3 py-2"

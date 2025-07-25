@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
-import { CreateUser, Delete, Foreign } from "../../../assets/icons";
+import { CreateUser, Danger, Delete, Warning } from "../../../assets/icons";
 import Button from "./Button";
 import {
   ContactCreateModal,
@@ -10,12 +10,16 @@ import {
 import { useSearchContacts } from "../../../api/contacts/contacts.queries";
 import { useAuthStore } from "../../../api/auth/auth.store";
 import { useFindAllBranch } from "../../../api/branch/branch.queries";
-import { useCreateVoucher } from "../../../api/vouchers/vouchers.queries";
+import {
+  useCreateVoucher,
+  useGenerateVoucherNumber,
+} from "../../../api/vouchers/vouchers.queries";
 import Message from "./Message";
 import { useCreateNotification } from "../../../api/notification/notification.queries";
 
-const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
+const CreateInvoice = ({ tipoOperacion }) => {
   const {
+    replace,
     register,
     control,
     handleSubmit,
@@ -29,8 +33,6 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
       cliente: "",
       numeroFactura: "",
       letra: "P",
-      tipoFactura: tipoComprobante === "factura" ? "P" : "NCA",
-      condicionPago: "Contado",
       productos: [
         {
           descripcion: "",
@@ -54,16 +56,16 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
   const [selectedEntidadName, setSelectedEntidadName] = useState("");
   const [message, setMessage] = useState({ text: "", type: "info" });
 
-  const condicionesPago = ["Contado", "Cuenta Corriente"];
-
   const tiposFactura = useMemo(() => {
-    if (tipoComprobante === "factura") {
+    if (tipoOperacion === "compra") {
       return [
-        { value: "P", label: "P" },
+        { value: "FACTURA", label: "FACTURA" },
         { value: "REMITO", label: "REMITO" },
       ];
+    } else {
+      return [{ value: "P", label: "P" }];
     }
-  }, [tipoComprobante]);
+  }, [tipoOperacion]);
 
   const campoEntidad = tipoOperacion === "venta" ? "cliente" : "proveedor";
   const tipoEntidad = tipoOperacion === "venta" ? "CLIENT" : "SUPPLIER";
@@ -73,6 +75,30 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
   const { fields, append, remove } = useFieldArray({
     control,
     name: "productos",
+  });
+
+  const tipoFactura = watch("tipoFactura");
+  const origenSucursal = watch("origenSucursal");
+  const origenSucursalSeleccionada = watch("origenSucursal");
+
+  useEffect(() => {
+    if (origenSucursal) {
+      remove([
+        {
+          descripcion: "",
+          isReserved: false,
+          precio: 0,
+          quantity: 1,
+        },
+      ]);
+    }
+  }, [origenSucursal]);
+
+  const { data: numeroGenerado } = useGenerateVoucherNumber({
+    type: tipoFactura,
+    emissionBranchId: origenSucursalSeleccionada,
+    enabled: !!tipoFactura && !!origenSucursal,
+    refetchInterval: 5000, // cada segundo
   });
 
   const calcularTotales = () => {
@@ -115,6 +141,14 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
       console.error("Error al crear factura:", error);
     },
   });
+
+  const handleOpenProductModal = () => {
+    if (!origenSucursalSeleccionada) {
+      setMessage({ text: "selecciona una sucursal", type: "info" });
+
+      return;
+    }
+  };
 
   const onSubmit = (data) => {
     setMessage({ text: "", type: "info" }); // Limpiar mensaje previo
@@ -170,17 +204,6 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
       }
     }
 
-    // Validación 4: número de factura obligatorio salvo que sea REMITO
-    if (data.tipoFactura !== "REMITO") {
-      if (!data.numeroFactura || data.numeroFactura.trim() === "") {
-        setMessage({
-          text: "El número de factura es obligatorio.",
-          type: "error",
-        });
-        return;
-      }
-    }
-
     // Validación 5: la fecha no puede ser futura
     const fechaSeleccionada = new Date(data.fecha);
     const hoy = new Date();
@@ -203,18 +226,22 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
       return;
     }
 
+    //     // Buscar nombre de sucursal emisora
+    const sucursalOrigenName =
+      branches.find((b) => b.id === data.origenSucursal)?.name ||
+      "Sucursal origen";
+
     // Si pasamos todas las validaciones, mostrar mensaje y crear la factura
     setMessage({ text: "Creando factura...", type: "info" });
 
     const isRemito = data.tipoFactura === "REMITO";
-
     const payload = {
       type: data.tipoFactura,
-      number: isRemito ? undefined : data.numeroFactura,
+      number: numeroGenerado.number,
       emissionDate: fechaSeleccionada.toISOString(),
-      emissionBranchId: setUser.branchId,
-      emissionBranchName: setUser.branchId,
-      destinationBranchId: isRemito ? data.destinoSucursal : undefined,
+      emissionBranchId: data.origenSucursal,
+      emissionBranchName: sucursalOrigenName,
+      destinationBranchId: data.destinoSucursal,
       contactId: !isRemito
         ? tipoOperacion === "venta"
           ? data.cliente
@@ -222,8 +249,12 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
         : undefined,
       contactName: !isRemito ? selectedEntidadName : undefined,
       currency: "ARS",
-      conditionPayment:
-        !isRemito && data.condicionPago === "Contado" ? "CASH" : "CREDIT",
+
+      conditionPayment: !isRemito
+        ? totalPagado < totalFactura
+          ? "CREDIT"
+          : "CASH"
+        : undefined,
       exchangeRate: data.exchangeRate || undefined,
       products: data.productos.map((p) => ({
         branchId: p.branchId,
@@ -252,17 +283,11 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
         receivedAt: payment.receivedAt || new Date().toISOString(),
       })),
     };
-
     createVoucher(payload, {
       onSuccess: (response) => {
         if (response.data.status >= 400) return;
 
         const productosAfectados = data.productos;
-
-        // Buscar nombre de sucursal emisora
-        const sucursalOrigen =
-          branches.find((b) => b.id === setUser.branchId)?.name ||
-          "Sucursal origen";
 
         // Crear una notificación por cada producto
         productosAfectados.forEach((producto) => {
@@ -275,7 +300,7 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
             branchId: producto.branchId,
             type: "PRODUCT_TRANSFER",
             title: `Producto descontado: ${producto.descripcion}`,
-            message: `El producto "${producto.descripcion}" fue descontado (${producto.quantity}) en una operación emitida desde la sucursal ${sucursalOrigen}.`,
+            message: `El producto "${producto.descripcion}" fue descontado (${producto.quantity}) en una operación emitida desde la sucursal.`,
           });
 
           // Si el producto viene de otra sucursal, también notificamos a la emisora
@@ -290,12 +315,11 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
         });
       },
     });
-    // Notificación por producto afectado
   };
 
   const { data: entidadesFiltradas = [] } = useSearchContacts({
     search: searchEntidad,
-    branchId: setUser.branchId,
+    branchId: origenSucursal,
     type: tipoEntidad,
     limit: 6,
     offset: 1,
@@ -332,22 +356,6 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
 
           <div>
             <label className="block text-brown-800 font-medium mb-1">
-              Condición de Pago
-            </label>
-            <select
-              {...register("condicionPago", { required: true })}
-              className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-white"
-            >
-              {condicionesPago.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-brown-800 font-medium mb-1">
               Fecha
             </label>
             <input
@@ -360,6 +368,23 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
                 {errors.fecha.message}
               </span>
             )}
+          </div>
+
+          <div>
+            <label className="block text-brown-800 font-medium mb-1">
+              Origen (Sucursal)
+            </label>
+            <select
+              {...register("origenSucursal", { required: true })}
+              className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-white"
+            >
+              <option value="">Seleccionar sucursal</option>
+              {branches.map((branch) => (
+                <option key={branch.id} value={branch.id}>
+                  {branch.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="relative">
@@ -377,13 +402,21 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
                   }}
                   placeholder="Buscar por Nombre/DNI"
                   className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2"
+                  disabled={!origenSucursalSeleccionada}
                 />
+                {!origenSucursalSeleccionada && (
+                  <p className="text-red-700 flex items-center gap-2 pt-1">
+                    <Danger color="red" size={"20"} />
+                    Debes seleccionar una sucursal
+                  </p>
+                )}
                 <span
                   className="absolute right-2 top-12 transform -translate-y-1/2 cursor-pointer"
                   onClick={() => setShowContactModal(true)}
                 >
                   <CreateUser color="#292828" size="24" />
                 </span>
+
                 {searchEntidad &&
                   entidadesFiltradas.data?.length > 0 &&
                   !selectedProductEqual && (
@@ -400,41 +433,48 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
                         >
                           {searchEntidad === entidad.name
                             ? setSelectedProductEqual(true)
-                            : `${entidad.name} - ${entidad.documentNumber}`}
+                            : `${entidad.name} - ${entidad.phone}`}
                         </li>
                       ))}
                     </ul>
                   )}
               </div>
             ) : (
-              <div>
-                <label className="block text-brown-800 font-medium mb-1">
-                  Destino (Sucursal)
-                </label>
-                <select
-                  {...register("destinoSucursal", { required: true })}
-                  className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-white"
-                >
-                  <option value="">Seleccionar sucursal</option>
-                  {branches.map((branch) => (
-                    <option key={branch.id} value={branch.id}>
-                      {branch.name}
-                    </option>
-                  ))}
-                </select>
+              <div className="flex gap-2">
+                <div>
+                  <label className="block text-brown-800 font-medium mb-1">
+                    Destino (Sucursal)
+                  </label>
+                  <select
+                    {...register("destinoSucursal", { required: true })}
+                    className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-white"
+                  >
+                    <option value="">Seleccionar sucursal</option>
+                    {branches.map((branch) => (
+                      <option key={branch.id} value={branch.id}>
+                        {branch.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             )}
           </div>
 
           <div>
             <label className="block text-brown-800 font-medium mb-1">
-              Número de Factura
+              Número de Comprobante
             </label>
             <input
               type="text"
-              {...register("numeroFactura", { required: "Obligatorio" })}
               className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2"
               placeholder="F-0001"
+              value={
+                !origenSucursalSeleccionada
+                  ? "Selecciona una sucursal"
+                  : numeroGenerado?.number || "Generando..."
+              }
+              readOnly
             />
           </div>
         </div>
@@ -457,6 +497,7 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
                 <button
                   type="button"
                   onClick={() => {
+                    handleOpenProductModal();
                     setSelectedProductIndex(index);
                     setShowProductModal(true);
                   }}
@@ -562,11 +603,12 @@ const CreateInvoice = ({ tipoOperacion, tipoComprobante }) => {
             setValue(campoEntidad, contact.id);
             setSelectedEntidadName(contact.name);
           }}
-          branchId={setUser.branchId}
+          branchId={origenSucursal}
         />
 
         <ProductSearchModal
           isOpen={showProductModal}
+          branchId={origenSucursal}
           onClose={() => setShowProductModal(false)}
           index={selectedProductIndex}
           onSelect={(producto, index) => {

@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { useAuthStore } from "../../../../../../api/auth/auth.store";
 import { usePaginatedTableData } from "../../../../../../hooks/usePaginatedTableData";
-import { searchProducts } from "../../../../../../api/products/products.api";
 import { useDownloadPdfQrs } from "../../../../../../api/products/products.queries";
 import { GenericTable } from "../../../../widgets";
+import { Delete } from "../../../../../../assets/icons";
+import { searchProductsByBranches } from "../../../../../../api/products/products.api";
 
 const PrintQrCodeContent = () => {
   const user = useAuthStore((state) => state.user);
@@ -25,7 +26,7 @@ const PrintQrCodeContent = () => {
     isLoading,
     totalPages,
   } = usePaginatedTableData({
-    fetchFunction: searchProducts,
+    fetchFunction: searchProductsByBranches,
     queryKeyBase: "products",
     search,
     branchId,
@@ -36,7 +37,6 @@ const PrintQrCodeContent = () => {
   const mappedProducts = useMemo(() => {
     return products.map(({ product }) => ({
       code: product?.code,
-      color: product?.color || "N/A",
       priceGene: product?.priceGene,
       stock: product?.stock,
       descripcion: product?.description,
@@ -56,11 +56,24 @@ const PrintQrCodeContent = () => {
     });
   };
 
+  const handleClearSelection = () => {
+    setSelectedProducts({});
+    setShowModal(false); // opcional, si querés cerrar el modal
+  };
+
   const handleQuantityChange = (code, quantity) => {
     setSelectedProducts((prev) => ({
       ...prev,
       [code]: { ...prev[code], quantity: Number(quantity) },
     }));
+  };
+
+  const handleRemoveProduct = (code) => {
+    setSelectedProducts((prev) => {
+      const updated = { ...prev };
+      delete updated[code];
+      return updated;
+    });
   };
 
   const allVisibleSelected =
@@ -125,7 +138,6 @@ const PrintQrCodeContent = () => {
   const columns = [
     { key: "code", label: "CÓDIGO" },
     { key: "name", label: "DESCRIPCIÓN" },
-    { key: "color", label: "COLOR TELA" },
     {
       key: "quantity",
       label: "CANTIDAD",
@@ -184,7 +196,7 @@ const PrintQrCodeContent = () => {
           onClick={handleOpenModal}
           className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded"
         >
-          Descargar PDF
+          Visualizar Selección
         </button>
       </div>
       <input
@@ -227,20 +239,34 @@ const PrintQrCodeContent = () => {
                     Cantidad:{" "}
                     <p className="text-green-600">{product.quantity}</p>
                   </span>
+                  <button
+                    onClick={() => handleRemoveProduct(product.code)}
+                    title="Eliminar producto"
+                    className="text-red-600 hover:text-red-800 cursor-pointer"
+                  >
+                    <Delete />
+                    {/* O si tenés un icono: <DeleteIcon /> */}
+                  </button>
                 </li>
               ))}
             </ul>
             <div className="flex justify-end gap-4 mt-6">
               <button
                 onClick={() => setShowModal(false)}
-                className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded"
+                className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded cursor-pointer"
               >
                 Cancelar
               </button>
               <button
+                onClick={handleClearSelection}
+                className="bg-[var(--brown-dark-900)] hover:bg-[var(--brown-dark-700)] text-white px-4 py-2 rounded cursor-pointer"
+              >
+                Borrar selección
+              </button>
+              <button
                 onClick={handlePrint}
                 disabled={isPending}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded cursor-pointer"
               >
                 {isPending ? "Generando..." : "Confirmar descarga"}
               </button>

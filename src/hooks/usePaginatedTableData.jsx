@@ -13,7 +13,6 @@ export const usePaginatedTableData = ({
   const [page, setPage] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const offset = page;
-
   useEffect(() => {
     const timeout = setTimeout(() => {
       setDebouncedSearch(search.trim());
@@ -22,7 +21,7 @@ export const usePaginatedTableData = ({
     return () => clearTimeout(timeout);
   }, [search]);
 
-  const isEnabled = Boolean(enabled) && Boolean(branchId);
+  const isEnabled = Boolean(enabled);
 
   const query = useQuery({
     queryKey: [

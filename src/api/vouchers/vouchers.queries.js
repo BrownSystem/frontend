@@ -6,6 +6,7 @@ import {
   searchVoucher,
   updateReservedStatus,
   downloadVoucherHtml,
+  generateVoucherNumber,
 } from "./vouchers.api";
 
 export const useCreateVoucher = ({ onSuccess, onError } = {}) => {
@@ -117,3 +118,18 @@ export const useDownloadVoucherHtml = () => {
     mutationFn: downloadVoucherHtml,
   });
 };
+
+export const useGenerateVoucherNumber = ({
+  type,
+  emissionBranchId,
+  enabled = true,
+  refetchInterval = false, // <-- nuevo parámetro
+}) =>
+  useQuery({
+    queryKey: ["voucher-number", type, emissionBranchId],
+    queryFn: () => generateVoucherNumber({ type, emissionBranchId }),
+    enabled: !!type && !!emissionBranchId && enabled !== false,
+    refetchOnWindowFocus: false,
+    staleTime: 0,
+    refetchInterval, // <-- esto lo activará cada N milisegundos si se pasa
+  });
