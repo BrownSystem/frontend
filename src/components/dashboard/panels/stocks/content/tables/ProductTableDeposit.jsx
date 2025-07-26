@@ -31,7 +31,6 @@ const ProductTableDeposit = ({ title, span, backTo, branchId }) => {
       code: product?.code,
       name: product?.description,
       stock: inventory?.stock ?? 0,
-      color: product?.color || "N/A",
       ...product,
     }));
   }, [rawProducts]);
@@ -45,7 +44,6 @@ const ProductTableDeposit = ({ title, span, backTo, branchId }) => {
         label: "STOCK",
         render: (value) => <StockStatus value={value} />,
       },
-      { key: "color", label: "COLOR TELA" },
       {
         key: "actions",
         label: "",

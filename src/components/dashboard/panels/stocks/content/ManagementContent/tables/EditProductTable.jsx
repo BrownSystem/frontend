@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useAuthStore } from "../../../../../../../api/auth/auth.store";
 import { usePaginatedTableData } from "../../../../../../../hooks/usePaginatedTableData";
-import { Delete, Edit } from "../../../../../../../assets/icons";
+import { Delete, Duplicate, Edit } from "../../../../../../../assets/icons";
 import { GenericTable, Message } from "../../../../../widgets";
 import {
   useUploadProducts,
@@ -66,6 +66,19 @@ const EditProductTable = () => {
     setEditedRowData(newProduct);
   };
 
+  const handleDuplicateProduct = (row) => {
+    const tempId = `temp-${Date.now()}`;
+    const newProduct = {
+      id: tempId,
+      description: row.description,
+      isNew: true,
+    };
+
+    setTempProducts((prev) => [newProduct, ...prev]);
+    setEditingRowId(tempId);
+    setEditedRowData(newProduct);
+  };
+
   const handleEditCell = (id, key, value) => {
     if (id === editingRowId) {
       setEditedRowData((prev) => ({
@@ -93,6 +106,7 @@ const EditProductTable = () => {
 
   const handleDelete = async (row) => {
     try {
+      if (!confirm("¿Desea eliminar el producto?")) return;
       await updateProductMutation.mutateAsync({
         id: row.id,
         available: false,
@@ -208,7 +222,16 @@ const EditProductTable = () => {
             <button className="text-gray-700" title="Editar producto">
               <Edit color="black" onClick={() => handleEditProduct(row)} />
             </button>
-            <button>
+
+            <button title="Duplicar producto">
+              <Duplicate
+                color="black"
+                size="22"
+                onClick={() => handleDuplicateProduct(row)}
+              />
+            </button>
+
+            <button title="Eliminar producto">
               <Delete onClick={() => handleDelete(row)} />
             </button>
           </div>

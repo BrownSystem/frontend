@@ -34,12 +34,10 @@ const SalesInvoiceTable = () => {
     fetchFunction: searchVoucher,
     queryKeyBase: "vouchers",
     search: searchText,
-    additionalParams: { conditionPayment: conditionPaymentSelect },
+    additionalParams: { conditionPayment: conditionPaymentSelect, type: "P" },
     limit,
     enabled: true,
   });
-
-  console.log(rawVoucher);
 
   const totalAdeudado = rawVoucher
     .filter((v) =>

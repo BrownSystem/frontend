@@ -47,3 +47,13 @@ export const generateVoucherNumber = async (data) => {
   );
   return response.data;
 };
+
+export const deleteVoucher = async ({ id, typeOfDelete }) => {
+  const response = await AxiosInitializer.post(
+    `/voucher/delete-product/${id}`,
+    {
+      typeOfDelete,
+    }
+  );
+  return response.data;
+};

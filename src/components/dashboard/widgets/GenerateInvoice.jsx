@@ -60,6 +60,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
     if (tipoOperacion === "compra") {
       return [
         { value: "FACTURA", label: "FACTURA" },
+        // { value: "NOTA_CREDITO", label: "NOTA DE CREDITO" },
         { value: "REMITO", label: "REMITO" },
       ];
     } else {
@@ -98,7 +99,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
     type: tipoFactura,
     emissionBranchId: origenSucursalSeleccionada,
     enabled: !!tipoFactura && !!origenSucursal,
-    refetchInterval: 5000, // cada segundo
+    refetchInterval: 1000, // cada segundo
   });
 
   const calcularTotales = () => {
@@ -231,6 +232,9 @@ const CreateInvoice = ({ tipoOperacion }) => {
       branches.find((b) => b.id === data.origenSucursal)?.name ||
       "Sucursal origen";
 
+    const sucursalDestinoName =
+      branches.find((b) => b.id === data.destinoSucursal)?.name ||
+      "Sucursal destino";
     // Si pasamos todas las validaciones, mostrar mensaje y crear la factura
     setMessage({ text: "Creando factura...", type: "info" });
 
@@ -241,6 +245,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
       emissionDate: fechaSeleccionada.toISOString(),
       emissionBranchId: data.origenSucursal,
       emissionBranchName: sucursalOrigenName,
+      destinationBranchName: sucursalDestinoName,
       destinationBranchId: data.destinoSucursal,
       contactId: !isRemito
         ? tipoOperacion === "venta"
@@ -283,6 +288,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
         receivedAt: payment.receivedAt || new Date().toISOString(),
       })),
     };
+    console.log(payload);
     createVoucher(payload, {
       onSuccess: (response) => {
         if (response.data.status >= 400) return;

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Delete, Edit } from "../../../../../../../assets/icons";
+import { Delete, Edit, Lock } from "../../../../../../../assets/icons";
 import { GenericTable, Button, Message } from "../../../../../widgets";
 import {
   useGetAllUsers,
@@ -109,7 +109,7 @@ const EmployeeTable = () => {
             <Edit color="#3a3835" />
           </button>
           <button onClick={() => handleDelete(row)} title="Desactivar">
-            <Delete color="#cc0000" />
+            <Delete color="#3a3835" />
           </button>
         </div>
       ),
@@ -180,7 +180,6 @@ const EmployeeTable = () => {
                 className="w-full border rounded px-3 py-2"
               >
                 <option value="ADMIN">Administrador</option>
-                <option value="MANAGER">Supervisor</option>
                 <option value="SELLER">Vendedor</option>
               </select>
             </div>

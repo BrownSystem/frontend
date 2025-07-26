@@ -68,10 +68,15 @@ const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
             {/* Origen y destino */}
             <div className="text-md">
               <p className="font-semibold text-[var(--brown-dark-950)]">
-                {factura?.origen ?? "—"}
+                {factura?.tipo === "FACTURA"
+                  ? factura?.cliente ?? "—"
+                  : factura?.origen ?? "—"}
               </p>
               <p className="text-[var(--brown-dark-950)]">
-                {factura?.cliente ?? "—"}
+                {factura?.tipo === "FACTURA"
+                  ? factura?.origen ?? "—"
+                  : factura?.cliente ?? "—"}
+                {factura?.tipo === "REMITO" ? factura?.destino : ""}
                 {factura?.direccion && (
                   <span className="text-[var(--brown-ligth-400)]">
                     {" "}

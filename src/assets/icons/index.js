@@ -27,3 +27,5 @@ export { default as Notification } from "./Notification";
 export { default as Warning } from "./Warning";
 export { default as TickCircle } from "./TickCircle";
 export { default as SecurityPassword } from "./SecurityPassword";
+export { default as Duplicate } from "./Duplicate";
+export { default as Replenish } from "./Replenish";

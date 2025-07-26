@@ -7,6 +7,7 @@ import {
   updateReservedStatus,
   downloadVoucherHtml,
   generateVoucherNumber,
+  deleteVoucher,
 } from "./vouchers.api";
 
 export const useCreateVoucher = ({ onSuccess, onError } = {}) => {
@@ -109,6 +110,18 @@ export const useUpdateReservedStatus = ({ onSuccess, onError } = {}) => {
     onError: (error) => {
       if (onError) onError(error);
       else console.error("Failed to update reserved status", error);
+    },
+  });
+};
+
+export const useDeleteVoucher = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteVoucher,
+    onSuccess: () => {
+      // Invalida y refetch la lista de vouchers
+      queryClient.invalidateQueries({ queryKey: ["vouchers"] });
     },
   });
 };
