@@ -5,7 +5,8 @@ import { BsEye } from "react-icons/bs";
 import { useAuthStore } from "../../../../../../api/auth/auth.store";
 import { usePaginatedTableData } from "../../../../../../hooks/usePaginatedTableData";
 import { searchVoucher } from "../../../../../../api/vouchers/vouchers.api";
-import { Edit } from "../../../../../../assets/icons";
+import { Delete, Edit, Replenish } from "../../../../../../assets/icons";
+import { useDeleteVoucher } from "../../../../../../api/vouchers/vouchers.queries";
 
 const SalesInvoiceTable = () => {
   const [showModal, setShowModal] = useState(false);
@@ -23,6 +24,24 @@ const SalesInvoiceTable = () => {
   };
 
   const conditionPaymentSelect = conditionPaymentMap[tags];
+
+  const { mutate: deleteVoucherMutate } = useDeleteVoucher({
+    onSuccess: () => {
+      setPage(1); // recarga tabla solo si se borra con éxito
+    },
+    onError: (error) => {
+      console.error("Error al borrar voucher:", error);
+    },
+  });
+
+  const handlerDelete = (row, actionType) => {
+    if (actionType === "SOFT") {
+      deleteVoucherMutate({ id: row.id, typeOfDelete: "SOFT" });
+    } else if (actionType === "REPLENISH") {
+      // Suponiendo que replenish no usa React Query aún:
+      deleteVoucherMutate({ id: row.id, typeOfDelete: "REPLENISH" });
+    }
+  };
 
   const {
     data: rawVoucher,
@@ -82,15 +101,27 @@ const SalesInvoiceTable = () => {
       label: "DETALLES",
       className: "text-center",
       render: (_, row) => (
-        <div
-          className="flex items-center justify-center cursor-pointer"
-          onClick={() => {
-            setShowModal(true);
-            setComprobanteSeleccionado(row); // ← guardás el comprobante
-            setShowModal(true);
-          }}
-        >
-          <BsEye className="h-6 w-6" />
+        <div className="flex gap-2 justify-center items-center">
+          <div
+            className="flex items-center justify-center cursor-pointer"
+            onClick={() => {
+              setShowModal(true);
+              setComprobanteSeleccionado(row); // ← guardás el comprobante
+              setShowModal(true);
+            }}
+          >
+            <BsEye className="h-6 w-6" />
+          </div>
+          <div
+            title="Revastecer"
+            onClick={() => handlerDelete(row, "REPLENISH")}
+          >
+            <Replenish />
+          </div>
+
+          <div title="Borrar" onClick={() => handlerDelete(row, "SOFT")}>
+            <Delete />
+          </div>
         </div>
       ),
     },
@@ -154,6 +185,16 @@ const SalesInvoiceTable = () => {
             }}
           >
             <Edit color={"black"} />
+          </div>
+          <div
+            title="Revastecer"
+            onClick={() => handlerDelete(row, "REPLENISH")}
+          >
+            <Replenish />
+          </div>
+
+          <div title="Borrar" onClick={() => handlerDelete(row, "SOFT")}>
+            <Delete />
           </div>
         </div>
       ),

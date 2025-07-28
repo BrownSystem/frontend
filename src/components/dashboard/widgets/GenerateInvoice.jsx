@@ -262,12 +262,12 @@ const CreateInvoice = ({ tipoOperacion }) => {
         : undefined,
       exchangeRate: data.exchangeRate || undefined,
       products: data.productos.map((p) => ({
-        branchId: p.branchId,
-        productId: p.productId,
-        isReserved: p.isReserved,
+        branchId: p.sucursalId,
+        productId: p.id,
+        isReserved: false,
         description: p.descripcion,
-        quantity: parseFloat(p.quantity),
-        price: parseFloat(p.precio),
+        quantity: parseFloat(p.cantidad),
+        price: 0,
       })),
       totalAmount: parseFloat(totalFactura),
       paidAmount: parseFloat(totalPagado),
@@ -288,7 +288,6 @@ const CreateInvoice = ({ tipoOperacion }) => {
         receivedAt: payment.receivedAt || new Date().toISOString(),
       })),
     };
-    console.log(payload);
     createVoucher(payload, {
       onSuccess: (response) => {
         if (response.data.status >= 400) return;
