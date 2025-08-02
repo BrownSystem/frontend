@@ -5,7 +5,7 @@ import { OptionCard, RenderOptions } from "../../../../widgets";
 import { EditClient, ReservationTable } from "./tables";
 
 const viewMap = {
-  editClient: () => <EditClient />,
+  // editClient: () => <EditClient />,
 
   reservation: () => <ReservationTable />,
 };
@@ -24,13 +24,13 @@ const ClientContent = () => {
             <Folder color={"#fff"} />
           </OptionCard>
 
-          <OptionCard
+          {/* <OptionCard
             text={"Editar Cliente"}
             onClick={() => setView("editClient")}
             name="editClient"
           >
             <Edit color={"#fff"} />
-          </OptionCard>
+          </OptionCard> */}
         </div>
       </div>
 

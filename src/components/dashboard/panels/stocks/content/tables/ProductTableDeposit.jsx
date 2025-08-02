@@ -44,11 +44,6 @@ const ProductTableDeposit = ({ title, span, backTo, branchId }) => {
         label: "STOCK",
         render: (value) => <StockStatus value={value} />,
       },
-      {
-        key: "actions",
-        label: "",
-        render: (_, row) => <ShowEyes data={row} />,
-      },
     ],
     []
   );
