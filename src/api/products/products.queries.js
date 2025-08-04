@@ -1,4 +1,9 @@
-import { createProduct, updateProduct, uploadProducts } from "./products.api";
+import {
+  createProduct,
+  downloadPdfProducts,
+  updateProduct,
+  uploadProducts,
+} from "./products.api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { downloadPdfQrs, searchProducts } from "./products.api";
 
@@ -32,6 +37,12 @@ export const useSearchProducts = ({
 export const useDownloadPdfQrs = () => {
   return useMutation({
     mutationFn: downloadPdfQrs,
+  });
+};
+
+export const useDownloadPdfProducts = () => {
+  return useMutation({
+    mutationFn: downloadPdfProducts,
   });
 };
 

@@ -9,7 +9,7 @@ const ProductTable = () => {
   const branchId = user?.branchId;
 
   const [search, setSearch] = useState("");
-  const limit = 10;
+  const limit = 150;
 
   const {
     data: rawProducts,

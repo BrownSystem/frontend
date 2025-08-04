@@ -61,6 +61,28 @@ export const downloadPdfQrs = async ({ products }) => {
   window.URL.revokeObjectURL(url);
 };
 
+export const downloadPdfProducts = async ({ products }) => {
+  const response = await AxiosInitializer.post(
+    "/products/download-pdf-products",
+    { products },
+    { responseType: "blob" } // importante para archivos binarios
+  );
+
+  // Crear un blob y generar la descarga
+  const url = window.URL.createObjectURL(
+    new Blob([response.data], { type: "application/pdf" })
+  );
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", "catalogo-productos.pdf"); // nombre del archivo
+  document.body.appendChild(link);
+  link.click();
+
+  // Limpieza
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+
 export const uploadProducts = async (file) => {
   const formData = new FormData();
   formData.append("file", file);

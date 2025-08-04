@@ -89,11 +89,14 @@ const GenericTable = ({
           </div>
         )}
 
-        <table className="w-full">
-          <thead>
-            <tr className="grid grid-cols-[repeat(auto-fit,_minmax(100px,_1fr))] font-semibold border-b py-2">
+        <table className="w-full table-auto border-collapse">
+          <thead className="">
+            <tr className="border-b font-semibold bg-gray-100 ">
               {columns.map((col) => (
-                <th key={col.key} className="px-2 items-center">
+                <th
+                  key={col.key}
+                  className="px-2 py-2  whitespace-nowrap text-center"
+                >
                   {col.label}
                 </th>
               ))}
@@ -102,13 +105,7 @@ const GenericTable = ({
           <tbody>
             {isLoading ? (
               <tr>
-                <td
-                  colSpan={columns.length}
-                  className="py-10 text-center"
-                  style={{
-                    gridColumn: `span ${columns.length} / span ${columns.length}`,
-                  }}
-                >
+                <td colSpan={columns.length} className="py-10 text-center">
                   <div className="flex justify-center items-center">
                     <div className="w-10 h-10 border-4 border-b-transparent border-[var(--brown-dark-800)] rounded-full animate-spin"></div>
                   </div>
@@ -119,9 +116,6 @@ const GenericTable = ({
                 <td
                   colSpan={columns.length}
                   className="py-4 text-gray-500 text-center"
-                  style={{
-                    gridColumn: `span ${columns.length} / span ${columns.length}`,
-                  }}
                 >
                   No se encontraron resultados.
                 </td>
@@ -132,18 +126,19 @@ const GenericTable = ({
                   key={index}
                   onClick={() => !row.isEditing && onRowClick?.(row)}
                   title={row[columns[1].key]}
-                  className={`grid grid-cols-[repeat(auto-fit,_minmax(100px,_1fr))] px-2 py-3 hover:bg-gray-200 ${
-                    index % 2 === 0 ? "bg-gray-100" : "bg-white"
+                  className={`hover:bg-gray-200 ${
+                    index % 2 === 0 ? "bg-gray-50" : "bg-white"
                   }`}
                 >
                   {columns.map((col, colIndex) => (
                     <td
                       key={col.key}
-                      className={`px-2 text-center text-[${sizeColumn}] ${
+                      className={`px-2 py-2 text-sm text-center max-w-[300px] ${
                         colIndex === 0
                           ? "truncate whitespace-nowrap overflow-hidden"
                           : ""
                       }`}
+                      style={{ fontSize: `${sizeColumn}px` }}
                     >
                       {row.isEditing && col.editable ? (
                         <input
@@ -183,16 +178,32 @@ const GenericTable = ({
             >
               Anterior
             </button>
-            <span className="font-semibold flex">
-              PÁGINA{" "}
-              <p className="text-green-600 mx-2">
-                {externalPagination ? currentPage : localPage}
-              </p>{" "}
-              DE{" "}
-              <p className="text-green-600 mx-2">
+
+            <span className="font-semibold flex items-center gap-2">
+              PÁGINA
+              <input
+                type="number"
+                min={1}
+                max={externalPagination ? totalPages : totalLocalPages}
+                value={externalPagination ? currentPage : localPage}
+                onChange={(e) => {
+                  const page = Math.max(
+                    1,
+                    Math.min(
+                      Number(e.target.value),
+                      externalPagination ? totalPages : totalLocalPages
+                    )
+                  );
+                  externalPagination ? onPageChange(page) : setLocalPage(page);
+                }}
+                className="w-16 text-center border rounded px-2 py-1 text-green-600"
+              />
+              DE
+              <span className="text-green-600">
                 {externalPagination ? totalPages : totalLocalPages}
-              </p>
+              </span>
             </span>
+
             <button
               onClick={() =>
                 externalPagination

@@ -112,12 +112,6 @@ const SalesInvoiceTable = () => {
           >
             <BsEye className="h-6 w-6" />
           </div>
-          <div
-            title="Revastecer"
-            onClick={() => handlerDelete(row, "REPLENISH")}
-          >
-            <Replenish />
-          </div>
 
           <div title="Borrar" onClick={() => handlerDelete(row, "SOFT")}>
             <Delete />
@@ -185,12 +179,6 @@ const SalesInvoiceTable = () => {
             }}
           >
             <Edit color={"black"} />
-          </div>
-          <div
-            title="Revastecer"
-            onClick={() => handlerDelete(row, "REPLENISH")}
-          >
-            <Replenish />
           </div>
 
           <div title="Borrar" onClick={() => handlerDelete(row, "SOFT")}>

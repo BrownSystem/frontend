@@ -23,7 +23,7 @@ const EditProductTable = () => {
   const user = useAuthStore((state) => state.user);
   const branchId = user?.branchId;
 
-  const limit = 10;
+  const limit = 200;
   const queryClient = useQueryClient();
 
   const {

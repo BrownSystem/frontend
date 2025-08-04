@@ -1,7 +1,10 @@
 import { useMemo, useState } from "react";
 import { useAuthStore } from "../../../../../../api/auth/auth.store";
 import { usePaginatedTableData } from "../../../../../../hooks/usePaginatedTableData";
-import { useDownloadPdfQrs } from "../../../../../../api/products/products.queries";
+import {
+  useDownloadPdfProducts,
+  useDownloadPdfQrs,
+} from "../../../../../../api/products/products.queries";
 import { GenericTable } from "../../../../widgets";
 import { Delete } from "../../../../../../assets/icons";
 import { searchProductsByBranches } from "../../../../../../api/products/products.api";
@@ -16,8 +19,10 @@ const PrintQrCodeContent = () => {
   const [showModal, setShowModal] = useState(false);
 
   const { mutate: downloadPdf, isPending } = useDownloadPdfQrs();
+  const { mutate: downloadPdfProducts, isPendingPdfProducts } =
+    useDownloadPdfProducts();
 
-  const limit = 10;
+  const limit = 150;
 
   const {
     data: products,
@@ -123,6 +128,29 @@ const PrintQrCodeContent = () => {
     }));
 
     downloadPdf(
+      { products: toPrint },
+      {
+        onSuccess: () => {
+          setShowModal(false);
+        },
+        onError: () => {
+          alert("Hubo un error al generar el PDF.");
+        },
+      }
+    );
+  };
+
+  const handleDownloadProducts = () => {
+    const filtered = Object.values(selectedProducts).filter(
+      (p) => p.quantity > 0
+    );
+
+    const toPrint = filtered.map((p) => ({
+      code: p.code,
+      quantity: p.quantity,
+    }));
+
+    downloadPdfProducts(
       { products: toPrint },
       {
         onSuccess: () => {
@@ -268,7 +296,14 @@ const PrintQrCodeContent = () => {
                 disabled={isPending}
                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded cursor-pointer"
               >
-                {isPending ? "Generando..." : "Confirmar descarga"}
+                {isPending ? "Generando..." : "Descargar Qrs"}
+              </button>
+              <button
+                onClick={handleDownloadProducts}
+                disabled={isPending}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded cursor-pointer"
+              >
+                {isPendingPdfProducts ? "Generando..." : "Exportar Catalogo"}
               </button>
             </div>
           </div>

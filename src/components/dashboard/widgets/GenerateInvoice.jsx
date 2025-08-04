@@ -60,11 +60,14 @@ const CreateInvoice = ({ tipoOperacion }) => {
     if (tipoOperacion === "compra") {
       return [
         { value: "FACTURA", label: "FACTURA" },
-        // { value: "NOTA_CREDITO", label: "NOTA DE CREDITO" },
+        { value: "NOTA_CREDITO_PROVEEDOR", label: "NOTA DE CREDITO" },
         { value: "REMITO", label: "REMITO" },
       ];
     } else {
-      return [{ value: "P", label: "P" }];
+      return [
+        { value: "P", label: "P" },
+        { value: "NOTA_CREDITO_CLIENTE", label: "NOTA DE CREDITO" },
+      ];
     }
   }, [tipoOperacion]);
 
@@ -170,17 +173,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
         });
         return;
       }
-      if (
-        (!p.precio && data.tipoFactura !== "REMITO") ||
-        (isNaN(p.precio) && data.tipoFactura !== "REMITO") ||
-        (p.precio <= 0 && data.tipoFactura !== "REMITO")
-      ) {
-        setMessage({
-          text: `Producto #${i + 1}: El precio debe ser mayor a 0.`,
-          type: "error",
-        });
-        return;
-      }
+
       if (!p.quantity || isNaN(p.quantity) || p.quantity <= 0) {
         setMessage({
           text: `Producto #${i + 1}: La cantidad debe ser mayor a 0.`,
@@ -480,6 +473,17 @@ const CreateInvoice = ({ tipoOperacion }) => {
                   : numeroGenerado?.number || "Generando..."
               }
               readOnly
+            />
+          </div>
+          <div>
+            <label className="block text-brown-800 font-medium mb-1">
+              Observación
+            </label>
+            <input
+              {...register("observation")}
+              type="text"
+              className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2"
+              placeholder="Agregar Observacón"
             />
           </div>
         </div>

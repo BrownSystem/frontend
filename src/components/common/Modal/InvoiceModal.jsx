@@ -39,7 +39,7 @@ const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
   const total = productos.reduce((acc, p) => acc + calcularSubtotal(p), 0);
 
   return (
-    <div className="fixed inset-0 bg-[var(--brown-ligth-400)]/20 flex items-center justify-center z-50 top-8">
+    <div className="fixed inset-0 bg-[var(--brown-ligth-400)]/20 flex items-center justify-center z-[9999999999] top-8">
       <div className="bg-[#fefcf9] rounded-2xl shadow-lg w-[900px] p-6 border border-[#e0d2bb]">
         <div className="grid grid-cols-2 gap-6">
           {/* Columna izquierda */}

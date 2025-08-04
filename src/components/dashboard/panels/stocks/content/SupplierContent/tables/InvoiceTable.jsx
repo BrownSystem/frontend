@@ -107,16 +107,21 @@ const InvoiceTable = () => {
       {
         key: "acciones",
         label: "DETALLES",
-        className: "text-center",
         render: (_, row) => (
-          <div
-            className="flex items-center justify-center cursor-pointer"
-            onClick={() => {
-              setComprobanteSeleccionado(row);
-              setShowModal(true);
-            }}
-          >
-            <BsEye className="h-6 w-6" />
+          <div className="flex gap-2 justify-center items-center">
+            <div
+              className="cursor-pointer"
+              onClick={() => {
+                setComprobanteSeleccionado(row);
+                setShowModal(true);
+              }}
+            >
+              <BsEye className="h-6 w-6" />
+            </div>
+
+            <div title="Borrar" onClick={() => handlerDelete(row, "SOFT")}>
+              <Delete />
+            </div>
           </div>
         ),
       },
@@ -178,12 +183,6 @@ const InvoiceTable = () => {
               }}
             >
               <BsEye className="h-6 w-6" />
-            </div>
-            <div
-              title="Revastecer"
-              onClick={() => handlerDelete(row, "REPLENISH")}
-            >
-              <Replenish />
             </div>
 
             <div title="Borrar" onClick={() => handlerDelete(row, "SOFT")}>
