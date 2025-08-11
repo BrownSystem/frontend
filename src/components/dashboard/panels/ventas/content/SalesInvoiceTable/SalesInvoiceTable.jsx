@@ -25,24 +25,6 @@ const SalesInvoiceTable = () => {
 
   const conditionPaymentSelect = conditionPaymentMap[tags];
 
-  const { mutate: deleteVoucherMutate } = useDeleteVoucher({
-    onSuccess: () => {
-      setPage(1); // recarga tabla solo si se borra con éxito
-    },
-    onError: (error) => {
-      console.error("Error al borrar voucher:", error);
-    },
-  });
-
-  const handlerDelete = (row, actionType) => {
-    if (actionType === "SOFT") {
-      deleteVoucherMutate({ id: row.id, typeOfDelete: "SOFT" });
-    } else if (actionType === "REPLENISH") {
-      // Suponiendo que replenish no usa React Query aún:
-      deleteVoucherMutate({ id: row.id, typeOfDelete: "REPLENISH" });
-    }
-  };
-
   const {
     data: rawVoucher,
     page,
@@ -112,10 +94,6 @@ const SalesInvoiceTable = () => {
           >
             <BsEye className="h-6 w-6" />
           </div>
-
-          <div title="Borrar" onClick={() => handlerDelete(row, "SOFT")}>
-            <Delete />
-          </div>
         </div>
       ),
     },
@@ -179,10 +157,6 @@ const SalesInvoiceTable = () => {
             }}
           >
             <Edit color={"black"} />
-          </div>
-
-          <div title="Borrar" onClick={() => handlerDelete(row, "SOFT")}>
-            <Delete />
           </div>
         </div>
       ),

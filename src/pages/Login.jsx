@@ -147,12 +147,6 @@ const Login = () => {
             {loading ? "Cargando..." : "Iniciar sesión"}
           </button>
         </form>
-
-        <div className="text-center mt-4">
-          <a className="text-sm text-[var(--brown-ligth-300)] hover:underline font-medium cursor-pointer">
-            ¿Olvidaste tu contraseña?
-          </a>
-        </div>
       </div>
     </div>
   );

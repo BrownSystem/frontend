@@ -2,12 +2,17 @@ import { useEffect, useMemo, useState } from "react";
 import { usePaginatedTableData } from "../../../../../../../hooks/usePaginatedTableData";
 import { BsEye } from "react-icons/bs";
 import { Delete, Edit, Replenish } from "../../../../../../../assets/icons";
-import { InvoiceModal, InvoicePaymentModal } from "../../../../../../common";
+import {
+  InvoiceModal,
+  InvoicePaymentModal,
+  PasswordConfirmModal,
+} from "../../../../../../common";
 import { GenericTable } from "../../../../../widgets";
 import { useAuthStore } from "../../../../../../../api/auth/auth.store";
 import { searchVoucher } from "../../../../../../../api/vouchers/vouchers.api";
 import { useFindAllBranch } from "../../../../../../../api/branch/branch.queries";
 import { useDeleteVoucher } from "../../../../../../../api/vouchers/vouchers.queries";
+import { useVerifyPassword } from "../../../../../../../api/auth/auth.queries";
 
 const InvoiceTable = () => {
   const [showModal, setShowModal] = useState(false);
@@ -16,10 +21,14 @@ const InvoiceTable = () => {
   const [tags, setTags] = useState("remito");
   const [searchText, setSearchText] = useState("");
   const [comprobanteSeleccionado, setComprobanteSeleccionado] = useState(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [voucherToDelete, setVoucherToDelete] = useState(null);
+  const [deleteType, setDeleteType] = useState(null);
+  const [tempPassword, setTempPassword] = useState("");
 
   const user = useAuthStore((state) => state.user);
   const { data: branches = [] } = useFindAllBranch();
-  const limit = 8;
+  const limit = 100;
 
   const conditionPaymentMap = {
     pagos: "CASH",
@@ -47,22 +56,49 @@ const InvoiceTable = () => {
     enabled: true,
   });
 
-  const { mutate: deleteVoucherMutate } = useDeleteVoucher({
-    onSuccess: () => {
-      setPage(1); // recarga tabla solo si se borra con éxito
-    },
-    onError: (error) => {
-      console.error("Error al borrar voucher:", error);
-    },
-  });
+  const {
+    mutate: verifyPassword,
+    isLoading: verifying,
+    error: verifyError,
+  } = useVerifyPassword();
+
+  const { mutate: deleteVoucherMutate, isLoading: deleting } = useDeleteVoucher(
+    {
+      onSuccess: () => {
+        setPage(1); // recarga tabla solo si se borra con éxito
+        setShowPasswordModal(false);
+        setTempPassword("");
+        setVoucherToDelete(null);
+        setDeleteType(null);
+      },
+      onError: (error) => {
+        console.error("Error al borrar voucher:", error);
+      },
+    }
+  );
 
   const handlerDelete = (row, actionType) => {
-    if (actionType === "SOFT") {
-      deleteVoucherMutate({ id: row.id, typeOfDelete: "SOFT" });
-    } else if (actionType === "REPLENISH") {
-      // Suponiendo que replenish no usa React Query aún:
-      deleteVoucherMutate({ id: row.id, typeOfDelete: "REPLENISH" });
-    }
+    setVoucherToDelete(row);
+    setDeleteType(actionType);
+    setTempPassword("");
+    setShowPasswordModal(true);
+  };
+
+  const confirmPasswordAndDelete = (password) => {
+    verifyPassword(
+      { email: user.email, password },
+      {
+        onSuccess: () => {
+          deleteVoucherMutate({
+            id: voucherToDelete.id,
+            typeOfDelete: deleteType,
+          });
+        },
+        onError: () => {
+          // El error se maneja con verifyError que se pasa al modal
+        },
+      }
+    );
   };
 
   const formatFechaISO = (isoDate) => {
@@ -122,10 +158,6 @@ const InvoiceTable = () => {
               }}
             >
               <BsEye className="h-6 w-6" />
-            </div>
-
-            <div title="Borrar" onClick={() => handlerDelete(row, "SOFT")}>
-              <Delete />
             </div>
           </div>
         ),
@@ -190,7 +222,7 @@ const InvoiceTable = () => {
               <BsEye className="h-6 w-6" />
             </div>
 
-            <div title="Borrar" onClick={() => handlerDelete(row, "SOFT")}>
+            <div title="Borrar" onClick={() => handlerDelete(row, "REPLENISH")}>
               <Delete />
             </div>
           </div>
@@ -209,6 +241,16 @@ const InvoiceTable = () => {
 
   return (
     <>
+      {showPasswordModal && (
+        <PasswordConfirmModal
+          onCancel={() => setShowPasswordModal(false)}
+          onConfirm={confirmPasswordAndDelete}
+          isLoading={verifying || deleting}
+          error={verifyError ? "Contraseña incorrecta" : null}
+          onPasswordChange={setTempPassword}
+          password={tempPassword}
+        />
+      )}
       {showModal && comprobanteSeleccionado && (
         <InvoiceModal
           onCancel={() => setShowModal(false)}

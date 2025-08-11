@@ -8,3 +8,4 @@ export { default as RegisterPaymentModal } from "./Modal/RegisterpaymentModal";
 export { default as ContactCreateModal } from "./Modal/ContactCreateModal";
 export { default as ProductSearchModal } from "./Modal/ProductSearchModal";
 export { default as NotificationModal } from "./Modal/NotificationModal";
+export { default as PasswordConfirmModal } from "./Modal/PasswordConfirmModal";
