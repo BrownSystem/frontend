@@ -65,6 +65,11 @@ const InvoiceTable = () => {
     }
   };
 
+  const formatFechaISO = (isoDate) => {
+    const [year, month, day] = isoDate.split("T")[0].split("-");
+    return `${day}/${month}/${year}`;
+  };
+
   const totalAdeudado = useMemo(() => {
     return rawVoucher
       .filter((v) =>
@@ -79,12 +84,12 @@ const InvoiceTable = () => {
         key: "emissionDate",
         label: "FECHA",
         className: "text-center",
-        render: (value) =>
-          new Date(value).toLocaleDateString("es-AR", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          }),
+        render: (value) => formatFechaISO(value),
+      },
+      {
+        key: "number",
+        label: "NUMERO",
+        className: "text-center",
       },
       {
         key: "contactName",
@@ -135,12 +140,12 @@ const InvoiceTable = () => {
         key: "emissionDate",
         label: "FECHA",
         className: "text-center",
-        render: (value) =>
-          new Date(value).toLocaleDateString("es-AR", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          }),
+        render: (value) => formatFechaISO(value),
+      },
+      {
+        key: "number",
+        label: "NUMERO",
+        className: "text-center",
       },
       {
         key: "emissionBranchName",
@@ -215,16 +220,14 @@ const InvoiceTable = () => {
             id: comprobanteSeleccionado.id,
             numero: comprobanteSeleccionado.number ?? "—",
             tipo: comprobanteSeleccionado.type ?? "—",
-            fecha: new Date(
-              comprobanteSeleccionado.emissionDate
-            ).toLocaleDateString("es-AR"),
+            fecha: formatFechaISO(comprobanteSeleccionado.emissionDate),
             origen: comprobanteSeleccionado.emissionBranchName ?? "—",
             destino: `${comprobanteSeleccionado.destinationBranchName || "—"}`,
             cliente: comprobanteSeleccionado.contactName ?? "—",
             total: comprobanteSeleccionado.totalAmount ?? 0,
           }}
           productos={(comprobanteSeleccionado.products ?? []).map((p) => ({
-            codigo: p.productCode ?? "—",
+            codigo: p.code ?? "—",
             descripcion: p.description ?? "—",
             cantidad: p.quantity,
             precio: p.price,
@@ -268,9 +271,7 @@ const InvoiceTable = () => {
               comprobanteSeleccionado.initialPayment
             )
               ? comprobanteSeleccionado.initialPayment.map((p) => ({
-                  fecha: p.receivedAt
-                    ? new Date(p.receivedAt).toLocaleDateString("es-AR")
-                    : "—",
+                  fecha: p.receivedAt ? formatFechaISO(p.receivedAt) : "—",
                   monto: p.amount ?? 0,
                   metodo: p.method ?? "—",
                   banco: p.bankName ?? undefined,
@@ -280,9 +281,9 @@ const InvoiceTable = () => {
               ? [
                   {
                     fecha: comprobanteSeleccionado.initialPayment.receivedAt
-                      ? new Date(
+                      ? formatFechaISO(
                           comprobanteSeleccionado.initialPayment.receivedAt
-                        ).toLocaleDateString("es-AR")
+                        )
                       : "—",
                     monto: comprobanteSeleccionado.initialPayment.amount ?? 0,
                     metodo:

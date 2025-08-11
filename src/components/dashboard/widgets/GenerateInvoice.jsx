@@ -25,6 +25,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -310,6 +311,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
               message: `Se descontó el producto "${producto.descripcion}" perteneciente a la sucursal ${sucursalProducto}.`,
             });
           }
+          reset();
         });
       },
     });

@@ -135,7 +135,7 @@ const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
 
           {/* Columna derecha - Productos y totales */}
           <div className="flex flex-col justify-between h-full">
-            <div>
+            <div className="overflow-y-auto max-h-[400px] pr-2">
               <table className="w-full text-left text-md mb-4">
                 <thead>
                   <tr className="border-b border-[#ddd] grid grid-cols-4 items-center">
@@ -153,7 +153,7 @@ const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
                     </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="">
                   {(productos ?? []).map((p, i) => (
                     <tr
                       key={i}
