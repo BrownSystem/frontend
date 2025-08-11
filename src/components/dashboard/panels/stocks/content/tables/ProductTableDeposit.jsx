@@ -5,7 +5,13 @@ import { ShowEyes } from "../../../../../../assets/icons";
 import { usePaginatedTableData } from "../../../../../../hooks/usePaginatedTableData";
 import { searchProducts } from "../../../../../../api/products/products.api";
 
-const ProductTableDeposit = ({ title, span, backTo, branchId }) => {
+const ProductTableDeposit = ({
+  title,
+  span,
+  backTo,
+  branchId,
+  filterByStock = true,
+}) => {
   const setView = useStockViewStore((state) => state.setViewSafe);
   const [search, setSearch] = useState("");
 
@@ -20,8 +26,11 @@ const ProductTableDeposit = ({ title, span, backTo, branchId }) => {
     fetchFunction: searchProducts, // o la función que filtre productos por sucursal
     queryKeyBase: "products_of_branch",
     search,
+    additionalParams: {
+      filterByStock, // aquí pasa el parámetro al backend
+    },
     branchId,
-    limit: 6,
+    limit: 200,
     enabled: !!branchId,
   });
 

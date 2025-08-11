@@ -8,14 +8,16 @@ export const createProduct = async (product) => {
 export const searchProducts = async ({
   search,
   branchId,
-  limit = 6,
+  limit = 150,
   offset,
+  filterByStock,
 }) => {
   const params = {
     branchId,
     limit,
     offset,
-    ...(search?.trim() ? { search: search.trim() } : {}), // no enviar search vacío
+    ...(search?.trim() ? { search: search.trim() } : {}),
+    ...(filterByStock !== undefined ? { filterByStock } : {}), // no enviar search vacío
   };
 
   const response = await AxiosInitializer.get("/products/search", { params });
@@ -24,13 +26,15 @@ export const searchProducts = async ({
 
 export const searchProductsByBranches = async ({
   search,
-  limit = 6,
+  limit = 200,
   offset,
+  filterByStock,
 }) => {
   const params = {
     limit,
     offset,
-    ...(search?.trim() ? { search: search.trim() } : {}), // no enviar search vacío
+    ...(search?.trim() ? { search: search.trim() } : {}),
+    ...(filterByStock !== undefined ? { filterByStock } : {}), // no enviar search vacío
   };
 
   const response = await AxiosInitializer.get("/products/by-branches", {

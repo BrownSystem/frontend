@@ -6,6 +6,7 @@ import { useShopViewStore } from "@store/useShopViewStore";
 import { RenderView } from "./RenderContent";
 import { ClientContent, ProductTable, RegisterSalesContent } from "./content";
 import { ReservationTable } from "./content/ClientContent/tables";
+import { useAuthStore } from "../../../../api/auth/auth.store";
 
 const viewMap = {
   productos: ProductTable,
@@ -15,6 +16,7 @@ const viewMap = {
 };
 
 const ShopPanel = () => {
+  const user = useAuthStore((state) => state.user);
   const setView = useShopViewStore((state) => state.setViewSafe);
   const handleViewProductos = useCallback(() => {
     setView({
@@ -33,6 +35,8 @@ const ShopPanel = () => {
     setView({ name: "generatedClient" });
   }, [setView]);
 
+  const isAdmin = user?.role === "ADMIN";
+
   return (
     <>
       <div className="w-full flex justify-center max-h-full">
@@ -45,14 +49,16 @@ const ShopPanel = () => {
             others={false}
             hasNotifications={false}
           />
-          <ActionCard
-            svgAction={<Comprobantes />}
-            action={"Ingresar"}
-            title={"Comprobantes"}
-            onClick={handlerViewRegisterSales}
-            others={false}
-            hasNotifications={false}
-          />
+          {isAdmin && (
+            <ActionCard
+              svgAction={<Comprobantes />}
+              action={"Ingresar"}
+              title={"Comprobantes"}
+              onClick={handlerViewRegisterSales}
+              others={false}
+              hasNotifications={false}
+            />
+          )}
 
           <ActionCard
             svgAction={<CreateUser color={"#ffff"} x={"24"} y={"24"} />}
