@@ -10,7 +10,7 @@ const ProductTableDeposit = ({
   span,
   backTo,
   branchId,
-  filterByStock = true,
+  filterbystock = true,
 }) => {
   const setView = useStockViewStore((state) => state.setViewSafe);
   const [search, setSearch] = useState("");
@@ -27,7 +27,7 @@ const ProductTableDeposit = ({
     queryKeyBase: "products_of_branch",
     search,
     additionalParams: {
-      filterByStock, // aquí pasa el parámetro al backend
+      filterbystock, // aquí pasa el parámetro al backend
     },
     branchId,
     limit: 200,

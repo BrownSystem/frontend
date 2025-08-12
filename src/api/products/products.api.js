@@ -10,14 +10,14 @@ export const searchProducts = async ({
   branchId,
   limit = 150,
   offset,
-  filterByStock,
+  filterbystock,
 }) => {
   const params = {
     branchId,
     limit,
     offset,
     ...(search?.trim() ? { search: search.trim() } : {}),
-    ...(filterByStock !== undefined ? { filterByStock } : {}), // no enviar search vacío
+    ...(filterbystock !== undefined ? { filterbystock } : {}), // no enviar search vacío
   };
 
   const response = await AxiosInitializer.get("/products/search", { params });
@@ -28,13 +28,13 @@ export const searchProductsByBranches = async ({
   search,
   limit = 200,
   offset,
-  filterByStock,
+  filterbystock,
 }) => {
   const params = {
     limit,
     offset,
     ...(search?.trim() ? { search: search.trim() } : {}),
-    ...(filterByStock !== undefined ? { filterByStock } : {}), // no enviar search vacío
+    ...(filterbystock !== undefined ? { filterbystock } : {}), // no enviar search vacío
   };
 
   const response = await AxiosInitializer.get("/products/by-branches", {
