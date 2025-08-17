@@ -63,7 +63,7 @@ const PrintQrCodeContent = () => {
 
   const handleClearSelection = () => {
     setSelectedProducts({});
-    setShowModal(false); // opcional, si querés cerrar el modal
+    setShowModal(false);
   };
 
   const handleQuantityChange = (code, quantity) => {
@@ -176,7 +176,7 @@ const PrintQrCodeContent = () => {
             min={1}
             value={selectedProducts[row.code]?.quantity || ""}
             onChange={(e) => handleQuantityChange(row.code, e.target.value)}
-            className="w-16 text-center border rounded px-2"
+            className="w-20 text-center border border-[var(--brown-ligth-200)] rounded-lg px-2 py-1 shadow-sm focus:ring-2 focus:ring-[var(--brown-dark-700)] outline-none transition"
           />
         ) : (
           "-"
@@ -211,29 +211,33 @@ const PrintQrCodeContent = () => {
   }
 
   return (
-    <div className="w-full flex flex-col gap-4 py-2 rounded-lg">
-      <div className="w-full mt-1 flex justify-around items-center">
-        <div className="text-3xl font-semibold text-[#3c2f1c]">
+    <div className="w-full flex flex-col gap-6 py-6 px-4 bg-[#fffdf8]">
+      {/* Header */}
+      <div className="w-full flex justify-around items-center">
+        <h1 className="text-3xl font-bold text-[var(--brown-dark-900)]">
           DESCARGAR QR
-          <span className="text-[18px] text-[var(--brown-ligth-400)]">
-            {" "}
-            (Seleccionar para crear pdf)
+          <span className="block text-base font-normal text-[var(--brown-ligth-400)]">
+            Selecciona productos para crear un PDF
           </span>
-        </div>
+        </h1>
         <button
           onClick={handleOpenModal}
-          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded"
+          className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-xl shadow transition"
         >
           Visualizar Selección
         </button>
       </div>
+
+      {/* Search input */}
       <input
         type="text"
-        placeholder="Buscar producto..."
-        className="border px-2 py-1 rounded w-full max-w-md mx-auto"
+        placeholder="🔍 Buscar producto por nombre o código..."
+        className="border border-[var(--brown-ligth-200)] px-4 py-3 rounded-xl shadow-sm w-full max-w-lg focus:outline-none focus:ring-2 focus:ring-[var(--brown-dark-700)] transition mx-auto"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
+
+      {/* Table */}
       <GenericTable
         columns={columns}
         data={mappedProducts}
@@ -247,63 +251,69 @@ const PrintQrCodeContent = () => {
         isLoading={isLoading}
       />
 
+      {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex justify-center items-center">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-[90%] max-w-2xl">
-            <h2 className="text-xl font-semibold mb-4 flex justify-center w-full">
-              DESCARGAR PDF
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-center items-center">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 w-[95%] max-w-3xl animate-fade-in-up">
+            <h2 className="text-2xl font-bold text-center text-[var(--brown-dark-900)] mb-6">
+              Productos Seleccionados
             </h2>
-            <ul className="space-y-2 max-h-60 overflow-y-auto px-2">
+
+            <ul className="space-y-3 max-h-80 overflow-y-auto pr-2">
               {Object.values(selectedProducts).map((product) => (
                 <li
                   key={product.code}
-                  className="flex justify-between border-b pb-1"
+                  className="flex justify-between items-center border-b border-gray-200 pb-2"
                 >
-                  <span>
-                    {product.name} -{" "}
-                    <span className="text-gray-500">{product.code}</span>
+                  <span className="text-[var(--brown-dark-900)] font-medium">
+                    {product.name}{" "}
+                    <span className="text-[var(--brown-ligth-400)] text-sm">
+                      ({product.code})
+                    </span>
                   </span>
-                  <span className="font-semibold flex gap-2">
-                    Cantidad:{" "}
-                    <p className="text-green-600">{product.quantity}</p>
+                  <span className="flex items-center gap-2">
+                    <span className="font-semibold text-green-600">
+                      x{product.quantity}
+                    </span>
+                    <button
+                      onClick={() => handleRemoveProduct(product.code)}
+                      title="Eliminar producto"
+                      className="text-red-600 hover:text-red-800 transition"
+                    >
+                      <Delete />
+                    </button>
                   </span>
-                  <button
-                    onClick={() => handleRemoveProduct(product.code)}
-                    title="Eliminar producto"
-                    className="text-red-600 hover:text-red-800 cursor-pointer"
-                  >
-                    <Delete />
-                    {/* O si tenés un icono: <DeleteIcon /> */}
-                  </button>
                 </li>
               ))}
             </ul>
-            <div className="flex justify-end gap-4 mt-6">
+
+            {/* Modal Actions */}
+            <div className="flex flex-wrap justify-end gap-4 mt-8">
               <button
                 onClick={() => setShowModal(false)}
-                className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded cursor-pointer"
+                className="bg-gray-400 hover:bg-gray-500 text-white px-5 py-2 rounded-xl shadow transition"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleClearSelection}
-                className="bg-[var(--brown-dark-900)] hover:bg-[var(--brown-dark-700)] text-white px-4 py-2 rounded cursor-pointer"
+                className="bg-[var(--brown-dark-900)] hover:bg-[var(--brown-dark-700)] text-white px-5 py-2 rounded-xl shadow transition"
               >
-                Borrar selección
+                🗑 Borrar selección
               </button>
               <button
                 onClick={handlePrint}
                 disabled={isPending}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded cursor-pointer"
+                className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl shadow transition disabled:opacity-50"
               >
-                {isPending ? "Generando..." : "Descargar Qrs"}
+                {isPending ? "Generando..." : "Descargar QRs"}
               </button>
               <button
                 onClick={handleDownloadProducts}
-                disabled={isPending}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded cursor-pointer"
+                disabled={isPendingPdfProducts}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-5 py-2 rounded-xl shadow transition disabled:opacity-50"
               >
-                {isPendingPdfProducts ? "Generando..." : "Exportar Catalogo"}
+                {isPendingPdfProducts ? "Generando..." : "Exportar Catálogo"}
               </button>
             </div>
           </div>

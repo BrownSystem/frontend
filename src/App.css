@@ -4,20 +4,20 @@
   /* FONTS */
   --font-outfit: "Outfit", sans-serif;
 
-  --brown-dark-950: #000000;
-  --brown-dark-900: #3d3d3d;
-  --brown-dark-800: #292929;
-  --brown-dark-700: #4f4f4f;
-  --brown-dark-500: #6d6d6d;
-  --brown-ligth-400: #888888;
-  --brown-ligth-300: #b0b0b0;
-  --brown-ligth-200: #d1d1d1;
-  --brown-ligth-100: #e7e7e7;
-  --brown-ligth-50: #f6f6f6;
-  --bg-state-red: #ffc9c9;
-  --text-state-red: #82181a;
-  --bg-state-yellow: #fff085;
-  --text-state-yellow: #733e0a;
-  --bg-state-green: #b9f8cf;
-  --text-state-green: #0d542b;
+  --brown-dark-950: #1b1b1b;
+  --brown-dark-900: #3c2f2f;
+  --brown-dark-800: #5a433f;
+  --brown-dark-700: #7a5c4c;
+  --brown-dark-500: #a07866;
+  --brown-ligth-400: #b99b87;
+  --brown-ligth-300: #d1baa2;
+  --brown-ligth-200: #e2d1c3;
+  --brown-ligth-100: #f0e6dc;
+  --brown-ligth-50: #faf5f1;
+  --bg-state-red: #ffd6d1;
+  --text-state-red: #a83228;
+  --bg-state-yellow: #fff3b8;
+  --text-state-yellow: #8a5d12;
+  --bg-state-green: #d6f7e4;
+  --text-state-green: #1a4d32;
 }

@@ -1,21 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchProducts } from "../../../api/products/products.store";
 import { useCreateProduct } from "../../../api/products/products.queries";
-import { Edit } from "../../../assets/icons";
 
 const ProductSearchModal = ({ isOpen, branchId, onClose, onSelect, index }) => {
-  const [search, setSearch] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newDescription, setNewDescription] = useState("");
+  const [search, setSearch] = useState("");
 
-  const { data: productosFiltrados } = useSearchProducts({
+  const inputRef = useRef(null);
+
+  // Hook para buscar productos dinámicamente según "search"
+  const { data: productosFiltrados, refetch } = useSearchProducts({
     search,
     branchId,
-    limit: 5,
+    limit: 150,
     offset: 1,
   });
 
   const createProductMutation = useCreateProduct();
+
+  // Enfocar buscador automáticamente al abrir modal
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      setTimeout(() => inputRef.current.focus(), 100);
+    }
+  }, [isOpen]);
 
   const handleAddProduct = async () => {
     if (!newDescription.trim()) return;
@@ -25,7 +34,6 @@ const ProductSearchModal = ({ isOpen, branchId, onClose, onSelect, index }) => {
         description: newDescription,
       });
 
-      // Seleccionar automáticamente el nuevo producto
       onSelect(
         {
           descripcion: result.description,
@@ -45,95 +53,121 @@ const ProductSearchModal = ({ isOpen, branchId, onClose, onSelect, index }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-[rgba(0,0,0,0.7)] flex justify-center items-center z-50">
-      <div className="bg-white rounded-md shadow-lg py-2 px-6 w-full max-w-2xl min-h-[300px] max-h-[90vh] overflow-auto transition-all duration-200">
-        <div className="flex justify-end items-start mb-1">
-          <button onClick={onClose} className="text-red-600 font-bold text-xl">
+    <div className="fixed inset-0 bg-[rgba(0,0,0,0.6)] flex justify-center items-center z-999999 transition-opacity">
+      <div className="bg-[#fffdf8] rounded-3xl shadow-2xl py-6 px-8 w-full max-w-3xl max-h-[85vh] overflow-auto transition-all">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-[var(--brown-dark-900)]">
+            Seleccionar Producto
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-red-600 font-bold text-3xl hover:text-red-700 transition-colors"
+          >
             ×
           </button>
         </div>
 
-        <div className="relative mb-4 w-full">
-          <input
-            type="text"
-            placeholder="Buscar por nombre o código"
-            className="border px-3 py-2 rounded w-full"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <span
-            className="absolute right-2 top-2 cursor-pointer"
+        {/* Buscador */}
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder="Filtrar productos por nombre o código"
+          className="w-full mb-6 h-12 px-4 rounded-xl border border-[var(--brown-ligth-200)] shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--brown-dark-700)] transition"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        {/* Botón para agregar nuevo producto */}
+        <div className="flex justify-end mb-4">
+          <button
             onClick={() => setIsAddModalOpen(true)}
+            className="bg-[var(--brown-dark-700)] hover:bg-[var(--brown-dark-800)] text-white font-medium px-5 py-2 rounded-xl shadow transition"
           >
-            <Edit color={"black"} />
-          </span>
+            + Añadir producto
+          </button>
         </div>
 
-        <div className="min-h-[180px]">
+        {/* Lista de productos como tarjetas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto">
           {productosFiltrados?.data?.length > 0 ? (
-            <ul className="divide-y">
-              {productosFiltrados.data.map((producto) => (
-                <li
-                  key={producto.product.id}
-                  className="py-2 px-2 hover:bg-brown-100 cursor-pointer"
-                  onClick={() => {
-                    onSelect(
-                      {
-                        productId: producto.product.id,
-                        branchId,
-                        descripcion: producto.product.description,
-                        precio: producto.product.price || 0,
-                      },
-                      index
-                    );
-                    onClose();
-                  }}
-                >
-                  <div className="flex justify-between items-center text-sm">
-                    <span>{producto.product.description}</span>
-                    <span className="text-gray-500">
-                      Stock: {producto.inventory.stock}
-                    </span>
-                  </div>
-                  <div className="text-xs text-gray-400">
-                    Código: {producto.product.code}
-                  </div>
-                </li>
-              ))}
-            </ul>
+            productosFiltrados.data.map((producto) => (
+              <div
+                key={producto.product.id}
+                onClick={() => {
+                  onSelect(
+                    {
+                      productId: producto.product.id,
+                      branchId,
+                      descripcion: producto.product.description,
+                    },
+                    index
+                  );
+                  onClose();
+                }}
+                className="p-4 bg-[#fefcf9] border border-[var(--brown-ligth-200)] rounded-2xl shadow hover:shadow-lg cursor-pointer relative transition-all flex flex-col justify-between"
+              >
+                <span className="font-semibold text-[var(--brown-dark-900)] mb-2">
+                  {producto.product.description}
+                </span>
+                <span className="text-sm text-[var(--brown-ligth-400)]">
+                  Código: {producto.product.code}
+                </span>
+                <span className="absolute bg-[var(--brown-ligth-400)] text-white rounded-full font-bold w-[20px] h-[22px] text-center right-0 top-0 ">
+                  {producto.inventory.stock}
+                </span>
+              </div>
+            ))
           ) : (
-            <div className="text-gray-500 text-sm mt-4">
-              No se encontraron productos.
+            <div className="col-span-full text-center text-gray-500 mt-4">
+              {search
+                ? "No se encontraron productos"
+                : "Empieza a escribir para buscar productos"}
             </div>
           )}
         </div>
-        {/* Sub-modal para agregar nuevo producto */}
+
+        {/* Sub-modal para agregar producto */}
+        {/* Sub-modal para agregar producto */}
         {isAddModalOpen && (
-          <div className="fixed inset-0 bg-white flex flex-col justify-center items-center rounded-md px-4 ">
-            <h2 className="text-lg font-bold mb-4">Agregar nuevo producto</h2>
-            <input
-              type="text"
-              placeholder="Descripción del producto"
-              className="border px-3 py-2 rounded mb-3"
-              value={newDescription}
-              onChange={(e) => setNewDescription(e.target.value)}
-            />
-            <div className="flex gap-2">
-              <button
-                className="bg-green-600 text-white px-4 py-2 rounded"
-                onClick={handleAddProduct}
-              >
-                Agregar
-              </button>
-              <button
-                className="bg-gray-400 text-white px-4 py-2 rounded"
-                onClick={() => {
-                  setIsAddModalOpen(false);
-                  setNewDescription("");
-                }}
-              >
-                Cancelar
-              </button>
+          <div className="fixed inset-0 bg-[rgba(0,0,0,0.55)] backdrop-blur-sm flex justify-center items-center z-[1000000]">
+            <div className="bg-[#fffdf8] rounded-3xl shadow-2xl w-full max-w-lg p-8 animate-fade-in-up border border-[var(--brown-ligth-200)]">
+              {/* Título */}
+              <h3 className="text-2xl font-bold text-[var(--brown-dark-900)] mb-8 text-center">
+                Agregar nuevo producto
+              </h3>
+
+              {/* Input */}
+              <input
+                type="text"
+                placeholder="Descripción del producto"
+                className="border border-[var(--brown-ligth-200)] px-5 py-3 rounded-2xl w-full mb-8 
+                   focus:outline-none focus:ring-4 focus:ring-[var(--brown-dark-700)]/40
+                   placeholder-gray-600 text-[var(--brown-dark-900)] transition"
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+              />
+
+              {/* Botones */}
+              <div className="flex justify-center gap-5">
+                <button
+                  onClick={handleAddProduct}
+                  className="bg-[var(--brown-dark-700)] hover:bg-[var(--brown-dark-800)] text-white 
+                     font-semibold px-7 py-3 rounded-2xl transition shadow-md hover:shadow-lg"
+                >
+                  Agregar
+                </button>
+                <button
+                  onClick={() => {
+                    setIsAddModalOpen(false);
+                    setNewDescription("");
+                  }}
+                  className="bg-[var(--brown-ligth-400)] hover:bg-[var(--brown-dark-500)] text-white 
+                     font-semibold px-7 py-3 rounded-2xl transition shadow-md hover:shadow-lg"
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
           </div>
         )}

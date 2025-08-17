@@ -57,9 +57,10 @@ const Login = () => {
       <div className="absolute top-10 left-10 w-20 h-20 bg-[var(--brown-dark-500)] rounded-full opacity-30 blur-[60px] z-2" />
       <div className="absolute bottom-10 right-10 w-32 h-32 bg-[var(--brown-ligth-300)] rounded-full opacity-20 blur-[100px] z-2" />
       <div className="absolute inset-0 bg-[var(--brown-dark-700)] opacity-20 [clip-path:polygon(0_0,100%_30%,100%_100%,0_100%)] z-2" />
+      <div className="absolute inset-0 bg-[var(--brown-dark-950)] opacity-40 [clip-path:polygon(0_0,20%_20%,100%_100%,0_100%)] rotate-180 z-2" />
 
       {/* Card */}
-      <div className="bg-[var(--brown-dark-800)] rounded-2xl p-8 w-full max-w-sm z-10 text-white border border-[var(--brown-dark-900)]">
+      <div className="bg-[var(--brown-dark-800)] rounded-2xl p-8 w-full max-w-sm z-10 text-white border border-[var(--brown-dark-900)] shadow-lg">
         <h1 className="text-3xl font-bold text-center mb-6">Bosque S.R.L.</h1>
 
         {errors.global && (

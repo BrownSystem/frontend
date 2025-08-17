@@ -13,7 +13,7 @@ const GenericTable = ({
   onVisibleDataChange,
   externalPagination = false,
   currentPage = 1,
-  sizeColumn = 20,
+  sizeColumn = 18,
   totalPages = 1,
   onPageChange = () => {},
   paginationDisabled = false,
@@ -65,105 +65,111 @@ const GenericTable = ({
   }, [currentData, onVisibleDataChange]);
 
   return (
-    <div className="w-full flex justify-center rounded-lg py-4">
-      <div className="w-[90%]">
+    <div className="w-full flex justify-center py-2">
+      <div className="w-full bg-[#fdfaf6] rounded-3xl shadow-2xl p-4 border border-[#e4d7c5]">
+        {/* Filtro y botón añadir */}
         {(enableFilter || showAddButton) && !externalPagination && (
-          <div className="flex justify-between gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
             {enableFilter && (
               <input
                 type="text"
                 value={searchText}
                 onChange={handleSearch}
-                placeholder="Buscar..."
-                className="w-full h-[40px] border px-2 rounded"
+                placeholder="🔍 Buscar..."
+                className="w-full sm:w-1/2 h-[42px] border border-[var(--brown-ligth-200)] px-3 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--brown-dark-700)]"
               />
             )}
             {showAddButton && onAddRow && (
               <button
                 onClick={onAddRow}
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                className="flex items-center justify-center gap-2 bg-[var(--brown-dark-700)] text-white px-5 py-2 rounded-xl hover:bg-[var(--brown-dark-800)] transition-all shadow-md"
               >
-                +<span>Añadir</span>
+                + Añadir
               </button>
             )}
           </div>
         )}
 
-        <table className="w-full table-auto border-collapse">
-          <thead className="">
-            <tr className="border-b font-semibold bg-gray-100 ">
-              {columns.map((col) => (
-                <th
-                  key={col.key}
-                  className="px-2 py-2  whitespace-nowrap text-center"
-                >
-                  {col.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
+        {/* Tabla */}
+        <div className="overflow-x-auto rounded-xl border border-[var(--brown-ligth-200)] shadow-inner">
+          <table className="w-full table-auto border-collapse text-[var(--brown-dark-900)]">
+            <thead className="bg-[var(--brown-ligth-100)] text-[var(--brown-dark-950)]">
               <tr>
-                <td colSpan={columns.length} className="py-10 text-center">
-                  <div className="flex justify-center items-center">
-                    <div className="w-10 h-10 border-4 border-b-transparent border-[var(--brown-dark-800)] rounded-full animate-spin"></div>
-                  </div>
-                </td>
+                {columns.map((col) => (
+                  <th
+                    key={col.key}
+                    className="px-4 py-3 text-center font-semibold text-sm"
+                  >
+                    {col.label}
+                  </th>
+                ))}
               </tr>
-            ) : currentData.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={columns.length}
-                  className="py-4 text-gray-500 text-center"
-                >
-                  No se encontraron resultados.
-                </td>
-              </tr>
-            ) : (
-              currentData.map((row, index) => (
-                <tr
-                  key={index}
-                  onClick={() => !row.isEditing && onRowClick?.(row)}
-                  title={row[columns[1].key]}
-                  className={`hover:bg-gray-200 ${
-                    index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                  }`}
-                >
-                  {columns.map((col, colIndex) => (
-                    <td
-                      key={col.key}
-                      className={`px-2 py-2 text-sm text-center max-w-[300px] ${
-                        colIndex === 0
-                          ? "truncate whitespace-nowrap overflow-hidden"
-                          : ""
-                      }`}
-                      style={{ fontSize: `${sizeColumn}px` }}
-                    >
-                      {row.isEditing && col.editable ? (
-                        <input
-                          type="text"
-                          value={row[col.key] || ""}
-                          onChange={(e) =>
-                            onEditCell?.(index, col.key, e.target.value)
-                          }
-                          className="border px-2 py-1 rounded w-full"
-                        />
-                      ) : col.render ? (
-                        col.render(row[col.key], row, index)
-                      ) : (
-                        row[col.key]
-                      )}
-                    </td>
-                  ))}
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={columns.length} className="py-10 text-center">
+                    <div className="flex justify-center items-center">
+                      <div className="w-10 h-10 border-4 border-b-transparent border-[var(--brown-dark-800)] rounded-full animate-spin"></div>
+                    </div>
+                  </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : currentData.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={columns.length}
+                    className="py-6 text-gray-500 text-center"
+                  >
+                    No se encontraron resultados.
+                  </td>
+                </tr>
+              ) : (
+                currentData.map((row, index) => (
+                  <tr
+                    key={index}
+                    onClick={() => !row.isEditing && onRowClick?.(row)}
+                    className={`hover:bg-[var(--brown-ligth-50)] transition-colors cursor-pointer ${
+                      index % 2 === 0
+                        ? "bg-white"
+                        : "bg-[var(--brown-ligth-50)]"
+                    }`}
+                  >
+                    {columns.map((col, colIndex) => (
+                      <td
+                        key={col.key}
+                        className={`px-4 py-2 text-center ${
+                          colIndex === 0
+                            ? "truncate whitespace-nowrap overflow-hidden text-left"
+                            : ""
+                        }`}
+                        style={{ fontSize: `${sizeColumn}px` }}
+                      >
+                        {row.isEditing && col.editable ? (
+                          <input
+                            type="text"
+                            value={row[col.key] || ""}
+                            onChange={(e) =>
+                              onEditCell?.(index, col.key, e.target.value)
+                            }
+                            className="border border-[var(--brown-ligth-200)] px-2 py-1 rounded w-full focus:outline-none focus:ring-2 focus:ring-[var(--brown-dark-700)]"
+                          />
+                        ) : col.render ? (
+                          col.render(row[col.key], row, index)
+                        ) : (
+                          row[col.key]
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
+        {/* Paginación */}
         {enablePagination && (
-          <div className="flex justify-between items-center mt-4">
+          <div className="flex flex-col sm:flex-row justify-between items-center mt-5 gap-3">
             <button
               onClick={() =>
                 externalPagination
@@ -174,13 +180,13 @@ const GenericTable = ({
                 paginationDisabled ||
                 (externalPagination ? currentPage === 1 : localPage === 1)
               }
-              className="px-3 py-1 border rounded disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--brown-dark-800)] text-white cursor-pointer"
+              className="px-4 py-2 bg-[var(--brown-dark-700)] text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--brown-dark-800)] transition-colors"
             >
               Anterior
             </button>
 
-            <span className="font-semibold flex items-center gap-2">
-              PÁGINA
+            <span className="flex items-center gap-2 font-semibold text-[var(--brown-dark-900)]">
+              Página
               <input
                 type="number"
                 min={1}
@@ -196,10 +202,10 @@ const GenericTable = ({
                   );
                   externalPagination ? onPageChange(page) : setLocalPage(page);
                 }}
-                className="w-16 text-center border rounded px-2 py-1 text-green-600"
+                className="w-16 text-center border border-[var(--brown-ligth-200)] rounded px-2 py-1 text-green-700 focus:outline-none focus:ring-2 focus:ring-[var(--brown-dark-700)]"
               />
-              DE
-              <span className="text-green-600">
+              de
+              <span className="text-green-700">
                 {externalPagination ? totalPages : totalLocalPages}
               </span>
             </span>
@@ -216,7 +222,7 @@ const GenericTable = ({
                   ? currentPage === totalPages
                   : localPage === totalLocalPages)
               }
-              className="px-3 py-1 border rounded disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--brown-dark-800)] text-white cursor-pointer"
+              className="px-4 py-2 bg-[var(--brown-dark-700)] text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--brown-dark-800)] transition-colors"
             >
               Siguiente
             </button>

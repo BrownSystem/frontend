@@ -235,7 +235,6 @@ const CreateInvoice = ({ tipoOperacion }) => {
     const isRemito = data.tipoFactura === "REMITO";
     const payload = {
       type: data.tipoFactura,
-      number: numeroGenerado.number,
       emissionDate: fechaSeleccionada.toISOString(),
       emissionBranchId: data.origenSucursal,
       emissionBranchName: sucursalOrigenName,

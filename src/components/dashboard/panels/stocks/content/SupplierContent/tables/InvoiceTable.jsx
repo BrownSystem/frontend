@@ -126,6 +126,9 @@ const InvoiceTable = () => {
         key: "number",
         label: "NUMERO",
         className: "text-center",
+        render: (value) => (
+          <p className="bg-[var(--brown-ligth-100)] rounded-lg border-[1px] border-[var(--brown-dark-500)]">{`${value}`}</p>
+        ),
       },
       {
         key: "contactName",
@@ -178,6 +181,9 @@ const InvoiceTable = () => {
         key: "number",
         label: "NUMERO",
         className: "text-center",
+        render: (value) => (
+          <p className="bg-[var(--brown-ligth-100)] rounded-lg border-[1px] border-[var(--brown-dark-500)]">{`${value}`}</p>
+        ),
       },
       {
         key: "emissionBranchName",
@@ -189,23 +195,6 @@ const InvoiceTable = () => {
         label: "DESTINO",
         className: "text-center",
         render: (value) => `${value}`,
-      },
-      {
-        key: "totalAmount",
-        label: "MONTO",
-        className: "text-center",
-        render: (value) =>
-          `$${value.toLocaleString("es-AR", { minimumFractionDigits: 2 })}`,
-      },
-      {
-        key: "paidAmount",
-        label: "MONTO ABONADO",
-        className: "text-center",
-        render: (value) => (
-          <span className="text-green-700">
-            ${value.toLocaleString("es-AR", { minimumFractionDigits: 2 })}
-          </span>
-        ),
       },
       {
         key: "acciones",

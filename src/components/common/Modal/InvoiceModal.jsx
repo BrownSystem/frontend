@@ -35,44 +35,43 @@ const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
   };
 
   const calcularSubtotal = (p) => p.precio * p.cantidad;
-
   const total = productos.reduce((acc, p) => acc + calcularSubtotal(p), 0);
 
   return (
-    <div className="fixed inset-0 bg-[var(--brown-ligth-400)]/20 flex items-center justify-center z-[9999999999] top-8">
-      <div className="bg-[#fefcf9] rounded-2xl shadow-lg w-[900px] p-6 border border-[#e0d2bb]">
-        <div className="grid grid-cols-2 gap-6">
+    <div className="fixed inset-0 bg-[var(--brown-ligth-400)]/30 flex items-center justify-center z-[9999] p-6">
+      <div className="bg-[#fdfaf6] rounded-3xl shadow-2xl w-full max-w-[950px] p-8 border border-[#e4d7c5]">
+        <div className="grid grid-cols-2 gap-8">
           {/* Columna izquierda */}
-          <div className="flex flex-col gap-4 mt-3">
+          <div className="flex flex-col gap-6">
             {/* Encabezado */}
             <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <div className="bg-[#302f2d] text-white p-2 rounded-lg">
-                  <i className="fas fa-warehouse"></i>
+              <div className="flex items-center gap-3">
+                <div className="bg-[var(--brown-dark-800)] text-white p-3 rounded-xl shadow-md flex items-center justify-center">
+                  <i className="fas fa-warehouse text-xl"></i>
                 </div>
-                <span className="font-bold text-[var(--brown-dark-800)]">
+                <div className="text-[var(--brown-dark-900)] font-bold text-lg">
                   COMPROBANTE ({factura?.tipo ?? "—"}) N°:{" "}
                   <span className="text-[var(--brown-ligth-400)]">
                     {factura?.numero ?? "—"}
                   </span>
-                </span>
+                </div>
               </div>
-              <span className="font-bold text-[var(--brown-dark-800)]">
+              <div className="text-[var(--brown-dark-900)] font-semibold">
                 FECHA:{" "}
                 <span className="text-[var(--brown-ligth-400)]">
                   {factura?.fecha ?? "—"}
                 </span>
-              </span>
+              </div>
             </div>
 
             {/* Origen y destino */}
-            <div className="text-md">
-              <p className="font-semibold text-[var(--brown-dark-950)]">
+            <div className="bg-[var(--brown-ligth-100)] rounded-lg p-4 border border-[var(--brown-ligth-200)] shadow-inner">
+              <p className="font-semibold text-[var(--brown-dark-950)] text-md">
                 {factura?.tipo === "FACTURA"
                   ? factura?.cliente ?? "—"
                   : factura?.origen ?? "—"}
               </p>
-              <p className="text-[var(--brown-dark-950)]">
+              <p className="text-[var(--brown-dark-950)] mt-1">
                 {factura?.tipo === "FACTURA"
                   ? factura?.origen ?? "—"
                   : factura?.cliente ?? "—"}
@@ -87,47 +86,31 @@ const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
             </div>
 
             {/* Detalles del pago */}
-            <div className="bg-[var(--brown-ligth-100)] border border-[var(--brown-ligth-200)] rounded-md p-4 flex flex-col">
-              <h3 className="font-semibold text-[var(--brown-dark-900)] mb-2">
+            <div className="bg-[var(--brown-ligth-50)] border border-[var(--brown-ligth-200)] rounded-xl p-5 shadow-sm">
+              <h3 className="font-bold text-[var(--brown-dark-900)] mb-3 text-lg">
                 Detalles del Pago
               </h3>
-              <div className="flex flex-col gap-1 text-[var(--brown-dark-950)] text-sm">
+              <div className="flex flex-col gap-2 text-[var(--brown-dark-950)] text-sm">
                 <p>
                   <strong>Fecha de Pago:</strong> {pago?.fechaPago ?? "—"}
                 </p>
                 <p>
                   <strong>Forma de Pago:</strong> {pago?.formaDePago ?? "—"}
                 </p>
-                <p className="text-green-700">
-                  <strong className="text-[var(--brown-dark-950)]">
-                    Monto Pagado:
-                  </strong>{" "}
-                  $
+                <p className="text-green-700 font-semibold">
+                  Monto Pagado: $
                   {(pago?.montoPagado ?? 0).toLocaleString("es-AR", {
                     minimumFractionDigits: 2,
                   })}
                 </p>
-                <p className="text-red-700">
-                  <strong className="text-[var(--brown-dark-950)]">
-                    Saldo Restante:
-                  </strong>{" "}
-                  $
+                <p className="text-red-600 font-semibold">
+                  Saldo Restante: $
                   {(pago?.saldoRestante ?? 0).toLocaleString("es-AR", {
                     minimumFractionDigits: 2,
                   })}
                 </p>
                 <p>
-                  <strong>Banco / Medio:</strong> {pago?.banco ?? "—"}
-                </p>
-                <p>
-                  <strong>Nº de Operación:</strong>{" "}
-                  {pago?.numeroOperacion ?? "—"}
-                </p>
-                <p className="col-span-2">
                   <strong>Observaciones:</strong> {pago?.observaciones ?? "—"}
-                </p>
-                <p className="col-span-2">
-                  <strong>Registrado por:</strong> {pago?.registradoPor ?? "—"}
                 </p>
               </div>
             </div>
@@ -135,49 +118,36 @@ const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
 
           {/* Columna derecha - Productos y totales */}
           <div className="flex flex-col justify-between h-full">
-            <div className="overflow-y-auto max-h-[400px] pr-2">
-              <table className="w-full text-left text-md mb-4">
+            <div className="overflow-y-auto max-h-[450px] pr-2">
+              <table className="w-full text-left text-md border-collapse">
                 <thead>
-                  <tr className="border-b border-[#ddd] grid grid-cols-4 items-center">
-                    <th className="py-2 text-[var(--brown-dark-950)]">
-                      Producto
-                    </th>
-                    <th className="py-2 text-center text-[var(--brown-dark-950)]">
-                      Cantidad
-                    </th>
-                    <th className="py-2 text-center text-[var(--brown-dark-950)]">
-                      Precio
-                    </th>
-                    <th className="py-2 text-center text-[var(--brown-dark-950)]">
-                      Subtotal
-                    </th>
+                  <tr className="bg-[var(--brown-ligth-200)] rounded-lg text-[var(--brown-dark-900)]">
+                    <th className="py-3 px-2 text-left">Producto</th>
+                    <th className="py-3 px-2 text-center">Cantidad</th>
+                    <th className="py-3 px-2 text-center">Precio</th>
+                    <th className="py-3 px-2 text-center">Subtotal</th>
                   </tr>
                 </thead>
-                <tbody className="">
+                <tbody>
                   {(productos ?? []).map((p, i) => (
                     <tr
                       key={i}
-                      className="border-b border-[#eee] grid grid-cols-4 items-center"
+                      className="border-b border-[var(--brown-ligth-200)] hover:bg-[var(--brown-ligth-50)] transition-colors"
                     >
-                      <td className="py-2">
-                        <div className="font-medium text-[var(--brown-dark-950)]">
-                          {p.codigo ?? "—"}
-                        </div>
-                        <div className="text-[var(--brown-ligth-500)]">
+                      <td className="py-2 px-2 font-medium text-[var(--brown-dark-950)]">
+                        {p.codigo}
+                        <div className="text-[var(--brown-ligth-500)] text-sm">
                           {p.descripcion ?? "—"}
                         </div>
                       </td>
-                      <td className="py-2 text-right text-[var(--brown-dark-950)]">
-                        <p className="flex justify-center">{p.cantidad}</p>
-                      </td>
-                      <td className="py-2 text-center text-[var(--brown-dark-950)]">
+                      <td className="py-2 text-center">{p.cantidad}</td>
+                      <td className="py-2 text-center">
                         $
                         {(p.precio ?? 0).toLocaleString("es-AR", {
                           minimumFractionDigits: 2,
                         })}
                       </td>
-
-                      <td className="py-2 text-center text-[var(--brown-dark-950)]">
+                      <td className="py-2 text-center font-semibold">
                         $
                         {calcularSubtotal(p).toLocaleString("es-AR", {
                           minimumFractionDigits: 2,
@@ -190,26 +160,26 @@ const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
             </div>
 
             {/* Total y botones */}
-            <div className="flex justify-between items-center mt-2">
-              <p className="font-medium text-[var(--brown-dark-950)] text-lg">
+            <div className="flex justify-between items-center mt-4">
+              <p className="font-bold text-[var(--brown-dark-900)] text-xl">
                 Total:{" "}
-                <span className="text-green-700 text-[18px] font-medium">
+                <span className="text-green-700 text-[20px]">
                   $
                   {total.toLocaleString("es-AR", {
                     minimumFractionDigits: 2,
                   })}
                 </span>
               </p>
-              <div className="flex justify-end gap-3">
+              <div className="flex gap-3">
                 <button
                   onClick={onCancel}
-                  className="bg-[#1a1a1a] text-white px-4 py-2 rounded-md hover:bg-[var(--brown-ligth-400)] cursor-pointer"
+                  className="bg-[var(--brown-dark-800)] text-white px-5 py-2 rounded-xl hover:bg-[var(--brown-dark-700)] transition-colors"
                 >
                   Cerrar
                 </button>
                 <button
                   onClick={handleDescargarPDF}
-                  className="bg-[var(--brown-dark-700)] text-white px-4 py-2 rounded-md hover:bg-[var(--brown-dark-800)] flex gap-1 cursor-pointer"
+                  className="bg-[var(--brown-dark-500)] text-white px-5 py-2 rounded-xl hover:bg-[var(--brown-dark-700)] flex items-center gap-2 transition-colors"
                 >
                   <Download />
                   Descargar PDF

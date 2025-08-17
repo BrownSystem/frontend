@@ -16,7 +16,7 @@ const SalesInvoiceTable = () => {
   const [tags, setTags] = useState("ventas");
   const [searchText, setSearchText] = useState("");
   const [comprobanteSeleccionado, setComprobanteSeleccionado] = useState(null);
-  const limit = 8;
+  const limit = 100;
 
   const conditionPaymentMap = {
     pagos: "CASH",
@@ -59,10 +59,22 @@ const SalesInvoiceTable = () => {
         }),
     },
     {
+      key: "number",
+      label: "NUMERO",
+      className: "text-center",
+      render: (value) => (
+        <p className="bg-[var(--brown-ligth-100)] rounded-lg border-[1px] border-[var(--brown-dark-500)]">{`${value}`}</p>
+      ),
+    },
+    {
       key: "contactName",
       label: "CLIENTE",
       className: "text-center",
-      render: (value) => `-> ${value}`,
+      render: (value) => (
+        <p className="text-[var(--brown-ligth-400)]">
+          {`->`} <span className="text-black">{` ${value}`}</span>
+        </p>
+      ),
     },
     {
       key: "totalAmount",
@@ -110,6 +122,14 @@ const SalesInvoiceTable = () => {
           month: "2-digit",
           year: "numeric",
         }),
+    },
+    {
+      key: "number",
+      label: "NUMERO",
+      className: "text-center",
+      render: (value) => (
+        <p className="bg-[var(--brown-ligth-100)] rounded-lg border-[1px] border-[var(--brown-dark-500)]">{`${value}`}</p>
+      ),
     },
     { key: "contactName", label: "CLIENTE", className: "text-center" },
     {
@@ -174,6 +194,7 @@ const SalesInvoiceTable = () => {
           }}
           factura={{
             id: comprobanteSeleccionado.id,
+            origen: comprobanteSeleccionado.emissionBranchName ?? "—",
             numero: comprobanteSeleccionado.number ?? "—",
             tipo: comprobanteSeleccionado.type ?? "—",
             fecha: new Date(
@@ -184,7 +205,7 @@ const SalesInvoiceTable = () => {
             total: comprobanteSeleccionado.totalAmount ?? 0,
           }}
           productos={(comprobanteSeleccionado.products ?? []).map((p) => ({
-            codigo: p.productCode ?? "—",
+            codigo: p.code,
             descripcion: p.description ?? "—",
             cantidad: p.quantity,
             precio: p.price,

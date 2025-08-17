@@ -72,7 +72,7 @@ const Sidebar = () => {
               />
             </svg>
             <span className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 text-sm text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
-              Dashboard
+              Panel
             </span>
           </div>
         )}
