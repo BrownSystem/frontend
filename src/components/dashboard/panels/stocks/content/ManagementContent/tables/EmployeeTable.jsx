@@ -141,54 +141,67 @@ const EmployeeTable = () => {
       {/* Modal de edición */}
       {selectedUser && (
         <div
-          className="fixed top-0 left-0 right-0 bottom-0 flex justify-center items-center z-20 bg-black/20"
+          className="fixed inset-0 flex justify-center items-center z-20 bg-[var(--brown-dark-950)]/40"
           onClick={() => setSelectedUser(null)}
         >
           <form
             onSubmit={handleSubmit(onSubmit)}
             onClick={(e) => e.stopPropagation()}
-            className="grid grid-cols-2 gap-4 pt-2 bg-white shadow-md rounded-md p-4 w-full max-w-xl"
+            className="grid grid-cols-2 gap-4 pt-4 bg-[var(--brown-ligth-50)] shadow-lg rounded-2xl p-6 w-full max-w-xl border border-[var(--brown-ligth-200)] font-outfit"
           >
+            {/* Title */}
             <div className="col-span-2">
-              <h3 className="text-lg font-semibold mb-2 text-center">
+              <h3 className="text-lg font-semibold mb-4 text-center text-[var(--brown-dark-900)]">
                 Editar Usuario: {selectedUser.name}
               </h3>
             </div>
 
+            {/* Nombre */}
             <div>
-              <label className="text-sm font-semibold">Nombre completo</label>
+              <label className="text-sm font-semibold text-[var(--brown-dark-700)]">
+                Nombre completo
+              </label>
               <input
                 type="text"
                 {...register("name", { required: true })}
-                className="w-full border rounded px-3 py-2"
+                className="w-full border border-[var(--brown-ligth-200)] rounded-md px-3 py-2 bg-[var(--brown-ligth-100)] text-[var(--brown-dark-900)] focus:outline-none focus:ring-2 focus:ring-[var(--brown-ligth-300)]"
               />
             </div>
 
+            {/* Email */}
             <div>
-              <label className="text-sm font-semibold">Email</label>
+              <label className="text-sm font-semibold text-[var(--brown-dark-700)]">
+                Email
+              </label>
               <input
                 type="email"
                 {...register("email", { required: true })}
-                className="w-full border rounded px-3 py-2"
+                className="w-full border border-[var(--brown-ligth-200)] rounded-md px-3 py-2 bg-[var(--brown-ligth-100)] text-[var(--brown-dark-900)] focus:outline-none focus:ring-2 focus:ring-[var(--brown-ligth-300)]"
               />
             </div>
 
+            {/* Rol */}
             <div>
-              <label className="text-sm font-semibold">Rol</label>
+              <label className="text-sm font-semibold text-[var(--brown-dark-700)]">
+                Rol
+              </label>
               <select
                 {...register("role")}
-                className="w-full border rounded px-3 py-2"
+                className="w-full border border-[var(--brown-ligth-200)] rounded-md px-3 py-2 bg-[var(--brown-ligth-100)] text-[var(--brown-dark-900)] focus:outline-none focus:ring-2 focus:ring-[var(--brown-ligth-300)]"
               >
                 <option value="ADMIN">Administrador</option>
                 <option value="SELLER">Vendedor</option>
               </select>
             </div>
 
+            {/* Sucursal */}
             <div>
-              <label className="text-sm font-semibold">Sucursal</label>
+              <label className="text-sm font-semibold text-[var(--brown-dark-700)]">
+                Sucursal
+              </label>
               <select
                 {...register("branchId")}
-                className="w-full border rounded px-3 py-2"
+                className="w-full border border-[var(--brown-ligth-200)] rounded-md px-3 py-2 bg-[var(--brown-ligth-100)] text-[var(--brown-dark-900)] focus:outline-none focus:ring-2 focus:ring-[var(--brown-ligth-300)]"
               >
                 <option value="">Sin asignar</option>
                 {branches.map((branch) => (
@@ -201,7 +214,9 @@ const EmployeeTable = () => {
 
             {/* Contraseña */}
             <div>
-              <label className="text-sm font-semibold">Nueva contraseña</label>
+              <label className="text-sm font-semibold text-[var(--brown-dark-700)]">
+                Nueva contraseña
+              </label>
               <input
                 type="password"
                 {...register("password", {
@@ -210,36 +225,49 @@ const EmployeeTable = () => {
                     message: "La contraseña debe tener al menos 4 caracteres",
                   },
                 })}
-                className="w-full border rounded px-3 py-2"
+                className="w-full border border-[var(--brown-ligth-200)] rounded-md px-3 py-2 bg-[var(--brown-ligth-100)] text-[var(--brown-dark-900)] focus:outline-none focus:ring-2 focus:ring-[var(--brown-ligth-300)]"
                 placeholder="********"
               />
               {errors.password && (
-                <p className="text-sm text-red-500 mt-1">
+                <p className="text-sm text-[var(--text-state-red)] mt-1">
                   {errors.password.message}
                 </p>
               )}
             </div>
 
+            {/* Confirmar contraseña */}
             <div>
-              <label className="text-sm font-semibold">
+              <label className="text-sm font-semibold text-[var(--brown-dark-700)]">
                 Confirmar contraseña
               </label>
               <input
                 type="password"
                 {...register("passwordConfirm")}
-                className="w-full border rounded px-3 py-2"
+                className="w-full border border-[var(--brown-ligth-200)] rounded-md px-3 py-2 bg-[var(--brown-ligth-100)] text-[var(--brown-dark-900)] focus:outline-none focus:ring-2 focus:ring-[var(--brown-ligth-300)]"
                 placeholder="********"
               />
               {password !== passwordConfirm && password && (
-                <p className="text-sm text-red-500 mt-1">
+                <p className="text-sm text-[var(--text-state-red)] mt-1">
                   Las contraseñas no coinciden
                 </p>
               )}
             </div>
 
+            {/* Botones */}
             <div className="col-span-2 flex justify-center mt-4 gap-4">
-              <Button text="Actualizar Usuario" />
-              <Button text="Cancelar" onClick={() => setSelectedUser(null)} />
+              <button
+                type="submit"
+                className="bg-[var(--brown-dark-700)] text-white px-4 py-2 rounded-md hover:bg-[var(--brown-dark-800)] transition"
+              >
+                Actualizar Usuario
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedUser(null)}
+                className="bg-[var(--brown-ligth-200)] text-[var(--brown-dark-900)] px-4 py-2 rounded-md hover:bg-[var(--brown-ligth-300)] transition"
+              >
+                Cancelar
+              </button>
             </div>
           </form>
         </div>

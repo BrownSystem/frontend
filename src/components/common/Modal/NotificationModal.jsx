@@ -5,21 +5,21 @@ const getIcon = (type) => {
   switch (type) {
     case "error":
       return (
-        <span className="bg-red-500 text-xl rounded-full p-2 text-white">
+        <span className="bg-bg-state-red text-xl rounded-full p-2 text-text-state-red">
           <Warning />
         </span>
       );
     case "warning":
       return (
-        <span className="bg-orange-500 text-xl rounded-full p-2">
-          <Danger color={"white"} />
+        <span className="bg-bg-state-yellow text-xl rounded-full p-2 text-text-state-yellow">
+          <Danger />
         </span>
       );
     case "success":
     default:
       return (
-        <span className="bg-green-600 text-xl rounded-full p-2">
-          <TickCircle color={"white"} />
+        <span className="bg-[var(--brown-dark-800)] text-xl rounded-full p-2 text-text-state-green">
+          <TickCircle />
         </span>
       );
   }
@@ -35,12 +35,12 @@ const NotificationModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100000] bg-black/50 flex items-center justify-center">
-      <div className="bg-white rounded-2xl shadow-2xl p-6 w-[480px] max-h-[80vh] overflow-y-auto relative border border-gray-200">
+    <div className="fixed inset-0 z-[100000] bg-[var(--brown-dark-950)]/50 flex items-center justify-center">
+      <div className="bg-[var(--brown-ligth-50)] rounded-2xl shadow-lg p-6 w-[520px] max-h-[80vh] overflow-y-auto relative border border-[var(--brown-ligth-200)] font-outfit">
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-black text-lg"
+          className="absolute top-4 right-4 text-[var(--brown-dark-700)] hover:text-[var(--brown-dark-900)] text-lg"
           aria-label="Cerrar notificaciones"
         >
           ✕
@@ -49,33 +49,35 @@ const NotificationModal = ({
         {/* Title */}
         <div className="flex items-center gap-2 mb-6">
           <span className="text-2xl">🔔</span>
-          <h2 className="text-xl font-semibold text-gray-800">
+          <h2 className="text-lg font-semibold text-[var(--brown-dark-900)]">
             Notificaciones
           </h2>
         </div>
 
         {/* Content */}
         {notifications.length === 0 ? (
-          <div className="text-center text-gray-500 py-10">
+          <div className="text-center text-[var(--brown-dark-700)] py-10 italic">
             No hay notificaciones por el momento.
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {notifications.map((notif, index) => (
               <div
                 key={index}
-                className="flex items-start bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition text-sm relative"
+                className="flex items-start bg-[var(--brown-ligth-100)] border border-[var(--brown-ligth-200)] rounded-lg p-4 hover:bg-[var(--brown-ligth-200)] transition text-sm relative"
               >
                 {getIcon(notif.type)}
                 <div className="ml-3 flex-1">
-                  <p className="font-medium mb-1 text-gray-900">
+                  <p className="font-medium mb-1 text-[var(--brown-dark-900)]">
                     {notif.title}
                   </p>
-                  <p className="text-gray-700 mb-2">{notif.message}</p>
+                  <p className="text-[var(--brown-dark-700)] mb-2">
+                    {notif.message}
+                  </p>
                   {notif.action && (
                     <button
                       onClick={notif.action}
-                      className="text-green-600 hover:underline text-xs font-medium cursor-pointer"
+                      className="text-[var(--brown-dark-800)] hover:underline text-xs font-medium cursor-pointer"
                     >
                       {notif.actionLabel || "Ver detalles"}
                     </button>
@@ -85,15 +87,8 @@ const NotificationModal = ({
                 {/* Action buttons */}
                 <div className="flex flex-col gap-2 ml-2">
                   <button
-                    onClick={() => onMarkAsRead?.(notif)}
-                    className="text-green-600 hover:text-green-800 text-lg"
-                    title="Marcar como leído"
-                  >
-                    ✅
-                  </button>
-                  <button
                     onClick={() => onDelete?.(notif)}
-                    className="text-red-500 hover:text-red-700 text-lg"
+                    className="text-[var(--text-state-red)] hover:text-[var(--brown-dark-800)] text-lg"
                     title="Eliminar notificación"
                   >
                     <Delete />
@@ -103,16 +98,6 @@ const NotificationModal = ({
             ))}
           </div>
         )}
-
-        {/* Footer */}
-        {/* <div className="mt-6 flex justify-end">
-          <button
-            onClick={onClose}
-            className="bg-black text-white px-4 py-2 rounded-md text-sm hover:bg-gray-800"
-          >
-            Cerrar
-          </button>
-        </div> */}
       </div>
     </div>
   );
