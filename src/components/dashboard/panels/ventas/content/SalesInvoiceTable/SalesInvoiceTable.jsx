@@ -7,6 +7,7 @@ import { usePaginatedTableData } from "../../../../../../hooks/usePaginatedTable
 import { searchVoucher } from "../../../../../../api/vouchers/vouchers.api";
 import { Delete, Edit, Replenish } from "../../../../../../assets/icons";
 import { useDeleteVoucher } from "../../../../../../api/vouchers/vouchers.queries";
+import { formatFechaISO } from "../../../stocks/content/SupplierContent/tables/InvoiceTable";
 
 const SalesInvoiceTable = () => {
   const [showModal, setShowModal] = useState(false);
@@ -21,6 +22,7 @@ const SalesInvoiceTable = () => {
   const conditionPaymentMap = {
     pagos: "CASH",
     ventas: "CREDIT",
+    credito: "NOTA_CREDITO_CLIENTE",
   };
 
   const conditionPaymentSelect = conditionPaymentMap[tags];
@@ -35,7 +37,11 @@ const SalesInvoiceTable = () => {
     fetchFunction: searchVoucher,
     queryKeyBase: "vouchers",
     search: searchText,
-    additionalParams: { conditionPayment: conditionPaymentSelect, type: "P" },
+    additionalParams: {
+      conditionPayment: conditionPaymentSelect,
+      type:
+        tags === "ventas" || tags === "pagos" ? "P" : "NOTA_CREDITO_CLIENTE",
+    },
     limit,
     enabled: true,
   });
@@ -51,12 +57,7 @@ const SalesInvoiceTable = () => {
       key: "emissionDate",
       label: "FECHA",
       className: "text-center",
-      render: (value) =>
-        new Date(value).toLocaleDateString("es-AR", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        }),
+      render: (value) => formatFechaISO(value),
     },
     {
       key: "number",
@@ -116,22 +117,43 @@ const SalesInvoiceTable = () => {
       key: "emissionDate",
       label: "FECHA",
       className: "text-center",
-      render: (value) =>
-        new Date(value).toLocaleDateString("es-AR", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        }),
+      render: (value) => formatFechaISO(value),
     },
     {
       key: "number",
       label: "NUMERO",
       className: "text-center",
+      render: (value) => {
+        // Si contiene "NOTA_CREDITO_CLIENTE", abreviamos
+        if (value.includes("NOTA_CREDITO_CLIENTE")) {
+          // Extraemos el número después del guion o subrayado
+          const parts = value.split(/[-_]/); // divide por '-' o '_'
+          const numero = parts[parts.length - 1]; // tomamos la última parte
+          return (
+            <p className="bg-[var(--brown-ligth-100)] rounded-lg border-[1px] border-[var(--brown-dark-500)]">
+              NTC_{numero}
+            </p>
+          );
+        }
+
+        // Caso normal
+        return (
+          <p className="bg-[var(--brown-ligth-100)] rounded-lg border-[1px] border-[var(--brown-dark-500)]">
+            {value}
+          </p>
+        );
+      },
+    },
+    {
+      key: "contactName",
+      label: "CLIENTE",
+      className: "text-center",
       render: (value) => (
-        <p className="bg-[var(--brown-ligth-100)] rounded-lg border-[1px] border-[var(--brown-dark-500)]">{`${value}`}</p>
+        <p className="text-[var(--brown-ligth-400)]">
+          {`->`} <span className="text-black">{` ${value}`}</span>
+        </p>
       ),
     },
-    { key: "contactName", label: "CLIENTE", className: "text-center" },
     {
       key: "totalAmount",
       label: "MONTO",
@@ -143,11 +165,8 @@ const SalesInvoiceTable = () => {
       key: "paidAmount",
       label: "MONTO ABONADO",
       className: "text-center",
-      render: (value) => (
-        <span className="text-green-700">
-          ${value.toLocaleString("es-AR", { minimumFractionDigits: 2 })}
-        </span>
-      ),
+      render: (value) =>
+        `$${value.toLocaleString("es-AR", { minimumFractionDigits: 2 })}`,
     },
     {
       key: "emissionBranchName",
@@ -170,17 +189,25 @@ const SalesInvoiceTable = () => {
           >
             <BsEye className="h-6 w-6" />
           </div>
-          <div
-            onClick={() => {
-              setComprobanteSeleccionado(row);
-              setShowModalRegisterPayment(true);
-            }}
-          >
-            <Edit color={"black"} />
-          </div>
+          {tags !== "creditos" && row.remainingAmount > 0 && (
+            <div
+              onClick={() => {
+                setComprobanteSeleccionado(row);
+                setShowModalRegisterPayment(true);
+              }}
+            >
+              <Edit color={"black"} />
+            </div>
+          )}
         </div>
       ),
     },
+  ];
+
+  const tabs = [
+    { label: "PAGOS PARCIALES", value: "ventas" },
+    { label: "PAGOS COMPLETOS", value: "pagos" },
+    { label: "NOTA DE CREDITO", value: "creditos" },
   ];
 
   return (
@@ -195,11 +222,17 @@ const SalesInvoiceTable = () => {
           factura={{
             id: comprobanteSeleccionado.id,
             origen: comprobanteSeleccionado.emissionBranchName ?? "—",
-            numero: comprobanteSeleccionado.number ?? "—",
+            numero: comprobanteSeleccionado.number.includes(
+              "NOTA_CREDITO_CLIENTE"
+            )
+              ? (() => {
+                  const parts = comprobanteSeleccionado.number.split(/[-_]/);
+                  const numero = parts[parts.length - 1];
+                  return `NTC_${numero}`;
+                })()
+              : comprobanteSeleccionado.number ?? "—",
             tipo: comprobanteSeleccionado.type ?? "—",
-            fecha: new Date(
-              comprobanteSeleccionado.emissionDate
-            ).toLocaleDateString("es-AR"),
+            fecha: formatFechaISO(comprobanteSeleccionado.emissionDate) ?? "—",
             cliente: comprobanteSeleccionado.contactName ?? "—",
             direccion: comprobanteSeleccionado.contactAddress ?? "—",
             total: comprobanteSeleccionado.totalAmount ?? 0,
@@ -235,7 +268,15 @@ const SalesInvoiceTable = () => {
           onClose={() => setShowModalRegisterPayment(false)}
           factura={{
             id: comprobanteSeleccionado.id,
-            numero: comprobanteSeleccionado.number ?? "—",
+            numero: comprobanteSeleccionado.number.includes(
+              "NOTA_CREDITO_CLIENTE"
+            )
+              ? (() => {
+                  const parts = comprobanteSeleccionado.number.split(/[-_]/);
+                  const numero = parts[parts.length - 1];
+                  return `NTC_${numero}`;
+                })()
+              : comprobanteSeleccionado.number ?? "—",
             proveedor: comprobanteSeleccionado.contactName ?? "—",
             total: comprobanteSeleccionado.totalAmount ?? 0,
             abonado: comprobanteSeleccionado.paidAmount ?? 0,
@@ -249,9 +290,7 @@ const SalesInvoiceTable = () => {
               comprobanteSeleccionado.initialPayment
             )
               ? comprobanteSeleccionado.initialPayment.map((p) => ({
-                  fecha: p.receivedAt
-                    ? new Date(p.receivedAt).toLocaleDateString("es-AR")
-                    : "—",
+                  fecha: p.receivedAt ? formatFechaISO(p.receivedAt) : "—",
                   monto: p.amount ?? 0,
                   metodo: p.method ?? "—",
                   banco: p.bankName ?? undefined,
@@ -282,26 +321,21 @@ const SalesInvoiceTable = () => {
       )}
 
       <div className="w-full h-full bg-white rounded-lg shadow p-4">
-        <div className="flex text-[15px] font-medium rounded-t-lg overflow-hidden bg-[var(--brown-ligth-200)] mt-4">
-          <div
-            className={`w-full cursor-pointer px-4 py-2 text-xl text-center ${
-              tags === "pagos"
-                ? "text-[var(--brown-ligth-400)] border-b-2 border-[var(--brown-dark-600)]"
-                : "bg-white text-[var(--brown-dark-700)] border-t-2 border-x-2 border-[var(--brown-dark-600)] rounded-t-md shadow-md"
-            }`}
-            onClick={() => setTags("ventas")}
-          >
-            Pagos Parciales
-          </div>
-          <div
-            className={`w-full px-4 py-2 text-xl text-center cursor-pointer ${
-              tags === "ventas"
-                ? "text-[var(--brown-ligth-400)] border-b-2 border-[var(--brown-dark-600)]"
-                : "bg-white text-[var(--brown-dark-700)] border-t-2 border-x-2 border-[var(--brown-dark-600)] rounded-t-md shadow-md"
-            }`}
-            onClick={() => setTags("pagos")}
-          >
-            Pagos Completos
+        <div className="w-full h-full bg-white rounded-lg shadow p-4">
+          <div className="flex text-[15px] font-medium rounded-t-lg overflow-hidden bg-[var(--brown-ligth-200)] mt-4">
+            {tabs.map((tab) => (
+              <div
+                key={tab.value}
+                className={`w-full cursor-pointer px-4 py-2 text-xl text-center ${
+                  tags === tab.value
+                    ? "bg-white text-[var(--brown-dark-700)] border-t-2 border-x-2 border-[var(--brown-dark-600)] rounded-t-md shadow-md"
+                    : "text-[var(--brown-ligth-400)] border-b-2 border-[var(--brown-dark-600)]"
+                }`}
+                onClick={() => setTags(tab.value)}
+              >
+                {tab.label}
+              </div>
+            ))}
           </div>
         </div>
 

@@ -14,6 +14,11 @@ import { useFindAllBranch } from "../../../../../../../api/branch/branch.queries
 import { useDeleteVoucher } from "../../../../../../../api/vouchers/vouchers.queries";
 import { useVerifyPassword } from "../../../../../../../api/auth/auth.queries";
 
+export const formatFechaISO = (isoDate) => {
+  const [year, month, day] = isoDate.split("T")[0].split("-");
+  return `${day}/${month}/${year}`;
+};
+
 const InvoiceTable = () => {
   const [showModal, setShowModal] = useState(false);
   const [showModalRegisterPayment, setShowModalRegisterPayment] =
@@ -36,7 +41,12 @@ const InvoiceTable = () => {
   };
 
   const conditionPaymentSelect = conditionPaymentMap[tags];
-  const typeVoucher = tags === "remito" ? "REMITO" : "FACTURA";
+  const typeVoucher =
+    tags === "remito"
+      ? "REMITO"
+      : tags === "factura"
+      ? "FACTURA"
+      : "NOTA_CREDITO_PROVEEDOR";
 
   const {
     data: rawVoucher,
@@ -99,11 +109,6 @@ const InvoiceTable = () => {
         },
       }
     );
-  };
-
-  const formatFechaISO = (isoDate) => {
-    const [year, month, day] = isoDate.split("T")[0].split("-");
-    return `${day}/${month}/${year}`;
   };
 
   const totalAdeudado = useMemo(() => {
@@ -221,11 +226,80 @@ const InvoiceTable = () => {
     [branches]
   );
 
+  const columnsCredito = useMemo(
+    () => [
+      {
+        key: "emissionDate",
+        label: "FECHA",
+        className: "text-center",
+        render: (value) => formatFechaISO(value),
+      },
+      {
+        key: "number",
+        label: "NUMERO",
+        className: "text-center",
+        render: (value) => {
+          // Si contiene "NOTA_CREDITO_CLIENTE", abreviamos
+          if (value.includes("NOTA_CREDITO_PROVEEDOR")) {
+            // Extraemos el número después del guion o subrayado
+            const parts = value.split(/[-_]/); // divide por '-' o '_'
+            const numero = parts[parts.length - 1]; // tomamos la última parte
+            return (
+              <p className="bg-[var(--brown-ligth-100)] rounded-lg border-[1px] border-[var(--brown-dark-500)]">
+                NTC_{numero}
+              </p>
+            );
+          }
+
+          // Caso normal
+          return (
+            <p className="bg-[var(--brown-ligth-100)] rounded-lg border-[1px] border-[var(--brown-dark-500)]">
+              {value}
+            </p>
+          );
+        },
+      },
+      {
+        key: "emissionBranchName",
+        label: "ORIGEN",
+        className: "text-center",
+      },
+      {
+        key: "destinationBranchName",
+        label: "DESTINO",
+        className: "text-center",
+        render: (value) => `${value}`,
+      },
+      {
+        key: "acciones",
+        label: "DETALLES",
+        render: (_, row) => (
+          <div className="flex gap-2 justify-center items-center">
+            <div
+              className="cursor-pointer"
+              onClick={() => {
+                setComprobanteSeleccionado(row);
+                setShowModal(true);
+              }}
+            >
+              <BsEye className="h-6 w-6" />
+            </div>
+
+            <div title="Borrar" onClick={() => handlerDelete(row, "REPLENISH")}>
+              <Delete />
+            </div>
+          </div>
+        ),
+      },
+    ],
+    [branches]
+  );
+
   const tabClass = (selected) =>
     `w-full px-4 py-2 text-xl text-center cursor-pointer ${
       tags === selected
-        ? "text-[var(--brown-ligth-400)] border-b-2 border-[var(--brown-dark-600)]"
-        : "bg-white text-[var(--brown-dark-700)] border-t-2 border-x-2 border-[var(--brown-dark-600)] rounded-t-md shadow-md"
+        ? "bg-white text-[var(--brown-dark-700)] border-t-2 border-x-2 border-[var(--brown-dark-600)] rounded-t-md shadow-md"
+        : "text-[var(--brown-ligth-400)] border-b-2 border-[var(--brown-dark-600)]"
     }`;
 
   return (
@@ -249,7 +323,15 @@ const InvoiceTable = () => {
           }}
           factura={{
             id: comprobanteSeleccionado.id,
-            numero: comprobanteSeleccionado.number ?? "—",
+            numero: comprobanteSeleccionado.number.includes(
+              "NOTA_CREDITO_PROVEEDOR"
+            )
+              ? (() => {
+                  const parts = comprobanteSeleccionado.number.split(/[-_]/);
+                  const numero = parts[parts.length - 1];
+                  return `NTC_${numero}`;
+                })()
+              : comprobanteSeleccionado.number ?? "—",
             tipo: comprobanteSeleccionado.type ?? "—",
             fecha: formatFechaISO(comprobanteSeleccionado.emissionDate),
             origen: comprobanteSeleccionado.emissionBranchName ?? "—",
@@ -334,17 +416,20 @@ const InvoiceTable = () => {
 
       <div className="w-full h-full bg-white rounded-lg shadow p-4">
         <div className="flex text-[15px] font-medium rounded-t-lg overflow-hidden bg-[var(--brown-ligth-200)] mt-4">
-          <div
-            className={tabClass("factura")}
-            onClick={() => setTags("remito")}
-          >
+          <div className={tabClass("remito")} onClick={() => setTags("remito")}>
             REMITOS
           </div>
           <div
-            className={tabClass("remito")}
+            className={tabClass("factura")}
             onClick={() => setTags("factura")}
           >
             FACTURAS
+          </div>
+          <div
+            className={tabClass("credito")}
+            onClick={() => setTags("credito")}
+          >
+            NOTA DE CREDITO
           </div>
         </div>
 
@@ -370,7 +455,13 @@ const InvoiceTable = () => {
           )}
 
           <GenericTable
-            columns={tags === "factura" ? columnsFactura : columnsRemito}
+            columns={
+              tags === "factura"
+                ? columnsFactura
+                : tags === "remito"
+                ? columnsRemito
+                : columnsCredito
+            }
             data={rawVoucher}
             enablePagination={true}
             enableFilter={false}

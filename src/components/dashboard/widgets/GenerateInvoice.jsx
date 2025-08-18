@@ -625,7 +625,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
             setValue(`productos.${index}.productId`, producto.productId);
             setValue(`productos.${index}.branchId`, producto.branchId);
             setValue(`productos.${index}.descripcion`, producto.descripcion);
-            setValue(`productos.${index}.precio`, producto.precio);
+            setValue(`productos.${index}.precio`, producto.precio || 0);
           }}
         />
       </form>
