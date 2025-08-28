@@ -103,6 +103,7 @@ const ProductSearchModal = ({ isOpen, branchId, onClose, onSelect, index }) => {
                     },
                     index
                   );
+                  setSearch("");
                   onClose();
                 }}
                 className="p-4 bg-[#fefcf9] border border-[var(--brown-ligth-200)] rounded-2xl shadow hover:shadow-lg cursor-pointer relative transition-all flex flex-col justify-between"
