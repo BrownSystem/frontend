@@ -622,10 +622,30 @@ const CreateInvoice = ({ tipoOperacion }) => {
           onClose={() => setShowProductModal(false)}
           index={selectedProductIndex}
           onSelect={(producto, index) => {
-            setValue(`productos.${index}.productId`, producto.productId);
-            setValue(`productos.${index}.branchId`, producto.branchId);
-            setValue(`productos.${index}.descripcion`, producto.descripcion);
-            setValue(`productos.${index}.precio`, producto.precio || 0);
+            const productosActuales = watch("productos");
+            const existenteIndex = productosActuales.findIndex(
+              (p) =>
+                p.productId === producto.productId &&
+                p.branchId === producto.branchId
+            );
+
+            if (existenteIndex !== -1 && existenteIndex !== index) {
+              // Si ya existe en otra fila, sumamos la cantidad
+              const cantidadActual =
+                parseFloat(productosActuales[existenteIndex].quantity) || 0;
+              setValue(
+                `productos.${existenteIndex}.quantity`,
+                cantidadActual + 1
+              );
+              // Opcional: borrar la fila en la que ibas a ponerlo
+              remove(index);
+            } else {
+              // Si no existe, lo seteamos normalmente
+              setValue(`productos.${index}.productId`, producto.productId);
+              setValue(`productos.${index}.branchId`, producto.branchId);
+              setValue(`productos.${index}.descripcion`, producto.descripcion);
+              setValue(`productos.${index}.precio`, producto.precio || 0);
+            }
           }}
         />
       </form>
