@@ -419,7 +419,7 @@ const PrintQrCodeContent = () => {
           <div className="bg-[var(--brown-ligth-50)] rounded-2xl shadow-xl w-[600px] max-h-[80vh] p-6 overflow-y-auto">
             <h2 className="text-xl font-bold mb-4 text-[var(--brown-dark-900)] flex flex-col items-center justify-center">
               <span className="flex items-center gap-2">
-                REORDENAR ORDEN{" "}
+                REORDENAR SUCURSALES{" "}
                 <span className="flex">
                   <StockIcon /> <StockIcon type={"low"} />
                 </span>
