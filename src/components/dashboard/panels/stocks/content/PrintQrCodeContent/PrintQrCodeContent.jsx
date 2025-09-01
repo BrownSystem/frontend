@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useAuthStore } from "../../../../../../api/auth/auth.store";
 import { usePaginatedTableData } from "../../../../../../hooks/usePaginatedTableData";
 import {
@@ -8,6 +8,51 @@ import {
 import { GenericTable } from "../../../../widgets";
 import { Delete } from "../../../../../../assets/icons";
 import { searchProductsByBranches } from "../../../../../../api/products/products.api";
+import { useFindAllBranch } from "../../../../../../api/branch/branch.queries";
+
+// 👉 Drag & Drop
+import {
+  DndContext,
+  closestCenter,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { StockIcon } from "../../../../../../assets/icons/Icon";
+
+// Componente para cada sucursal arrastrable
+const SortableBranch = ({ branch }) => {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: branch.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="bg-[var(--brown-ligth-100)] border border-[var(--brown-ligth-200)] rounded-xl shadow-md p-4 m-2 cursor-grab hover:bg-[var(--brown-ligth-200)] transition"
+    >
+      <h3 className="text-lg font-semibold text-[var(--brown-dark-900)]">
+        {branch.name}
+      </h3>
+      <p className="text-sm text-[var(--brown-dark-700)]">{branch.location}</p>
+    </div>
+  );
+};
 
 const PrintQrCodeContent = () => {
   const user = useAuthStore((state) => state.user);
@@ -17,6 +62,32 @@ const PrintQrCodeContent = () => {
   const [selectedProducts, setSelectedProducts] = useState({});
   const [visibleProducts, setVisibleProducts] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [showModalBranches, setShowModalBranches] = useState(false);
+  const [pendingExport, setPendingExport] = useState(false); // 👉 bandera para exportar luego de reordenar
+
+  const { data: branches } = useFindAllBranch();
+  const [orderedBranches, setOrderedBranches] = useState([]);
+
+  // Inicializar branches cuando llegan desde el backend
+  useEffect(() => {
+    if (branches) {
+      setOrderedBranches(branches);
+    }
+  }, [branches]);
+
+  // Drag & drop sensors
+  const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+      setOrderedBranches((prev) => {
+        const oldIndex = prev.findIndex((b) => b.id === active.id);
+        const newIndex = prev.findIndex((b) => b.id === over.id);
+        return arrayMove(prev, oldIndex, newIndex);
+      });
+    }
+  };
 
   const { mutate: downloadPdf, isPending } = useDownloadPdfQrs();
   const { mutate: downloadPdfProducts, isPendingPdfProducts } =
@@ -140,7 +211,27 @@ const PrintQrCodeContent = () => {
     );
   };
 
+  // 👉 ahora no descarga directo, primero abre modal branches
   const handleDownloadProducts = () => {
+    const filtered = Object.values(selectedProducts).filter(
+      (p) => p.quantity > 0
+    );
+
+    if (filtered.length === 0) {
+      alert("Seleccione al menos un producto para exportar.");
+      return;
+    }
+
+    setPendingExport(true); // marcamos intención de exportar
+    setShowModalBranches(true); // mostramos modal branches
+  };
+
+  const handleSaveBranchesOrder = () => {
+    if (!pendingExport) {
+      setShowModalBranches(false);
+      return;
+    }
+
     const filtered = Object.values(selectedProducts).filter(
       (p) => p.quantity > 0
     );
@@ -151,13 +242,15 @@ const PrintQrCodeContent = () => {
     }));
 
     downloadPdfProducts(
-      { products: toPrint },
+      { products: toPrint, branchOrder: orderedBranches },
       {
         onSuccess: () => {
-          setShowModal(false);
+          setShowModalBranches(false);
+          setPendingExport(false);
         },
         onError: () => {
           alert("Hubo un error al generar el PDF.");
+          setPendingExport(false);
         },
       }
     );
@@ -251,7 +344,7 @@ const PrintQrCodeContent = () => {
         isLoading={isLoading}
       />
 
-      {/* Modal */}
+      {/* Modal de Productos Seleccionados */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-center items-center">
           <div className="bg-white rounded-3xl shadow-2xl p-8 w-[95%] max-w-3xl animate-fade-in-up">
@@ -314,6 +407,55 @@ const PrintQrCodeContent = () => {
                 className="bg-gray-600 hover:bg-gray-700 text-white px-5 py-2 rounded-xl shadow transition disabled:opacity-50"
               >
                 {isPendingPdfProducts ? "Generando..." : "Exportar Catálogo"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Sucursales con drag & drop */}
+      {showModalBranches && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-center items-center">
+          <div className="bg-[var(--brown-ligth-50)] rounded-2xl shadow-xl w-[600px] max-h-[80vh] p-6 overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4 text-[var(--brown-dark-900)] flex flex-col items-center justify-center">
+              <span className="flex items-center gap-2">
+                REORDENAR ORDEN{" "}
+                <span className="flex">
+                  <StockIcon /> <StockIcon type={"low"} />
+                </span>
+              </span>
+              <p className="text-md text-[var(--brown-dark-500)] font-normal mt-2">
+                (Arrastra y suelta las sucursales para reordenarlas.)
+              </p>
+            </h2>
+
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={orderedBranches.map((b) => b.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {orderedBranches.map((branch) => (
+                  <SortableBranch key={branch.id} branch={branch} />
+                ))}
+              </SortableContext>
+            </DndContext>
+
+            <div className="flex justify-end mt-6 gap-2">
+              <button
+                onClick={() => setShowModalBranches(false)}
+                className="px-4 py-2 rounded-xl bg-[var(--brown-dark-700)] text-white hover:bg-[var(--brown-dark-800)]"
+              >
+                Cerrar
+              </button>
+              <button
+                onClick={handleSaveBranchesOrder}
+                className="px-4 py-2 rounded-xl bg-[var(--brown-ligth-400)] text-[var(--brown-dark-900)] hover:bg-[var(--brown-ligth-300)]"
+              >
+                Guardar Orden
               </button>
             </div>
           </div>
