@@ -1,21 +1,25 @@
-import { useStockViewStore } from "@store/useStockViewStore";
 import { useQueryClient } from "@tanstack/react-query";
+
+import { BsEye } from "react-icons/bs";
+import { useState } from "react";
+import { useAuthStore } from "../../../../../../api/auth/auth.store";
+import { useShopViewStore } from "@store/useShopViewStore";
+
 import {
   useCreateBranch,
   useFindAllBranch,
   useUpdateBranch,
 } from "../../../../../../api/branch/branch.queries";
-import { BsEye } from "react-icons/bs";
 import { GenericTable, Message } from "../../../../widgets";
-import { useState } from "react";
 import { Delete, Edit } from "../../../../../../assets/icons";
 
 const DepositsContent = () => {
   const queryClient = useQueryClient();
   const { data: branches = [], isLoading } = useFindAllBranch();
-  const setView = useStockViewStore((state) => state.setViewSafe);
+  const setView = useShopViewStore((state) => state.setViewSafe);
   const [message, setMessage] = useState({ text: "", type: "success" });
-
+  const setUser = useAuthStore((state) => state.user);
+  const isAdmin = setUser?.role === "ADMIN";
   const createBranchMutation = useCreateBranch();
   const updateBranchMutation = useUpdateBranch();
 
@@ -188,20 +192,24 @@ const DepositsContent = () => {
               onClick={() => handleRowClick(row)}
               title="Inspeccionar productos"
             />
-            <button
-              onClick={() => handleDeleteBranch(row)}
-              className="text-red-600"
-              title="Eliminar depósito"
-            >
-              <Delete />
-            </button>
-            <button
-              onClick={() => handleEditBranch(row)}
-              className="text-gray-700"
-              title="Editar depósito"
-            >
-              <Edit color="black" />
-            </button>
+            {isAdmin && (
+              <>
+                <button
+                  onClick={() => handleDeleteBranch(row)}
+                  className="text-red-600"
+                  title="Eliminar depósito"
+                >
+                  <Delete />
+                </button>
+                <button
+                  onClick={() => handleEditBranch(row)}
+                  className="text-gray-700"
+                  title="Editar depósito"
+                >
+                  <Edit color="black" />
+                </button>
+              </>
+            )}
           </div>
         ),
     },

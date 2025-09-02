@@ -2,8 +2,7 @@ import { useCallback } from "react";
 import { useStockViewStore } from "@store/useStockViewStore"; // Asegúrate de que el path sea correcto
 import { ActionCard } from "../../widgets";
 import {
-  Folder,
-  Home,
+  DailyBox,
   MenuKebab,
   Proveedores,
   QrCode,
@@ -12,10 +11,6 @@ import { RenderView } from "./RenderContent";
 
 const StockPanel = () => {
   const setView = useStockViewStore((state) => state.setViewSafe);
-
-  const handleViewDepositos = useCallback(() => {
-    setView({ name: "depositos" });
-  }, [setView]);
 
   const handleViewProveedores = useCallback(() => {
     setView({ name: "proveedores" });
@@ -29,15 +24,19 @@ const StockPanel = () => {
     setView({ name: "management" });
   }, [setView]);
 
+  const handleViewBoxDaily = useCallback(() => {
+    setView({ name: "boxDaily" });
+  }, [setView]);
+
   return (
     <>
       <div className="w-full  flex  max-h-full roundend-lg">
         <div className="w-full flex justify-center h-[70px] gap-5">
           <ActionCard
-            svgAction={<Home />}
+            svgAction={<DailyBox />}
             action={"Ingresar"}
-            onClick={handleViewDepositos}
-            title={"Depositos"}
+            onClick={handleViewBoxDaily}
+            title={"Caja Diaria"}
             others={false}
             hasNotifications={false}
           />

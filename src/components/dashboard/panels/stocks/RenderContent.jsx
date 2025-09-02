@@ -1,18 +1,16 @@
 import { useStockViewStore } from "@store/useStockViewStore";
-import { ProductTableDeposit } from "./content/tables";
 import {
-  DepositsContent,
   ManagementContent,
   PrintQrCodeContent,
   SuppliersContent,
 } from "./content";
+import BoxDaily from "./content/BoxDaily/BoxDaily";
 
 const viewMap = {
-  depositos: DepositsContent,
   proveedores: SuppliersContent,
-  products_of_deposit: ProductTableDeposit,
   management: ManagementContent,
   qrcode: PrintQrCodeContent,
+  boxDaily: BoxDaily,
 };
 
 export const RenderView = () => {
@@ -20,10 +18,10 @@ export const RenderView = () => {
 
   const Component = viewMap[view?.name];
   if (!Component) {
-    const DefaultComponent = viewMap["depositos"];
+    const DefaultComponent = viewMap["proveedores"];
     return (
       <DefaultComponent
-        title={"depositos"}
+        title={"proveedores"}
         span={""}
         backTo={view?.props?.backTo}
       />

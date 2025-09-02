@@ -1,18 +1,31 @@
 import { useCallback } from "react";
 import { ActionCard } from "../../widgets";
-import { Comprobantes, CreateUser, Folder } from "../../../../assets/icons";
+import {
+  Comprobantes,
+  CreateUser,
+  Folder,
+  Home,
+} from "../../../../assets/icons";
 
 import { useShopViewStore } from "@store/useShopViewStore";
 import { RenderView } from "./RenderContent";
-import { ClientContent, ProductTable, RegisterSalesContent } from "./content";
+import {
+  ClientContent,
+  DepositsContent,
+  ProductTable,
+  RegisterSalesContent,
+} from "./content";
 import { ReservationTable } from "./content/ClientContent/tables";
 import { useAuthStore } from "../../../../api/auth/auth.store";
+import { ProductTableDeposit } from "./content/DepositsContent/tables";
 
 const viewMap = {
   productos: ProductTable,
+  depositos: DepositsContent,
   registerSales: RegisterSalesContent,
   reservationTable: ReservationTable,
   generatedClient: ClientContent,
+  products_of_deposit: ProductTableDeposit,
 };
 
 const ShopPanel = () => {
@@ -23,6 +36,11 @@ const ShopPanel = () => {
       name: "productos",
     });
   }, [setView]);
+
+  const handleViewDepositos = useCallback(() => {
+    setView({ name: "depositos" });
+  }, [setView]);
+
   const handlerViewRegisterSales = useCallback(() => {
     setView({ name: "registerSales" });
   }, [setView]);
@@ -46,6 +64,14 @@ const ShopPanel = () => {
             action={"Ver"}
             onClick={handleViewProductos}
             title={"Productos"}
+            others={false}
+            hasNotifications={false}
+          />
+          <ActionCard
+            svgAction={<Home />}
+            action={"Ingresar"}
+            onClick={handleViewDepositos}
+            title={"Depositos"}
             others={false}
             hasNotifications={false}
           />

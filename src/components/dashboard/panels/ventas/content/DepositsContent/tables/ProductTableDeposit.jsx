@@ -1,9 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { useStockViewStore } from "@store/useStockViewStore";
-import { GenericTable, StockStatus } from "../../../../widgets";
-import { ShowEyes } from "../../../../../../assets/icons";
-import { usePaginatedTableData } from "../../../../../../hooks/usePaginatedTableData";
-import { searchProducts } from "../../../../../../api/products/products.api";
+import { usePaginatedTableData } from "../../../../../../../hooks/usePaginatedTableData";
+import { GenericTable, StockStatus } from "../../../../../widgets";
+import { searchProducts } from "../../../../../../../api/products/products.api";
 
 const ProductTableDeposit = ({
   title,
