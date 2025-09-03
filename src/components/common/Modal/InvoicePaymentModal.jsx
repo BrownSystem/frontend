@@ -4,16 +4,22 @@ import {
   useDownloadVoucherHtml,
   useRegisterPayment,
 } from "../../../api/vouchers/vouchers.queries";
-import { Message } from "../../dashboard/widgets";
+import {
+  FormattedAmount,
+  FormattedNumberInput,
+  Message,
+} from "../../dashboard/widgets";
 import { useBanks } from "../../../api/banks/banks.queries";
 import html2pdf from "html2pdf.js";
+
+// tus nuevos componentes
+import { useForm } from "react-hook-form";
 
 const InvoicePaymentModal = ({
   factura,
   onClose,
   onRegistrarPago = console.log,
 }) => {
-  const [monto, setMonto] = useState(0);
   const [metodo, setMetodo] = useState("Efectivo");
   const [datosPago, setDatosPago] = useState({});
   const [message, setMessage] = useState({ text: "", type: "success" });
@@ -31,6 +37,15 @@ const InvoicePaymentModal = ({
       });
     },
   });
+
+  // hook form
+  const { control, handleSubmit, watch } = useForm({
+    defaultValues: {
+      monto: 0,
+    },
+  });
+
+  const monto = watch("monto");
 
   const handleDescargarPDF = () => {
     if (!factura?.id) return;
@@ -54,7 +69,7 @@ const InvoicePaymentModal = ({
     });
   };
 
-  const handleSubmit = () => {
+  const onSubmit = ({ monto }) => {
     if (monto > factura.saldoPendiente || !monto) {
       return setMessage({ text: "El monto no es válido ❌", type: "error" });
     }
@@ -121,19 +136,18 @@ const InvoicePaymentModal = ({
         {/* Info */}
         <div className="px-6 py-4 space-y-2 text-sm text-[var(--brown-dark-800)]">
           <p className="font-semibold">{factura.proveedor}</p>
-          <p>
-            Total:{" "}
-            <span className="font-medium">${factura.total.toFixed(2)}</span>
-          </p>
-          <p className="text-[var(--text-state-green)]">
-            Abonado: ${factura.abonado.toFixed(2)}
-          </p>
-          <p>
-            Saldo pendiente:{" "}
-            <span className="text-[var(--text-state-red)] font-semibold">
-              ${(factura.total - factura.abonado - (monto || 0)).toFixed(2)}
-            </span>
-          </p>
+
+          <FormattedAmount label="Total:" value={factura.total} />
+          <FormattedAmount
+            label="Abonado:"
+            value={factura.abonado}
+            color="text-[var(--text-state-green)]"
+          />
+          <FormattedAmount
+            label="Saldo pendiente:"
+            value={factura.total - factura.abonado - (monto || 0)}
+            color="text-[var(--text-state-red)]"
+          />
         </div>
 
         {/* Pagos anteriores */}
@@ -146,9 +160,10 @@ const InvoicePaymentModal = ({
               {factura.pagosAnteriores.map((p, i) => (
                 <li key={i}>
                   {p.fecha}:{" "}
-                  <span className="text-[var(--text-state-green)] font-medium">
-                    ${p.monto.toFixed(2)}
-                  </span>{" "}
+                  <FormattedAmount
+                    value={p.monto}
+                    color="text-[var(--text-state-green)]"
+                  />{" "}
                   ({p.metodo}
                   {p.banco && `, ${p.banco} - ${p.numeroOperacion}`})
                 </li>
@@ -158,21 +173,18 @@ const InvoicePaymentModal = ({
         )}
 
         {/* Form */}
-        <div className="px-6 py-4 space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-4 space-y-4">
           {/* Monto */}
           <div className="relative">
-            <label className="block font-semibold mb-1 text-[var(--brown-dark-900)]">
-              Monto a abonar
-            </label>
-            <input
-              type="number"
-              className="w-full p-2 border rounded-lg bg-white border-[var(--brown-ligth-300)] focus:ring-2 focus:ring-[var(--brown-dark-700)] focus:outline-none"
-              placeholder="Monto"
-              value={monto}
-              onChange={(e) => setMonto(parseFloat(e.target.value))}
+            <FormattedNumberInput
+              name="monto"
+              control={control}
+              label="Monto a abonar"
+              decimals={2}
+              className="w-full"
             />
             {monto > factura.saldoPendiente && (
-              <span className="absolute right-3 top-10">
+              <span className="absolute left-3 top-8">
                 <Danger color={"#b91c1c"} />
               </span>
             )}
@@ -192,6 +204,7 @@ const InvoicePaymentModal = ({
               ].map((m) => (
                 <button
                   key={m}
+                  type="button"
                   className={`px-3 py-1 rounded-lg border text-sm font-medium transition ${
                     metodo === m
                       ? "bg-[var(--brown-dark-800)] text-white border-[var(--brown-dark-800)]"
@@ -268,31 +281,32 @@ const InvoicePaymentModal = ({
               onChange={handleInputChange}
             />
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 bg-[var(--brown-ligth-100)] border-t border-[var(--brown-ligth-200)] flex flex-col gap-2">
-          <button
-            onClick={handleSubmit}
-            className={`px-4 py-2 rounded-lg font-semibold transition w-full ${
-              monto > factura.saldoPendiente
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-[var(--brown-dark-800)] text-white hover:bg-[var(--brown-dark-700)]"
-            }`}
-            disabled={monto > factura.saldoPendiente}
-          >
-            {monto > factura.saldoPendiente
-              ? "Monto mayor al saldo adeudado"
-              : "Registrar pago"}
-          </button>
+          {/* Footer */}
+          <div className="px-6 py-4 bg-[var(--brown-ligth-100)] border-t border-[var(--brown-ligth-200)] flex flex-col gap-2">
+            <button
+              type="submit"
+              className={`px-4 py-2 rounded-lg font-semibold transition w-full ${
+                monto > factura.saldoPendiente
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-[var(--brown-dark-800)] text-white hover:bg-[var(--brown-dark-700)]"
+              }`}
+              disabled={monto > factura.saldoPendiente}
+            >
+              {monto > factura.saldoPendiente
+                ? "Monto mayor al saldo adeudado"
+                : "Registrar pago"}
+            </button>
 
-          <button
-            onClick={handleDescargarPDF}
-            className="px-4 py-2 rounded-lg bg-[var(--brown-ligth-400)] text-white font-semibold hover:bg-[var(--brown-dark-500)] transition flex items-center justify-center gap-2"
-          >
-            <i className="fas fa-download"></i> Descargar comprobante PDF
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={handleDescargarPDF}
+              className="px-4 py-2 rounded-lg bg-[var(--brown-ligth-400)] text-white font-semibold hover:bg-[var(--brown-dark-500)] transition flex items-center justify-center gap-2"
+            >
+              <i className="fas fa-download"></i> Descargar comprobante PDF
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
