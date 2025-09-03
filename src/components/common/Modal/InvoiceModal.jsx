@@ -5,7 +5,6 @@ import html2pdf from "html2pdf.js";
 
 const InvoiceModal = ({ onCancel, onConfirm, factura, productos, pago }) => {
   const { mutate: descargarHtml } = useDownloadVoucherHtml();
-
   const handleDescargarPDF = () => {
     if (!factura?.id) return;
 

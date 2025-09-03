@@ -26,7 +26,7 @@ const SalesInvoiceTable = () => {
   };
 
   const conditionPaymentSelect = conditionPaymentMap[tags];
-
+  console.log(comprobanteSeleccionado);
   const {
     data: rawVoucher,
     page,
@@ -245,17 +245,17 @@ const SalesInvoiceTable = () => {
             iva: p.iva ?? 21.5,
           }))}
           pago={{
-            formaDePago: comprobanteSeleccionado.initialPayment?.method ?? "—",
-            fechaPago: comprobanteSeleccionado.initialPayment?.receivedAt
+            formaDePago: comprobanteSeleccionado.payments[0]?.method ?? "—",
+            fechaPago: comprobanteSeleccionado.payments[0]?.receivedAt
               ? new Date(
-                  comprobanteSeleccionado.initialPayment.receivedAt
+                  comprobanteSeleccionado.payments[0].receivedAt
                 ).toLocaleDateString("es-AR")
               : "—",
             montoPagado: comprobanteSeleccionado.paidAmount ?? 0,
             saldoRestante: comprobanteSeleccionado.remainingAmount ?? 0,
-            banco: comprobanteSeleccionado.initialPayment?.bankName ?? "—",
+            banco: comprobanteSeleccionado.payments[0]?.bankName ?? "—",
             numeroOperacion:
-              comprobanteSeleccionado.initialPayment?.chequeNumber ?? "—",
+              comprobanteSeleccionado.payments[0]?.chequeNumber ?? "—",
             observaciones:
               comprobanteSeleccionado.observation ?? "Sin observaciones.",
             registradoPor: comprobanteSeleccionado.createdBy ?? "—",
