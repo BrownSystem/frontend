@@ -16,6 +16,8 @@ import {
 } from "../../../api/vouchers/vouchers.queries";
 import Message from "./Message";
 import { useCreateNotification } from "../../../api/notification/notification.queries";
+import FormattedAmount from "./FormattedAmount";
+import FormattedNumberInput from "./FormattedNumberInput";
 
 const CreateInvoice = ({ tipoOperacion }) => {
   const {
@@ -518,12 +520,12 @@ const CreateInvoice = ({ tipoOperacion }) => {
                 </button>
               </div>
 
-              <input
-                type="number"
-                step="0.01"
-                {...register(`productos.${index}.precio`)}
+              <FormattedNumberInput
+                name={`productos.${index}.precio`}
+                control={control}
                 className="border border-[var(--brown-ligth-400)] rounded px-2 py-1 text-right"
               />
+
               <input
                 type="number"
                 step="0.01"
@@ -578,16 +580,17 @@ const CreateInvoice = ({ tipoOperacion }) => {
             <Button type="submit" text="Guardar Factura" />
           </div>
           <div className="text-right space-y-1 text-brown-900 font-medium">
-            <div>
-              Total: <span className="font-normal">${total}</span>
-            </div>
-            <div>
-              Pagos:{" "}
-              <span className="font-normal text-green-800">${totalPagos}</span>
-            </div>
-            <div>
-              Saldo: <span className="font-normal text-red-800">${saldo}</span>
-            </div>
+            <FormattedAmount label="Total:" value={total} />{" "}
+            <FormattedAmount
+              label="Pagos:"
+              value={totalPagos}
+              color="text-green-800"
+            />{" "}
+            <FormattedAmount
+              label="Saldo:"
+              color="text-red-800"
+              value={saldo}
+            />{" "}
           </div>
         </div>
 

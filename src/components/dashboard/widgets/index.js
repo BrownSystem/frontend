@@ -10,3 +10,5 @@ export { default as GenericTable } from "./GenericTable";
 export { default as Message } from "./Message";
 export { default as EntryCard } from "./EntryCard";
 export { default as DatePickerCustom } from "./DatePickerCustom";
+export { default as FormattedAmount } from "./FormattedAmount";
+export { default as FormattedNumberInput } from "./FormattedNumberInput";
