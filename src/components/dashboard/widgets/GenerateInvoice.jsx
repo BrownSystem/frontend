@@ -520,6 +520,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
 
               <input
                 type="number"
+                step="0.01"
                 {...register(`productos.${index}.precio`)}
                 className="border border-[var(--brown-ligth-400)] rounded px-2 py-1 text-right"
               />
@@ -553,7 +554,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
               onClick={() =>
                 append({
                   descripcion: "",
-                  precio: 0,
+                  precio: 0.0,
                   quantity: 1,
                   isReserved: false,
                 })
