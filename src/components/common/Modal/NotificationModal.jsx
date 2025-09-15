@@ -33,6 +33,9 @@ const NotificationModal = ({
   onDelete,
 }) => {
   if (!isOpen) return null;
+  const openVoucher = (id) => {
+    navigate(`/dashboard/comprobantes/${id}`);
+  };
 
   return (
     <div className="fixed inset-0 z-[100000] bg-[var(--brown-dark-950)]/50 flex items-center justify-center">
@@ -76,7 +79,10 @@ const NotificationModal = ({
                   </p>
                   {notif.action && (
                     <button
-                      onClick={notif.action}
+                      onClick={() => {
+                        openVoucher(notif.action);
+                        onMarkAsRead?.(notif);
+                      }}
                       className="text-[var(--brown-dark-800)] hover:underline text-xs font-medium cursor-pointer"
                     >
                       {notif.actionLabel || "Ver detalles"}
