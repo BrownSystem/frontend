@@ -142,7 +142,7 @@ const GenericTable = ({
                             ? "truncate whitespace-nowrap overflow-hidden text-left"
                             : ""
                         }`}
-                        style={{ fontSize: `${sizeColumn}px` }}
+                        style={{ fontSize: `${14}px` }}
                       >
                         {row.isEditing && col.editable ? (
                           <input

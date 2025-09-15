@@ -1,14 +1,6 @@
-import { useProductModal } from "../../store/ProductModalContext";
-
-const ShowEyes = ({ data }) => {
-  const { openProductDetail } = useProductModal();
-
-  const handleClick = () => {
-    openProductDetail(data);
-  };
+const ShowEyes = () => {
   return (
     <svg
-      onClick={handleClick}
       className="cursor-pointer"
       width="24"
       height="24"

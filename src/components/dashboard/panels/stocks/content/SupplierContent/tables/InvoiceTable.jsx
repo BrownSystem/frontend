@@ -1,35 +1,37 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { usePaginatedTableData } from "../../../../../../../hooks/usePaginatedTableData";
-import { BsEye } from "react-icons/bs";
-import { Delete, Edit, Replenish } from "../../../../../../../assets/icons";
-import {
-  InvoiceModal,
-  InvoicePaymentModal,
-  PasswordConfirmModal,
-} from "../../../../../../common";
-import { GenericTable } from "../../../../../widgets";
+import { Delete, HideEyes, ShowEyes } from "../../../../../../../assets/icons";
+import { GenericTable, FilterPanel } from "../../../../../widgets";
 import { useAuthStore } from "../../../../../../../api/auth/auth.store";
 import { searchVoucher } from "../../../../../../../api/vouchers/vouchers.api";
 import { useFindAllBranch } from "../../../../../../../api/branch/branch.queries";
 import { useDeleteVoucher } from "../../../../../../../api/vouchers/vouchers.queries";
 import { useVerifyPassword } from "../../../../../../../api/auth/auth.queries";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { useSalesViewStockStore } from "../../../../../../../store/useTagsStore";
 
 export const formatFechaISO = (isoDate) => {
+  if (!isoDate) return "";
   const [year, month, day] = isoDate.split("T")[0].split("-");
   return `${day}/${month}/${year}`;
 };
 
 const InvoiceTable = () => {
-  const [showModal, setShowModal] = useState(false);
-  const [showModalRegisterPayment, setShowModalRegisterPayment] =
-    useState(false);
-  const [tags, setTags] = useState("remito");
-  const [searchText, setSearchText] = useState("");
-  const [comprobanteSeleccionado, setComprobanteSeleccionado] = useState(null);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const navigate = useNavigate();
+  const tags = useSalesViewStockStore((state) => state.tags);
+  const setTags = useSalesViewStockStore((state) => state.setTags);
   const [voucherToDelete, setVoucherToDelete] = useState(null);
   const [deleteType, setDeleteType] = useState(null);
   const [tempPassword, setTempPassword] = useState("");
+
+  // filtros
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateUntil, setDateUntil] = useState("");
+  const [contactId, setContactId] = useState("");
+  const [branch, setBranch] = useState("");
+  // const [montoMin, setMontoMin] = useState("");
+  // const [montoMax, setMontoMax] = useState("");
 
   const user = useAuthStore((state) => state.user);
   const { data: branches = [] } = useFindAllBranch();
@@ -48,6 +50,17 @@ const InvoiceTable = () => {
       ? "FACTURA"
       : "NOTA_CREDITO_PROVEEDOR";
 
+  const additionalParams = {
+    conditionPayment: conditionPaymentSelect,
+    type: typeVoucher,
+    ...(dateFrom && { dateFrom: new Date(dateFrom) }),
+    ...(dateUntil && { dateUntil: new Date(dateUntil) }),
+    ...(contactId && { contactId }),
+    ...(branch && { branch }),
+    // ...(montoMin && { montoMin }),
+    // ...(montoMax && { montoMax }),
+  };
+
   const {
     data: rawVoucher,
     page,
@@ -57,11 +70,8 @@ const InvoiceTable = () => {
   } = usePaginatedTableData({
     fetchFunction: searchVoucher,
     queryKeyBase: "vouchers",
-    search: searchText,
-    additionalParams: {
-      conditionPayment: conditionPaymentSelect,
-      type: typeVoucher,
-    },
+    search: "",
+    additionalParams,
     limit,
     enabled: true,
   });
@@ -75,11 +85,10 @@ const InvoiceTable = () => {
   const { mutate: deleteVoucherMutate, isLoading: deleting } = useDeleteVoucher(
     {
       onSuccess: () => {
-        setPage(1); // recarga tabla solo si se borra con éxito
-        setShowPasswordModal(false);
-        setTempPassword("");
+        setPage(1);
         setVoucherToDelete(null);
         setDeleteType(null);
+        setTempPassword("");
       },
       onError: (error) => {
         console.error("Error al borrar voucher:", error);
@@ -91,7 +100,6 @@ const InvoiceTable = () => {
     setVoucherToDelete(row);
     setDeleteType(actionType);
     setTempPassword("");
-    setShowPasswordModal(true);
   };
 
   const confirmPasswordAndDelete = (password) => {
@@ -104,20 +112,14 @@ const InvoiceTable = () => {
             typeOfDelete: deleteType,
           });
         },
-        onError: () => {
-          // El error se maneja con verifyError que se pasa al modal
-        },
       }
     );
   };
 
-  const totalAdeudado = useMemo(() => {
-    return rawVoucher
-      .filter((v) =>
-        v.contactName?.toLowerCase().includes(searchText.toLowerCase())
-      )
-      .reduce((acc, curr) => acc + (curr.remainingAmount || 0), 0);
-  }, [rawVoucher, searchText]);
+  // Función para abrir comprobante y guardarlo en localStorage
+  const openVoucher = (row) => {
+    navigate(`/dashboard/comprobantes/${row.id}`);
+  };
 
   const columnsFactura = useMemo(
     () => [
@@ -158,14 +160,42 @@ const InvoiceTable = () => {
         label: "DETALLES",
         render: (_, row) => (
           <div className="flex gap-2 justify-center items-center">
-            <div
-              className="cursor-pointer"
-              onClick={() => {
-                setComprobanteSeleccionado(row);
-                setShowModal(true);
-              }}
-            >
-              <BsEye className="h-6 w-6" />
+            <div className="cursor-pointer" onClick={() => openVoucher(row)}>
+              <motion.div
+                className="cursor-pointer"
+                initial="closed"
+                whileHover="open"
+              >
+                <div className="flex items-center justify-center relative w-7 h-7">
+                  <AnimatePresence mode="wait">
+                    {/* Ojo cerrado */}
+                    <motion.div
+                      key="closed"
+                      variants={{
+                        closed: { opacity: 1, scale: 1 },
+                        open: { opacity: 0, scale: 0.8 },
+                      }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute"
+                    >
+                      <HideEyes size={28} />
+                    </motion.div>
+
+                    {/* Ojo abierto */}
+                    <motion.div
+                      key="open"
+                      variants={{
+                        closed: { opacity: 0, scale: 0.8 },
+                        open: { opacity: 1, scale: 1 },
+                      }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute bottom-[0.5px] left-[0.5px]"
+                    >
+                      <ShowEyes size={30} />
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+              </motion.div>
             </div>
           </div>
         ),
@@ -206,16 +236,44 @@ const InvoiceTable = () => {
         label: "DETALLES",
         render: (_, row) => (
           <div className="flex gap-2 justify-center items-center">
-            <div
-              className="cursor-pointer"
-              onClick={() => {
-                setComprobanteSeleccionado(row);
-                setShowModal(true);
-              }}
-            >
-              <BsEye className="h-6 w-6" />
-            </div>
+            <div className="cursor-pointer" onClick={() => openVoucher(row)}>
+              {/* Contenedor de los ojos */}
+              <motion.div
+                className="cursor-pointer"
+                initial="closed"
+                whileHover="open"
+              >
+                <div className="flex items-center justify-center relative w-7 h-7">
+                  <AnimatePresence mode="wait">
+                    {/* Ojo cerrado */}
+                    <motion.div
+                      key="closed"
+                      variants={{
+                        closed: { opacity: 1, scale: 1 },
+                        open: { opacity: 0, scale: 0.8 },
+                      }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute"
+                    >
+                      <HideEyes size={28} />
+                    </motion.div>
 
+                    {/* Ojo abierto */}
+                    <motion.div
+                      key="open"
+                      variants={{
+                        closed: { opacity: 0, scale: 0.8 },
+                        open: { opacity: 1, scale: 1 },
+                      }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute bottom-[0.5px] left-[0.5px]"
+                    >
+                      <ShowEyes size={30} />
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            </div>
             <div title="Borrar" onClick={() => handlerDelete(row, "REPLENISH")}>
               <Delete />
             </div>
@@ -239,19 +297,15 @@ const InvoiceTable = () => {
         label: "NUMERO",
         className: "text-center",
         render: (value) => {
-          // Si contiene "NOTA_CREDITO_CLIENTE", abreviamos
           if (value.includes("NOTA_CREDITO_PROVEEDOR")) {
-            // Extraemos el número después del guion o subrayado
-            const parts = value.split(/[-_]/); // divide por '-' o '_'
-            const numero = parts[parts.length - 1]; // tomamos la última parte
+            const parts = value.split(/[-_]/);
+            const numero = parts[parts.length - 1];
             return (
               <p className="bg-[var(--brown-ligth-100)] rounded-lg border-[1px] border-[var(--brown-dark-500)]">
                 NTC_{numero}
               </p>
             );
           }
-
-          // Caso normal
           return (
             <p className="bg-[var(--brown-ligth-100)] rounded-lg border-[1px] border-[var(--brown-dark-500)]">
               {value}
@@ -268,23 +322,53 @@ const InvoiceTable = () => {
         key: "destinationBranchName",
         label: "DESTINO",
         className: "text-center",
-        render: (value) => `${value}`,
+        render: (_, row) =>
+          row.destinationBranchName === "Sucursal destino"
+            ? row.contactName ?? "-"
+            : row.destinationBranchName ?? "-",
       },
       {
         key: "acciones",
         label: "DETALLES",
         render: (_, row) => (
           <div className="flex gap-2 justify-center items-center">
-            <div
-              className="cursor-pointer"
-              onClick={() => {
-                setComprobanteSeleccionado(row);
-                setShowModal(true);
-              }}
-            >
-              <BsEye className="h-6 w-6" />
-            </div>
+            <div className="cursor-pointer" onClick={() => openVoucher(row)}>
+              <motion.div
+                className="cursor-pointer"
+                initial="closed"
+                whileHover="open"
+              >
+                <div className="flex items-center justify-center relative w-7 h-7">
+                  <AnimatePresence mode="wait">
+                    {/* Ojo cerrado */}
+                    <motion.div
+                      key="closed"
+                      variants={{
+                        closed: { opacity: 1, scale: 1 },
+                        open: { opacity: 0, scale: 0.8 },
+                      }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute"
+                    >
+                      <HideEyes size={28} />
+                    </motion.div>
 
+                    {/* Ojo abierto */}
+                    <motion.div
+                      key="open"
+                      variants={{
+                        closed: { opacity: 0, scale: 0.8 },
+                        open: { opacity: 1, scale: 1 },
+                      }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute bottom-[0.5px] left-[0.5px]"
+                    >
+                      <ShowEyes size={30} />
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            </div>
             <div title="Borrar" onClick={() => handlerDelete(row, "REPLENISH")}>
               <Delete />
             </div>
@@ -303,178 +387,51 @@ const InvoiceTable = () => {
     }`;
 
   return (
-    <>
-      {showPasswordModal && (
-        <PasswordConfirmModal
-          onCancel={() => setShowPasswordModal(false)}
-          onConfirm={confirmPasswordAndDelete}
-          isLoading={verifying || deleting}
-          error={verifyError ? "Contraseña incorrecta" : null}
-          onPasswordChange={setTempPassword}
-          password={tempPassword}
-        />
-      )}
-      {showModal && comprobanteSeleccionado && (
-        <InvoiceModal
-          onCancel={() => setShowModal(false)}
-          onConfirm={() => {
-            alert("Pago confirmado");
-            setShowModal(false);
-          }}
-          factura={{
-            id: comprobanteSeleccionado.id,
-            numero: comprobanteSeleccionado.number.includes(
-              "NOTA_CREDITO_PROVEEDOR"
-            )
-              ? (() => {
-                  const parts = comprobanteSeleccionado.number.split(/[-_]/);
-                  const numero = parts[parts.length - 1];
-                  return `NTC_${numero}`;
-                })()
-              : comprobanteSeleccionado.number ?? "—",
-            tipo: comprobanteSeleccionado.type ?? "—",
-            fecha: formatFechaISO(comprobanteSeleccionado.emissionDate),
-            origen: comprobanteSeleccionado.emissionBranchName ?? "—",
-            destino: `${comprobanteSeleccionado.destinationBranchName || "—"}`,
-            cliente: comprobanteSeleccionado.contactName ?? "—",
-            total: comprobanteSeleccionado.totalAmount ?? 0,
-          }}
-          productos={(comprobanteSeleccionado.products ?? []).map((p) => ({
-            codigo: p.code ?? "—",
-            descripcion: p.description ?? "—",
-            cantidad: p.quantity,
-            precio: p.price,
-            iva: p.iva ?? 21.5,
-          }))}
-          pago={{
-            formaDePago: comprobanteSeleccionado.initialPayment?.method ?? "—",
-            fechaPago: comprobanteSeleccionado.initialPayment?.receivedAt
-              ? new Date(
-                  comprobanteSeleccionado.initialPayment.receivedAt
-                ).toLocaleDateString("es-AR")
-              : "—",
-            montoPagado: comprobanteSeleccionado.paidAmount ?? 0,
-            saldoRestante: comprobanteSeleccionado.remainingAmount ?? 0,
-            banco: comprobanteSeleccionado.initialPayment?.bankName ?? "—",
-            numeroOperacion:
-              comprobanteSeleccionado.initialPayment?.chequeNumber ?? "—",
-            observaciones:
-              comprobanteSeleccionado.observation ?? "Sin observaciones.",
-            registradoPor: comprobanteSeleccionado.createdBy ?? "—",
-          }}
-        />
-      )}
-
-      {showModalRegisterPayment && comprobanteSeleccionado && (
-        <InvoicePaymentModal
-          onClose={() => setShowModalRegisterPayment(false)}
-          factura={{
-            id: comprobanteSeleccionado.id,
-            numero: comprobanteSeleccionado.number ?? "—",
-            proveedor: comprobanteSeleccionado.contactName ?? "—",
-            total: comprobanteSeleccionado.totalAmount ?? 0,
-            abonado: comprobanteSeleccionado.paidAmount ?? 0,
-            saldoPendiente: comprobanteSeleccionado.remainingAmount ?? 0,
-            vencimiento:
-              comprobanteSeleccionado.dueDate &&
-              new Date(comprobanteSeleccionado.dueDate) < new Date()
-                ? "Vencida"
-                : "En plazo",
-            pagosAnteriores: Array.isArray(
-              comprobanteSeleccionado.initialPayment
-            )
-              ? comprobanteSeleccionado.initialPayment.map((p) => ({
-                  fecha: p.receivedAt ? formatFechaISO(p.receivedAt) : "—",
-                  monto: p.amount ?? 0,
-                  metodo: p.method ?? "—",
-                  banco: p.bankName ?? undefined,
-                  numeroOperacion: p.chequeNumber ?? undefined,
-                }))
-              : comprobanteSeleccionado.initialPayment
-              ? [
-                  {
-                    fecha: comprobanteSeleccionado.initialPayment.receivedAt
-                      ? formatFechaISO(
-                          comprobanteSeleccionado.initialPayment.receivedAt
-                        )
-                      : "—",
-                    monto: comprobanteSeleccionado.initialPayment.amount ?? 0,
-                    metodo:
-                      comprobanteSeleccionado.initialPayment.method ?? "—",
-                    banco:
-                      comprobanteSeleccionado.initialPayment.bankName ??
-                      undefined,
-                    numeroOperacion:
-                      comprobanteSeleccionado.initialPayment.chequeNumber ??
-                      undefined,
-                  },
-                ]
-              : [],
-          }}
-        />
-      )}
-
-      <div className="w-full h-full bg-white rounded-lg shadow p-4">
-        <div className="flex text-[15px] font-medium rounded-t-lg overflow-hidden bg-[var(--brown-ligth-200)] mt-4">
-          <div className={tabClass("remito")} onClick={() => setTags("remito")}>
-            REMITOS
-          </div>
-          <div
-            className={tabClass("factura")}
-            onClick={() => setTags("factura")}
-          >
-            FACTURAS
-          </div>
-          <div
-            className={tabClass("credito")}
-            onClick={() => setTags("credito")}
-          >
-            NOTA DE CREDITO
-          </div>
+    <div className="w-full h-full bg-white rounded-lg shadow p-4">
+      {/* tabs */}
+      <div className="flex text-[15px] font-medium rounded-t-lg overflow-hidden bg-[var(--brown-ligth-200)]">
+        <div className={tabClass("remito")} onClick={() => setTags("remito")}>
+          REMITOS
         </div>
-
-        <div className="mt-4">
-          <input
-            type="text"
-            placeholder="Buscar comprobante..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md text-[15px]"
-          />
-
-          {searchText && (
-            <div className="mb-2 text-right text-[17px]">
-              Total adeudado por coincidencias:{" "}
-              <span className="text-red-700 font-medium">
-                $
-                {totalAdeudado.toLocaleString("es-AR", {
-                  minimumFractionDigits: 2,
-                })}
-              </span>
-            </div>
-          )}
-
-          <GenericTable
-            columns={
-              tags === "factura"
-                ? columnsFactura
-                : tags === "remito"
-                ? columnsRemito
-                : columnsCredito
-            }
-            data={rawVoucher}
-            enablePagination={true}
-            enableFilter={false}
-            isLoading={isLoading}
-            externalPagination={true}
-            currentPage={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-            paginationDisabled={isLoading}
-          />
+        <div className={tabClass("factura")} onClick={() => setTags("factura")}>
+          FACTURAS
+        </div>
+        <div className={tabClass("credito")} onClick={() => setTags("credito")}>
+          NOTA DE CREDITO
         </div>
       </div>
-    </>
+
+      {/* filtros */}
+      <FilterPanel
+        contact="proveedor"
+        dateFrom={dateFrom}
+        setDateFrom={setDateFrom}
+        dateUntil={dateUntil}
+        setDateUntil={setDateUntil}
+        setContactId={setContactId}
+        setBranch={setBranch}
+      />
+
+      {/* tabla */}
+      <GenericTable
+        columns={
+          tags === "factura"
+            ? columnsFactura
+            : tags === "remito"
+            ? columnsRemito
+            : columnsCredito
+        }
+        data={rawVoucher}
+        enablePagination={true}
+        enableFilter={false}
+        isLoading={isLoading}
+        externalPagination={true}
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        paginationDisabled={isLoading}
+      />
+    </div>
   );
 };
 

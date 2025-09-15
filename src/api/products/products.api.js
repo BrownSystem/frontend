@@ -65,10 +65,14 @@ export const downloadPdfQrs = async ({ products }) => {
   window.URL.revokeObjectURL(url);
 };
 
-export const downloadPdfProducts = async ({ products, branchOrder }) => {
+export const downloadPdfProducts = async ({
+  products,
+  branchOrder,
+  removeStockZero,
+}) => {
   const response = await AxiosInitializer.post(
     "/products/download-pdf-products",
-    { products, branchOrder },
+    { products, branchOrder, removeStockZero },
     { responseType: "blob" } // importante para archivos binarios
   );
 

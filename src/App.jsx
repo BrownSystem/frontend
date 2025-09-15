@@ -1,7 +1,11 @@
 import "./App.css";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
-import { ShopPanel, StockPanel } from "./components/dashboard/panels";
+import {
+  ShopPanel,
+  StockPanel,
+  VoucherPanel,
+} from "./components/dashboard/panels";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/common/Router/ProtectedRoute";
 import PublicRoute from "./components/common/Router/PublicRoute";
@@ -34,7 +38,17 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path="comprobantes/:id"
+            element={
+              <ProtectedRoute allowedRoles={["SELLER", "MANAGEMENT", "ADMIN"]}>
+                <VoucherPanel />
+              </ProtectedRoute>
+            }
+          />
         </Route>
+
         <Route
           path="/"
           element={

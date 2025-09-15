@@ -8,6 +8,7 @@ import {
   downloadVoucherHtml,
   generateVoucherNumber,
   deleteVoucher,
+  getOneVoucher,
 } from "./vouchers.api";
 
 export const useCreateVoucher = ({ onSuccess, onError } = {}) => {
@@ -96,6 +97,14 @@ export const useSearchReservedVouchers = ({
       searchReservedVouchers({ search, emissionBranchId, limit, offset }),
     enabled: !!emissionBranchId && offset >= 1,
     keepPreviousData: true,
+  });
+};
+
+export const useGetOneVoucher = (id) => {
+  return useQuery({
+    queryKey: ["vouchers", id],
+    queryFn: () => getOneVoucher(id),
+    enabled: !!id, // solo ejecuta si hay id
   });
 };
 

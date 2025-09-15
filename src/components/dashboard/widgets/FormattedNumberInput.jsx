@@ -44,7 +44,7 @@ const FormattedNumberInput = ({
         };
 
         return (
-          <div className="flex flex-col">
+          <div className="flex flex-col w-full">
             {label && (
               <label className="mb-1 text-sm font-medium text-gray-700">
                 {label}
@@ -52,16 +52,16 @@ const FormattedNumberInput = ({
             )}
             <input
               type="text"
-              defaultValue={
+              defaultValue={`${
                 field.value
                   ? new Intl.NumberFormat("es-AR", {
                       minimumFractionDigits: decimals,
                       maximumFractionDigits: decimals,
                     }).format(field.value)
                   : 0
-              }
+              }`}
               onChange={handleChange}
-              className={`border border-[var(--brown-ligth-400)] rounded px-2 py-1 text-right ${className}`}
+              className={`border border-[var(--brown-ligth-400)] rounded px-2 py-1 text-left ${className}`}
             />
           </div>
         );

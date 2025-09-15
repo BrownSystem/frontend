@@ -4,6 +4,7 @@ import { BsEye } from "react-icons/bs";
 import { useState } from "react";
 import { useAuthStore } from "../../../../../../api/auth/auth.store";
 import { useShopViewStore } from "@store/useShopViewStore";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   useCreateBranch,
@@ -11,7 +12,12 @@ import {
   useUpdateBranch,
 } from "../../../../../../api/branch/branch.queries";
 import { GenericTable, Message } from "../../../../widgets";
-import { Delete, Edit } from "../../../../../../assets/icons";
+import {
+  Delete,
+  Edit,
+  HideEyes,
+  ShowEyes,
+} from "../../../../../../assets/icons";
 
 const DepositsContent = () => {
   const queryClient = useQueryClient();
@@ -187,11 +193,42 @@ const DepositsContent = () => {
           </div>
         ) : (
           <div className="flex gap-2 justify-center items-center">
-            <BsEye
-              className="w-6 h-6 cursor-pointer"
+            <motion.div
+              className="cursor-pointer"
+              initial="closed"
+              whileHover="open"
               onClick={() => handleRowClick(row)}
-              title="Inspeccionar productos"
-            />
+            >
+              <div className="flex items-center justify-center relative w-7 h-7">
+                <AnimatePresence mode="wait">
+                  {/* Ojo cerrado */}
+                  <motion.div
+                    key="closed"
+                    variants={{
+                      closed: { opacity: 1, scale: 1 },
+                      open: { opacity: 0, scale: 0.8 },
+                    }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute"
+                  >
+                    <HideEyes size={28} />
+                  </motion.div>
+
+                  {/* Ojo abierto */}
+                  <motion.div
+                    key="open"
+                    variants={{
+                      closed: { opacity: 0, scale: 0.8 },
+                      open: { opacity: 1, scale: 1 },
+                    }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute bottom-[0.5px] left-[0.5px]"
+                  >
+                    <ShowEyes size={30} />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </motion.div>
             {isAdmin && (
               <>
                 <button

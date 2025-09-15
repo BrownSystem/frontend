@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Buy, Logout, Notification } from "../../../assets/icons";
+import { Buy, Comprobantes, Logout, Notification } from "../../../assets/icons";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../../api/auth/auth.store";
 import { NotificationModal } from "../../common";
@@ -77,6 +77,17 @@ const Sidebar = () => {
           </div>
         )}
 
+        {/* Comprobantes */}
+        {/* <div
+          onClick={() => handleSliderChange("ventas")}
+          className="group relative cursor-pointer border-none"
+        >
+          <Comprobantes size={32} />
+          <span className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 text-sm text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
+            Comprobantes
+          </span>
+        </div> */}
+
         {/* Ventas */}
         <div
           onClick={() => handleSliderChange("ventas")}
@@ -124,14 +135,11 @@ const Sidebar = () => {
           message: n.message,
           type: n.type || "success",
           actionLabel: "Ver detalle",
-          action: () => console.log("Ver notificación:", n.id),
         }))}
         onMarkAsRead={(notif) => {
-          console.log("📨 Marcar como leído", notif.id);
           markAsRead(notif.id);
         }}
         onDelete={(notif) => {
-          console.log("🗑️ Eliminar", notif.id);
           deleteNotification(notif.id);
         }}
       />

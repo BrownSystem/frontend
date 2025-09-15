@@ -17,7 +17,7 @@ const RegisterSalesContent = () => {
   return (
     <div className="w-auto h-full bg-white rounded-lg  p-4">
       <div className="flex">
-        <div className="w-[90%] flex items-center gap-4">
+        <div className="w-[90%] flex items-center justify-start pl-9 gap-4">
           <OptionCard
             text={"Ingresar factura"}
             onClick={() => setView("createInvoice")}
@@ -36,7 +36,7 @@ const RegisterSalesContent = () => {
         </div>
       </div>
 
-      <div className="w-full  bg-white px-4 py-2 mt-2 rounded-xl border border-[var(--brown-ligth-100)]">
+      <div className="w-full  px-4 ">
         <RenderOptions viewMap={viewMap} defaultView={"createInvoice"} />
       </div>
     </div>

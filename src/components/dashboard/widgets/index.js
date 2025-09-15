@@ -12,3 +12,5 @@ export { default as EntryCard } from "./EntryCard";
 export { default as DatePickerCustom } from "./DatePickerCustom";
 export { default as FormattedAmount } from "./FormattedAmount";
 export { default as FormattedNumberInput } from "./FormattedNumberInput";
+export { default as LabelInvoice } from "./LabelInvoice";
+export { default as FilterPanel } from "./FilterPanel";

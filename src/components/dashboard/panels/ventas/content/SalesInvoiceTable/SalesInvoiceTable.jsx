@@ -1,22 +1,28 @@
-import { useEffect, useState } from "react";
-import { GenericTable } from "../../../../widgets";
-import { InvoiceModal, InvoicePaymentModal } from "../../../../../common";
-import { BsEye } from "react-icons/bs";
-import { useAuthStore } from "../../../../../../api/auth/auth.store";
+import { useState } from "react";
+import { FilterPanel, GenericTable } from "../../../../widgets";
 import { usePaginatedTableData } from "../../../../../../hooks/usePaginatedTableData";
 import { searchVoucher } from "../../../../../../api/vouchers/vouchers.api";
-import { Delete, Edit, Replenish } from "../../../../../../assets/icons";
-import { useDeleteVoucher } from "../../../../../../api/vouchers/vouchers.queries";
+import { HideEyes, ShowEyes } from "../../../../../../assets/icons";
 import { formatFechaISO } from "../../../stocks/content/SupplierContent/tables/InvoiceTable";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { useSalesViewShopStore } from "../../../../../../store/useTagsStore";
 
 const SalesInvoiceTable = () => {
-  const [showModal, setShowModal] = useState(false);
-  const user = useAuthStore((state) => state.user);
-  const [showModalRegisterPayment, setShowModalRegisterPayment] =
-    useState(false);
-  const [tags, setTags] = useState("ventas");
+  const navigate = useNavigate();
+
+  const tags = useSalesViewShopStore((state) => state.tags);
+  const setTags = useSalesViewShopStore((state) => state.setTags);
   const [searchText, setSearchText] = useState("");
-  const [comprobanteSeleccionado, setComprobanteSeleccionado] = useState(null);
+
+  // Filtros
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateUntil, setDateUntil] = useState("");
+  const [contactId, setContactId] = useState("");
+  const [branch, setBranch] = useState("");
+  const [montoMin, setMontoMin] = useState("");
+  const [montoMax, setMontoMax] = useState("");
+
   const limit = 100;
 
   const conditionPaymentMap = {
@@ -26,7 +32,18 @@ const SalesInvoiceTable = () => {
   };
 
   const conditionPaymentSelect = conditionPaymentMap[tags];
-  console.log(comprobanteSeleccionado);
+
+  const additionalParams = {
+    conditionPayment: conditionPaymentSelect,
+    type: tags === "ventas" || tags === "pagos" ? "P" : "NOTA_CREDITO_CLIENTE",
+    ...(dateFrom && { dateFrom: new Date(dateFrom) }),
+    ...(dateUntil && { dateUntil: new Date(dateUntil) }),
+    ...(contactId && { contactId }),
+    ...(branch && { branch }),
+    // ...(montoMin && { montoMin }),
+    // ...(montoMax && { montoMax }),
+  };
+
   const {
     data: rawVoucher,
     page,
@@ -37,20 +54,15 @@ const SalesInvoiceTable = () => {
     fetchFunction: searchVoucher,
     queryKeyBase: "vouchers",
     search: searchText,
-    additionalParams: {
-      conditionPayment: conditionPaymentSelect,
-      type:
-        tags === "ventas" || tags === "pagos" ? "P" : "NOTA_CREDITO_CLIENTE",
-    },
+    additionalParams,
     limit,
     enabled: true,
   });
 
-  const totalAdeudado = rawVoucher
-    .filter((v) =>
-      v.contactName?.toLowerCase().includes(searchText.toLowerCase())
-    )
-    .reduce((acc, curr) => acc + (curr.remainingAmount || 0), 0);
+  // Función para abrir comprobante y guardarlo en localStorage
+  const openVoucher = (row) => {
+    navigate(`/dashboard/comprobantes/${row.id}`);
+  };
 
   const columnsVentas = [
     {
@@ -99,13 +111,43 @@ const SalesInvoiceTable = () => {
         <div className="flex gap-2 justify-center items-center">
           <div
             className="flex items-center justify-center cursor-pointer"
-            onClick={() => {
-              setShowModal(true);
-              setComprobanteSeleccionado(row); // ← guardás el comprobante
-              setShowModal(true);
-            }}
+            onClick={() => openVoucher(row)}
           >
-            <BsEye className="h-6 w-6" />
+            <motion.div
+              className="cursor-pointer"
+              initial="closed"
+              whileHover="open"
+            >
+              <div className="flex items-center justify-center relative w-7 h-7">
+                <AnimatePresence mode="wait">
+                  {/* Ojo cerrado */}
+                  <motion.div
+                    key="closed"
+                    variants={{
+                      closed: { opacity: 1, scale: 1 },
+                      open: { opacity: 0, scale: 0.8 },
+                    }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute"
+                  >
+                    <HideEyes size={28} />
+                  </motion.div>
+
+                  {/* Ojo abierto */}
+                  <motion.div
+                    key="open"
+                    variants={{
+                      closed: { opacity: 0, scale: 0.8 },
+                      open: { opacity: 1, scale: 1 },
+                    }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute bottom-[0.5px] left-[0.5px]"
+                  >
+                    <ShowEyes size={30} />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </motion.div>
           </div>
         </div>
       ),
@@ -124,11 +166,9 @@ const SalesInvoiceTable = () => {
       label: "NUMERO",
       className: "text-center",
       render: (value) => {
-        // Si contiene "NOTA_CREDITO_CLIENTE", abreviamos
         if (value.includes("NOTA_CREDITO_CLIENTE")) {
-          // Extraemos el número después del guion o subrayado
-          const parts = value.split(/[-_]/); // divide por '-' o '_'
-          const numero = parts[parts.length - 1]; // tomamos la última parte
+          const parts = value.split(/[-_]/);
+          const numero = parts[parts.length - 1];
           return (
             <p className="bg-[var(--brown-ligth-100)] rounded-lg border-[1px] border-[var(--brown-dark-500)]">
               NTC_{numero}
@@ -136,7 +176,6 @@ const SalesInvoiceTable = () => {
           );
         }
 
-        // Caso normal
         return (
           <p className="bg-[var(--brown-ligth-100)] rounded-lg border-[1px] border-[var(--brown-dark-500)]">
             {value}
@@ -154,16 +193,10 @@ const SalesInvoiceTable = () => {
         </p>
       ),
     },
+
     {
-      key: "totalAmount",
-      label: "MONTO",
-      className: "text-center",
-      render: (value) =>
-        `$${value.toLocaleString("es-AR", { minimumFractionDigits: 2 })}`,
-    },
-    {
-      key: "paidAmount",
-      label: "MONTO ABONADO",
+      key: "remainingAmount",
+      label: "SALDO",
       className: "text-center",
       render: (value) =>
         `$${value.toLocaleString("es-AR", { minimumFractionDigits: 2 })}`,
@@ -179,26 +212,43 @@ const SalesInvoiceTable = () => {
       label: "DETALLES",
       render: (_, row) => (
         <div className="flex gap-2 justify-center items-center">
-          <div
-            className="cursor-pointer"
-            onClick={() => {
-              setShowModal(true);
-              setComprobanteSeleccionado(row); // ← guardás el comprobante
-              setShowModal(true);
-            }}
-          >
-            <BsEye className="h-6 w-6" />
-          </div>
-          {tags !== "creditos" && row.remainingAmount > 0 && (
-            <div
-              onClick={() => {
-                setComprobanteSeleccionado(row);
-                setShowModalRegisterPayment(true);
-              }}
+          <div className="cursor-pointer" onClick={() => openVoucher(row)}>
+            <motion.div
+              className="cursor-pointer"
+              initial="closed"
+              whileHover="open"
             >
-              <Edit color={"black"} />
-            </div>
-          )}
+              <div className="flex items-center justify-center relative w-7 h-7">
+                <AnimatePresence mode="wait">
+                  {/* Ojo cerrado */}
+                  <motion.div
+                    key="closed"
+                    variants={{
+                      closed: { opacity: 1, scale: 1 },
+                      open: { opacity: 0, scale: 0.8 },
+                    }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute"
+                  >
+                    <HideEyes size={28} />
+                  </motion.div>
+
+                  {/* Ojo abierto */}
+                  <motion.div
+                    key="open"
+                    variants={{
+                      closed: { opacity: 0, scale: 0.8 },
+                      open: { opacity: 1, scale: 1 },
+                    }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute bottom-[0.5px] left-[0.5px]"
+                  >
+                    <ShowEyes size={30} />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          </div>
         </div>
       ),
     },
@@ -212,117 +262,10 @@ const SalesInvoiceTable = () => {
 
   return (
     <>
-      {showModal && comprobanteSeleccionado && (
-        <InvoiceModal
-          onCancel={() => setShowModal(false)}
-          onConfirm={() => {
-            alert("Pago confirmado");
-            setShowModal(false);
-          }}
-          factura={{
-            id: comprobanteSeleccionado.id,
-            origen: comprobanteSeleccionado.emissionBranchName ?? "—",
-            numero: comprobanteSeleccionado.number.includes(
-              "NOTA_CREDITO_CLIENTE"
-            )
-              ? (() => {
-                  const parts = comprobanteSeleccionado.number.split(/[-_]/);
-                  const numero = parts[parts.length - 1];
-                  return `NTC_${numero}`;
-                })()
-              : comprobanteSeleccionado.number ?? "—",
-            tipo: comprobanteSeleccionado.type ?? "—",
-            fecha: formatFechaISO(comprobanteSeleccionado.emissionDate) ?? "—",
-            cliente: comprobanteSeleccionado.contactName ?? "—",
-            direccion: comprobanteSeleccionado.contactAddress ?? "—",
-            total: comprobanteSeleccionado.totalAmount ?? 0,
-          }}
-          productos={(comprobanteSeleccionado.products ?? []).map((p) => ({
-            codigo: p.code,
-            descripcion: p.description ?? "—",
-            cantidad: p.quantity,
-            precio: p.price,
-            iva: p.iva ?? 21.5,
-          }))}
-          pago={{
-            formaDePago: comprobanteSeleccionado.payments[0]?.method ?? "—",
-            fechaPago: comprobanteSeleccionado.payments[0]?.receivedAt
-              ? new Date(
-                  comprobanteSeleccionado.payments[0].receivedAt
-                ).toLocaleDateString("es-AR")
-              : "—",
-            montoPagado: comprobanteSeleccionado.paidAmount ?? 0,
-            saldoRestante: comprobanteSeleccionado.remainingAmount ?? 0,
-            banco: comprobanteSeleccionado.payments[0]?.bankName ?? "—",
-            numeroOperacion:
-              comprobanteSeleccionado.payments[0]?.chequeNumber ?? "—",
-            observaciones:
-              comprobanteSeleccionado.observation ?? "Sin observaciones.",
-            registradoPor: comprobanteSeleccionado.createdBy ?? "—",
-          }}
-        />
-      )}
-
-      {showModalRegisterPayment && comprobanteSeleccionado && (
-        <InvoicePaymentModal
-          onClose={() => setShowModalRegisterPayment(false)}
-          factura={{
-            id: comprobanteSeleccionado.id,
-            numero: comprobanteSeleccionado.number.includes(
-              "NOTA_CREDITO_CLIENTE"
-            )
-              ? (() => {
-                  const parts = comprobanteSeleccionado.number.split(/[-_]/);
-                  const numero = parts[parts.length - 1];
-                  return `NTC_${numero}`;
-                })()
-              : comprobanteSeleccionado.number ?? "—",
-            proveedor: comprobanteSeleccionado.contactName ?? "—",
-            total: comprobanteSeleccionado.totalAmount ?? 0,
-            abonado: comprobanteSeleccionado.paidAmount ?? 0,
-            saldoPendiente: comprobanteSeleccionado.remainingAmount ?? 0,
-            vencimiento:
-              comprobanteSeleccionado.dueDate &&
-              new Date(comprobanteSeleccionado.dueDate) < new Date()
-                ? "Vencida"
-                : "En plazo",
-            pagosAnteriores: Array.isArray(
-              comprobanteSeleccionado.initialPayment
-            )
-              ? comprobanteSeleccionado.initialPayment.map((p) => ({
-                  fecha: p.receivedAt ? formatFechaISO(p.receivedAt) : "—",
-                  monto: p.amount ?? 0,
-                  metodo: p.method ?? "—",
-                  banco: p.bankName ?? undefined,
-                  numeroOperacion: p.chequeNumber ?? undefined,
-                }))
-              : comprobanteSeleccionado.initialPayment
-              ? [
-                  {
-                    fecha: comprobanteSeleccionado.initialPayment.receivedAt
-                      ? new Date(
-                          comprobanteSeleccionado.initialPayment.receivedAt
-                        ).toLocaleDateString("es-AR")
-                      : "—",
-                    monto: comprobanteSeleccionado.initialPayment.amount ?? 0,
-                    metodo:
-                      comprobanteSeleccionado.initialPayment.method ?? "—",
-                    banco:
-                      comprobanteSeleccionado.initialPayment.bankName ??
-                      undefined,
-                    numeroOperacion:
-                      comprobanteSeleccionado.initialPayment.chequeNumber ??
-                      undefined,
-                  },
-                ]
-              : [],
-          }}
-        />
-      )}
-
-      <div className="w-full h-full bg-white rounded-lg shadow p-4">
+      {/* CONTENEDOR */}
+      <div className="w-full h-full bg-white rounded-lg shadow ">
         <div className="w-full h-full bg-white rounded-lg shadow p-4">
-          <div className="flex text-[15px] font-medium rounded-t-lg overflow-hidden bg-[var(--brown-ligth-200)] mt-4">
+          <div className="flex text-[15px] font-medium rounded-t-lg overflow-hidden bg-[var(--brown-ligth-200)]">
             {tabs.map((tab) => (
               <div
                 key={tab.value}
@@ -339,40 +282,30 @@ const SalesInvoiceTable = () => {
           </div>
         </div>
 
-        <div className="mt-4">
-          <div className="mt-6 ">
-            <input
-              type="text"
-              placeholder="Buscar comprobante..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md text-[15px]"
-            />
-          </div>
-          {searchText && (
-            <div className="mb-2 text-right text-[17px] ">
-              Total adeudado por coincidencias:{" "}
-              <span className="text-red-700 font-medium">
-                $
-                {totalAdeudado.toLocaleString("es-AR", {
-                  minimumFractionDigits: 2,
-                })}
-              </span>
-            </div>
-          )}
-          <GenericTable
-            columns={tags === "pagos" ? columnsVentas : columnsPagos}
-            data={rawVoucher}
-            enablePagination={true}
-            enableFilter={false}
-            isLoading={isLoading}
-            externalPagination={true}
-            currentPage={page}
-            totalPages={totalPages}
-            onPageChange={(newPage) => setPage(newPage)}
-            paginationDisabled={isLoading}
-          />
-        </div>
+        {/* PANEL DE FILTROS */}
+        <FilterPanel
+          contact="cliente"
+          dateFrom={dateFrom}
+          setDateFrom={setDateFrom}
+          dateUntil={dateUntil}
+          setDateUntil={setDateUntil}
+          setContactId={setContactId}
+          setBranch={setBranch}
+        />
+
+        {/* TABLA */}
+        <GenericTable
+          columns={tags === "pagos" ? columnsVentas : columnsPagos}
+          data={rawVoucher}
+          enablePagination={true}
+          enableFilter={false}
+          isLoading={isLoading}
+          externalPagination={true}
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={(newPage) => setPage(newPage)}
+          paginationDisabled={isLoading}
+        />
       </div>
     </>
   );

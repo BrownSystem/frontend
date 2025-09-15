@@ -1,5 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createContact, searchContacts } from "./contacts.api";
+import {
+  createContact,
+  findOneContact,
+  searchContacts,
+  updateContact,
+} from "./contacts.api";
 
 export const useSearchContacts = ({
   search,
@@ -10,13 +15,20 @@ export const useSearchContacts = ({
 }) => {
   return useQuery({
     queryKey: ["contacts", search?.trim(), branchId, type, limit, offset],
-    queryFn: () => searchContacts({ search, branchId, type, limit, offset }),
-    enabled: !!branchId && offset >= 0,
-    keepPreviousData: true, // mantiene los datos anteriores mientras se carga la nueva página
+    queryFn: () =>
+      searchContacts({
+        search,
+        branchId: branchId || undefined, // 👈 importante
+        type,
+        limit,
+        offset,
+      }),
+    enabled: offset >= 0, // 👈 ya no depende de branchId
+    keepPreviousData: true,
   });
 };
 
-export const useCreateContact = ({ onSuccess }) => {
+export const useCreateContact = ({ onSuccess, onError }) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -27,6 +39,37 @@ export const useCreateContact = ({ onSuccess }) => {
 
       // Callback opcional
       if (onSuccess) onSuccess(data);
+    },
+    onError: (error) => {
+      if (onError) onError(error);
+    },
+  });
+};
+
+export const useFindOneContact = (
+  id,
+  { enabled = !!id, onSuccess, onError } = {}
+) => {
+  return useQuery({
+    queryKey: ["contacts", id],
+    queryFn: () => findOneContact(id),
+    enabled, // solo ejecuta si hay id
+    onSuccess,
+    onError,
+  });
+};
+
+export const useUpdateContact = ({ onSuccess, onError }) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, contactData }) => updateContact(id, contactData),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["contacts"] });
+      if (onSuccess) onSuccess(data);
+    },
+    onError: (error) => {
+      if (onError) onError(error);
     },
   });
 };

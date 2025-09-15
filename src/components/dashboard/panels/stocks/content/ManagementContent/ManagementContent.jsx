@@ -23,8 +23,8 @@ const MoreOptionsContent = () => {
   return (
     <>
       <div className="w-auto h-full bg-white   p-4">
-        <div className="flex">
-          <div className="w-[90%] flex items-center gap-4">
+        <div className="flex ">
+          <div className="w-[90%] flex justify-start pl-7 items-center gap-4">
             <OptionCard
               text={"Añadir Empleados"}
               onClick={() => setView("createUser")}

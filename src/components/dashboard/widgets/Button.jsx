@@ -1,13 +1,17 @@
-import React from "react";
-
-const Button = ({ text, onClick, type }) => {
+const Button = ({ text, onClick, type, Icon, textSize, disabled = false }) => {
   return (
     <button
       type={type}
       onClick={onClick}
-      className="bg-[var(--brown-ligth-50)] cursor-pointer border-[1px] border-[var(--brown-ligth-400)] text-[var(--brown-dark-950)] px-6 py-2 rounded hover:bg-[var(--brown-ligth-200)] w-full"
+      disabled={disabled}
+      className={`flex flex-col px-6 py-2 rounded cursor-pointer ${
+        disabled
+          ? " border-[1px] border-[var(--brown-ligth-200)] text-[var(--brown-dark-950)"
+          : "bg-[var(--brown-ligth-50)]  border-[1px] border-[var(--brown-ligth-400)] text-[var(--brown-dark-950)] hover:bg-[var(--brown-ligth-200)]"
+      } w-auto`}
     >
-      {text}
+      {Icon}
+      <p className={` ${textSize || "text-md"} `}>{text}</p>
     </button>
   );
 };

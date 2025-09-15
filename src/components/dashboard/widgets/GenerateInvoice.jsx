@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
-import { CreateUser, Danger, Delete, Warning } from "../../../assets/icons";
-import Button from "./Button";
 import {
-  ContactCreateModal,
-  ProductSearchModal,
-  RegisterPaymentModal,
-} from "../../common";
+  CreateUser,
+  Danger,
+  Delete,
+  PeopleTick,
+  Warning,
+} from "../../../assets/icons";
+import Button from "./Button";
+import { ProductSearchModal, RegisterPaymentModal } from "../../common";
 import { useSearchContacts } from "../../../api/contacts/contacts.queries";
 import { useAuthStore } from "../../../api/auth/auth.store";
 import { useFindAllBranch } from "../../../api/branch/branch.queries";
@@ -18,6 +20,9 @@ import Message from "./Message";
 import { useCreateNotification } from "../../../api/notification/notification.queries";
 import FormattedAmount from "./FormattedAmount";
 import FormattedNumberInput from "./FormattedNumberInput";
+import ContactCreateModal from "../../common/Modal/Contacts/ContactCreateModal";
+import LabelInvoice from "./LabelInvoice";
+import { notifyVoucher } from "../../../api/notification/notifications";
 
 const CreateInvoice = ({ tipoOperacion }) => {
   const {
@@ -54,8 +59,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
   const [showContactModal, setShowContactModal] = useState(false);
   const [showProductModal, setShowProductModal] = useState(false);
   const [selectedProductIndex, setSelectedProductIndex] = useState(null);
-  const [selectedProductEqual, setSelectedProductEqual] = useState(false);
-  const [searchEntidad, setSearchEntidad] = useState("");
+
   const [selectedEntidadName, setSelectedEntidadName] = useState("");
   const [message, setMessage] = useState({ text: "", type: "info" });
 
@@ -75,7 +79,6 @@ const CreateInvoice = ({ tipoOperacion }) => {
   }, [tipoOperacion]);
 
   const campoEntidad = tipoOperacion === "venta" ? "cliente" : "proveedor";
-  const tipoEntidad = tipoOperacion === "venta" ? "CLIENT" : "SUPPLIER";
 
   const productos = watch("productos");
 
@@ -159,7 +162,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
 
   const onSubmit = (data) => {
     setMessage({ text: "", type: "info" }); // Limpiar mensaje previo
-
+    setSelectedEntidadName("");
     // Validación 1: verificar que haya al menos un producto válido
     if (!data.productos || data.productos.length === 0) {
       setMessage({ text: "Debe agregar al menos un producto.", type: "error" });
@@ -266,6 +269,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
       })),
       totalAmount: parseFloat(totalFactura),
       paidAmount: parseFloat(totalPagado),
+
       available: true,
       createdBy: setUser.id,
       emittedBy: setUser.id,
@@ -286,45 +290,17 @@ const CreateInvoice = ({ tipoOperacion }) => {
     createVoucher(payload, {
       onSuccess: (response) => {
         if (response.data.status >= 400) return;
-
-        const productosAfectados = data.productos;
-
-        // Crear una notificación por cada producto
-        productosAfectados.forEach((producto) => {
-          const sucursalProducto =
-            branches.find((b) => b.id === producto.branchId)?.name ||
-            "Sucursal destino";
-
-          // Notificamos a la sucursal propietaria del producto
-          notify({
-            branchId: producto.branchId,
-            type: "PRODUCT_TRANSFER",
-            title: `Producto descontado: ${producto.descripcion}`,
-            message: `El producto "${producto.descripcion}" fue descontado (${producto.quantity}) en una operación emitida desde la sucursal.`,
-          });
-
-          // Si el producto viene de otra sucursal, también notificamos a la emisora
-          if (producto.branchId !== setUser.branchId) {
-            notify({
-              branchId: setUser.branchId,
-              type: "PRODUCT_TRANSFER",
-              title: `Uso de producto externo: ${producto.descripcion}`,
-              message: `Se descontó el producto "${producto.descripcion}" perteneciente a la sucursal ${sucursalProducto}.`,
-            });
-          }
-          reset();
+        notifyVoucher({
+          payload,
+          data,
+          setUser,
+          numeroGenerado,
+          notify,
         });
+        reset();
       },
     });
   };
-
-  const { data: entidadesFiltradas = [] } = useSearchContacts({
-    search: searchEntidad,
-    branchId: origenSucursal,
-    type: tipoEntidad,
-    limit: 6,
-    offset: 1,
-  });
 
   return (
     <>
@@ -336,163 +312,191 @@ const CreateInvoice = ({ tipoOperacion }) => {
       />
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="rounded-md space-y-4 h-full"
+        className="rounded-md space-y-4 h-full mt-6"
       >
         <div className="grid grid-cols-2 gap-4 px-5 relative">
-          <div>
-            <label className="block text-brown-800 font-medium mb-1">
-              Tipo de Comprobante
-            </label>
-            <select
-              {...register("tipoFactura", { required: true })}
-              className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-white"
-            >
-              {tiposFactura.map((fact) => (
-                <option key={fact.value} value={fact.value}>
-                  {fact.label}
-                </option>
-              ))}
-            </select>
+          {/* INFORMACION DEL COMPROBANTE */}
+          <div className="col-span-2 flex w-full justify-center gap-2 bg-[var(--brown-ligth-100)] p-5 rounded-md">
+            {/* TIPO DE COMPROBANTE */}
+            <div className="w-full">
+              <LabelInvoice text={"Tipo de comprobante"} optional={false} />
+              <select
+                {...register("tipoFactura", { required: true })}
+                className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+              >
+                {tiposFactura.map((fact) => (
+                  <option key={fact.value} value={fact.value}>
+                    {fact.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* ORIGEN DE COMPROBANTE */}
+            <div className="w-full">
+              <LabelInvoice text={"Origen (Sucursal)"} />
+              <select
+                {...register("origenSucursal", { required: true })}
+                className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+              >
+                <option value="">Seleccionar sucursal</option>
+                {branches.map((branch) => (
+                  <option key={branch.id} value={branch.id}>
+                    {branch.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-brown-800 font-medium mb-1">
-              Fecha
-            </label>
-            <input
-              type="date"
-              {...register("fecha", { required: "La fecha es obligatoria" })}
-              className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2"
-            />
-            {errors.fecha && (
-              <span className="text-red-600 text-sm">
-                {errors.fecha.message}
-              </span>
-            )}
+          {/* FECHA Y NUMERACIÓN */}
+          <div className="col-span-2 flex w-full justify-center gap-2 bg-[var(--brown-ligth-100)] p-5 rounded-md">
+            {/* FECHA DEL COMPROBANTE */}
+            <div className="w-full">
+              <LabelInvoice text={"Fecha"} />
+              <input
+                type="date"
+                {...register("fecha", { required: "La fecha es obligatoria" })}
+                className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+              />
+              {errors.fecha && (
+                <span className="text-red-600 text-sm">
+                  {errors.fecha.message}
+                </span>
+              )}
+            </div>
+
+            {/* NUMERACION DEL COMPROBANTE */}
+            <div className="w-full">
+              <LabelInvoice
+                text={"Numeración de comprobante"}
+                optional={false}
+              />
+
+              <input
+                type="text"
+                className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-[6.8px] bg-[var(--brown-ligth-50)]"
+                placeholder="F-0001"
+                value={
+                  !origenSucursalSeleccionada
+                    ? "Selecciona una sucursal"
+                    : numeroGenerado?.number || "Generando..."
+                }
+                readOnly
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-brown-800 font-medium mb-1">
-              Origen (Sucursal)
-            </label>
-            <select
-              {...register("origenSucursal", { required: true })}
-              className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-white"
-            >
-              <option value="">Seleccionar sucursal</option>
-              {branches.map((branch) => (
-                <option key={branch.id} value={branch.id}>
-                  {branch.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="relative">
-            {watch("tipoFactura") !== "REMITO" ? (
-              <div className="relative">
-                <label className="block text-brown-800 font-medium mb-1">
-                  {tipoOperacion === "venta" ? "Cliente" : "Proveedor"}
-                </label>
+          {/* CONTACTO Y VENDEDOR */}
+          <div className="col-span-2 flex w-full justify-center gap-2 bg-[var(--brown-ligth-100)] p-5 rounded-md">
+            {/* VENDEDOR */}
+            {watch("tipoFactura") !== "REMITO" && tipoOperacion === "venta" ? (
+              <div className="relative w-full">
+                <LabelInvoice text="Vendedor" />
                 <input
                   type="text"
-                  value={searchEntidad}
+                  value={selectedEntidadName}
                   onChange={(e) => {
                     setSearchEntidad(e.target.value);
                     setSelectedProductEqual(false);
                   }}
-                  placeholder="Buscar por Nombre/DNI"
-                  className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2"
-                  disabled={!origenSucursalSeleccionada}
+                  placeholder="NO DISPONIBLE"
+                  className="w-full bg-[var(--brown-ligth-50)] border border-[var(--brown-ligth-400)] rounded px-3 py-2"
+                  disabled={true}
+                  onFocus={() => {
+                    origenSucursalSeleccionada && setShowContactModal(true);
+                    !origenSucursalSeleccionada && handleOpenProductModal();
+                  }}
                 />
-                {!origenSucursalSeleccionada && (
-                  <p className="text-red-700 flex items-center gap-2 pt-1">
-                    <Danger color="red" size={"20"} />
-                    Debes seleccionar una sucursal
-                  </p>
-                )}
                 <span
                   className="absolute right-2 top-12 transform -translate-y-1/2 cursor-pointer"
-                  onClick={() => setShowContactModal(true)}
+                  onClick={() => {
+                    origenSucursalSeleccionada && setShowContactModal(true);
+                    !origenSucursalSeleccionada && handleOpenProductModal();
+                  }}
                 >
-                  <CreateUser color="#292828" size="24" />
+                  <PeopleTick color="#292828" size="24" />
                 </span>
-
-                {searchEntidad &&
-                  entidadesFiltradas.data?.length > 0 &&
-                  !selectedProductEqual && (
-                    <ul className="absolute z-10 bg-white border border-gray-300 rounded w-full mt-1 max-h-40 overflow-auto shadow">
-                      {entidadesFiltradas.data.map((entidad) => (
-                        <li
-                          key={entidad.id}
-                          onClick={() => {
-                            setSearchEntidad(entidad.name);
-                            setSelectedEntidadName(entidad.name);
-                            setValue(campoEntidad, entidad.id);
-                          }}
-                          className="p-2 hover:bg-gray-100 cursor-pointer"
-                        >
-                          {searchEntidad === entidad.name
-                            ? setSelectedProductEqual(true)
-                            : `${entidad.name} - ${entidad.phone}`}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
               </div>
             ) : (
-              <div className="flex gap-2">
-                <div>
-                  <label className="block text-brown-800 font-medium mb-1">
-                    Destino (Sucursal)
-                  </label>
-                  <select
-                    {...register("destinoSucursal", { required: true })}
-                    className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-white"
-                  >
-                    <option value="">Seleccionar sucursal</option>
-                    {branches.map((branch) => (
-                      <option key={branch.id} value={branch.id}>
-                        {branch.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              ""
             )}
+
+            {/* CONTACTO */}
+            <div className="relative w-full">
+              {watch("tipoFactura") !== "REMITO" ? (
+                <div className="relative">
+                  <LabelInvoice
+                    text={tipoOperacion === "venta" ? "Cliente" : "Proveedor"}
+                  />
+                  <input
+                    type="text"
+                    value={selectedEntidadName}
+                    onChange={(e) => {
+                      setSearchEntidad(e.target.value);
+                      setSelectedProductEqual(false);
+                    }}
+                    placeholder="Clickear Icono"
+                    className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+                    disabled={true}
+                    onFocus={() => {
+                      origenSucursalSeleccionada && setShowContactModal(true);
+                      !origenSucursalSeleccionada && handleOpenProductModal();
+                    }}
+                  />
+                  {!origenSucursalSeleccionada && (
+                    <p className="text-red-700 flex items-center gap-2 pt-1">
+                      <Danger color="red" size={"20"} />
+                      Debes seleccionar una sucursal
+                    </p>
+                  )}
+                  <span
+                    className="absolute right-2 top-12 transform -translate-y-1/2 cursor-pointer"
+                    onClick={() => {
+                      origenSucursalSeleccionada && setShowContactModal(true);
+                      !origenSucursalSeleccionada && handleOpenProductModal();
+                    }}
+                  >
+                    <PeopleTick color="#292828" size="24" />
+                  </span>
+                </div>
+              ) : (
+                <div className="flex gap-2 w-full">
+                  <div className="w-full">
+                    <LabelInvoice text={"Destino (sucursal)"} />
+                    <select
+                      {...register("destinoSucursal", { required: true })}
+                      className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+                    >
+                      <option value="">Seleccionar sucursal</option>
+                      {branches.map((branch) => (
+                        <option key={branch.id} value={branch.id}>
+                          {branch.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div>
-            <label className="block text-brown-800 font-medium mb-1">
-              Número de Comprobante
-            </label>
-            <input
-              type="text"
-              className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2"
-              placeholder="F-0001"
-              value={
-                !origenSucursalSeleccionada
-                  ? "Selecciona una sucursal"
-                  : numeroGenerado?.number || "Generando..."
-              }
-              readOnly
-            />
-          </div>
-          <div>
-            <label className="block text-brown-800 font-medium mb-1">
-              Observación
-            </label>
-            <input
-              {...register("observation")}
-              type="text"
-              className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2"
-              placeholder="Agregar Observacón"
-            />
+          {/* OBSERVACION */}
+          <div className="col-span-2 flex w-full justify-center gap-2 bg-[var(--brown-ligth-100)] p-5 rounded-md">
+            <div className="w-full">
+              <LabelInvoice text="Observación" optional={true} />
+              <input
+                {...register("observation")}
+                type="text"
+                className="w-full bg-[var(--brown-ligth-50)] border border-[var(--brown-ligth-400)] rounded px-3 py-2"
+                placeholder="Agregar Observacón"
+              />
+            </div>
           </div>
         </div>
 
         <div className="space-y-2 px-5">
-          <div className="grid grid-cols-5 gap-2 font-medium text-black bg-[#FDF7F1] rounded-t-md px-4 py-2 border border-[var(--brown-ligth-400)]">
+          <div className="grid grid-cols-5 gap-2 font-medium text-[var(--brown-dark-950)] bg-[var(--brown-ligth-200)] rounded-t-md px-4 py-2 border border-[var(--brown-ligth-400)]">
             <div className="text-start">DESCRIPCIÓN</div>
             <div className="text-end">PRECIO</div>
             <div className="text-end">CANTIDAD</div>
@@ -509,11 +513,13 @@ const CreateInvoice = ({ tipoOperacion }) => {
                 <button
                   type="button"
                   onClick={() => {
-                    handleOpenProductModal();
-                    setSelectedProductIndex(index);
-                    setShowProductModal(true);
+                    !origenSucursalSeleccionada && handleOpenProductModal();
+                    origenSucursalSeleccionada && handleOpenProductModal();
+                    origenSucursalSeleccionada &&
+                      setSelectedProductIndex(index);
+                    origenSucursalSeleccionada && setShowProductModal(true);
                   }}
-                  className="w-full text-left border border-[var(--brown-ligth-400)] rounded px-2 py-1 bg-white"
+                  className="w-full text-left border border-[var(--brown-ligth-400)] rounded px-2 py-1 bg-[var(--brown-ligth-50)]"
                 >
                   {watch(`productos.${index}.descripcion`) ||
                     "Seleccionar producto..."}
@@ -523,22 +529,22 @@ const CreateInvoice = ({ tipoOperacion }) => {
               <FormattedNumberInput
                 name={`productos.${index}.precio`}
                 control={control}
-                className="border border-[var(--brown-ligth-400)] rounded px-2 py-1 text-right"
+                className="border border-[var(--brown-ligth-400)] rounded px-2 py-1 text-right bg-[var(--brown-ligth-50)]"
               />
 
               <input
                 type="number"
-                step="0.01"
+                step="1"
                 {...register(`productos.${index}.quantity`, {
                   required: true,
-                  min: 0.01,
+                  min: 1,
                 })}
-                className="border border-[var(--brown-ligth-400)] rounded px-2 py-1 text-right"
+                className="border border-[var(--brown-ligth-400)] rounded px-2 py-1 text-right bg-[var(--brown-ligth-50)]"
               />
               <input
                 type="checkbox"
                 {...register(`productos.${index}.isReserved`)}
-                className="border border-[var(--brown-ligth-400)] rounded px-2 py-1 text-right"
+                className="border border-[var(--brown-ligth-400)] rounded px-2 py-1 text-right bg-[var(--brown-ligth-50)]"
               />
               <button
                 type="button"
@@ -561,7 +567,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
                   isReserved: false,
                 })
               }
-              className="text-brown-800 border border-[var(--brown-ligth-400)] rounded-full w-8 h-8 flex items-center justify-center hover:bg-brown-100"
+              className="text-[var(--brown-dark-900)] border border-[var(--brown-ligth-400)] rounded-full w-8 h-8 flex items-center justify-center hover:bg-brown-100"
             >
               <span className="text-3xl text-[var(--brown-dark-950)] font-medium pb-[.5px]">
                 +
@@ -614,8 +620,12 @@ const CreateInvoice = ({ tipoOperacion }) => {
           onClose={() => setShowContactModal(false)}
           tipo={campoEntidad}
           onSelect={(contact) => {
-            setValue(campoEntidad, contact.id);
-            setSelectedEntidadName(contact.name);
+            setValue(campoEntidad, contact?.id);
+            setMessage({
+              text: `Seleccionaste a ${contact?.name}`,
+              type: "success",
+            }); // notifica al padre
+            setSelectedEntidadName(contact?.name);
           }}
           branchId={origenSucursal}
         />

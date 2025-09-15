@@ -12,10 +12,42 @@ const SalesItems = () => {
         {/* Texto */}
         <div>
           <h3 className="text-xs font-medium text-[var(--brown-dark-700)]">
-            P-0001
+            NÚMERO
           </h3>
           <p className="text-md font-bold text-[var(--brown-dark-900)]">
-            $500,000
+            P-0001
+          </p>
+        </div>
+        <div>
+          <h3 className="text-xs font-medium text-[var(--brown-dark-700)]">
+            CLIENTE
+          </h3>
+          <p className="text-md font-bold text-[var(--brown-dark-900)]">
+            JUAN GOMEZ
+          </p>
+        </div>
+        <div>
+          <h3 className="text-xs font-medium text-[var(--brown-dark-700)]">
+            TOTAL
+          </h3>
+          <p className="text-md font-bold text-[var(--brown-dark-900)]">
+            $3.000.000
+          </p>
+        </div>
+        <div>
+          <h3 className="text-xs font-medium text-[var(--brown-dark-700)]">
+            EMISIÓN
+          </h3>
+          <p className="text-md font-bold text-[var(--brown-dark-900)]">
+            GRUPO MARRON
+          </p>
+        </div>
+        <div>
+          <h3 className="text-xs font-medium text-[var(--brown-dark-700)]">
+            SALDO
+          </h3>
+          <p className="text-md font-normal text-[var(--brown-dark-900)]">
+            $ 2.500.000
           </p>
         </div>
       </div>

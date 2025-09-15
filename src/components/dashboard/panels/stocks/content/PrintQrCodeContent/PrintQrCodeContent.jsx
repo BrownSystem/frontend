@@ -5,14 +5,12 @@ import {
   useDownloadPdfProducts,
   useDownloadPdfQrs,
 } from "../../../../../../api/products/products.queries";
-import { GenericTable } from "../../../../widgets";
-import { Delete } from "../../../../../../assets/icons";
+import { Button, GenericTable, Message } from "../../../../widgets";
 import { searchProductsByBranches } from "../../../../../../api/products/products.api";
 import { useFindAllBranch } from "../../../../../../api/branch/branch.queries";
 
 // 👉 Drag & Drop
 import {
-  DndContext,
   closestCenter,
   MouseSensor,
   TouchSensor,
@@ -21,12 +19,14 @@ import {
 } from "@dnd-kit/core";
 import {
   arrayMove,
-  SortableContext,
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { StockIcon } from "../../../../../../assets/icons/Icon";
+
+import SelecetedProductsQrModal from "../../../../../common/Modal/SelecetedProductsQrModal";
+import { ReorganizeBranchesModal } from "../../../../../common";
+import { useQrStore } from "../../../../../../store/useQrStore";
 
 // Componente para cada sucursal arrastrable
 const SortableBranch = ({ branch }) => {
@@ -44,7 +44,7 @@ const SortableBranch = ({ branch }) => {
       style={style}
       {...attributes}
       {...listeners}
-      className="bg-[var(--brown-ligth-100)] border border-[var(--brown-ligth-200)] rounded-xl shadow-md p-4 m-2 cursor-grab hover:bg-[var(--brown-ligth-200)] transition"
+      className="bg-[var(--brown-ligth-200)] border border-[var(--brown-ligth-400)] rounded-xl shadow-md p-4 m-2 cursor-grab hover:bg-[var(--brown-ligth-200)] transition"
     >
       <h3 className="text-lg font-semibold text-[var(--brown-dark-900)]">
         {branch.name}
@@ -55,18 +55,33 @@ const SortableBranch = ({ branch }) => {
 };
 
 const PrintQrCodeContent = () => {
+  const {
+    selectedProducts,
+    addOrUpdateProduct,
+    updateQuantity,
+    removeProduct,
+    setSelectedProducts,
+    clearProducts,
+  } = useQrStore();
+
   const user = useAuthStore((state) => state.user);
   const branchId = user?.branchId;
 
   const [search, setSearch] = useState("");
-  const [selectedProducts, setSelectedProducts] = useState({});
   const [visibleProducts, setVisibleProducts] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showModalBranches, setShowModalBranches] = useState(false);
-  const [pendingExport, setPendingExport] = useState(false); // 👉 bandera para exportar luego de reordenar
-
+  const [pendingExport, setPendingExport] = useState(false);
+  const [removeStockZero, setRemoveStockZero] = useState(false);
   const { data: branches } = useFindAllBranch();
   const [orderedBranches, setOrderedBranches] = useState([]);
+  const [message, setMessage] = useState({ text: "", type: "info" });
+
+  useEffect(() => {
+    if (selectedProducts && Object.keys(selectedProducts).length > 0) {
+      setMessage({ text: "Ya hay productos seleccionados", type: "error" });
+    }
+  }, [selectedProducts]);
 
   // Inicializar branches cuando llegan desde el backend
   useEffect(() => {
@@ -121,35 +136,23 @@ const PrintQrCodeContent = () => {
   }, [products]);
 
   const handleToggleSelect = (product) => {
-    setSelectedProducts((prev) => {
-      const exists = !!prev[product.code];
-      if (exists) {
-        const updated = { ...prev };
-        delete updated[product.code];
-        return updated;
-      }
-      return { ...prev, [product.code]: { ...product, quantity: 1 } };
-    });
+    const exists = !!selectedProducts[product.code];
+    if (exists) {
+      removeProduct(product.code);
+    } else {
+      addOrUpdateProduct(product, 1);
+    }
   };
 
   const handleClearSelection = () => {
-    setSelectedProducts({});
+    clearProducts();
     setShowModal(false);
   };
 
   const handleQuantityChange = (code, quantity) => {
-    setSelectedProducts((prev) => ({
-      ...prev,
-      [code]: { ...prev[code], quantity: Number(quantity) },
-    }));
-  };
-
-  const handleRemoveProduct = (code) => {
-    setSelectedProducts((prev) => {
-      const updated = { ...prev };
-      delete updated[code];
-      return updated;
-    });
+    if (quantity > 0) {
+      updateQuantity(code, quantity);
+    }
   };
 
   const allVisibleSelected =
@@ -157,22 +160,20 @@ const PrintQrCodeContent = () => {
     visibleProducts.every((p) => selectedProducts[p.code]);
 
   const handleToggleAll = () => {
-    const updated = { ...selectedProducts };
-
     if (allVisibleSelected) {
-      visibleProducts.forEach((p) => {
-        delete updated[p.code];
-      });
+      const updated = { ...selectedProducts };
+      visibleProducts.forEach((p) => delete updated[p.code]);
+      setSelectedProducts(updated);
     } else {
+      const updated = { ...selectedProducts };
       visibleProducts.forEach((p) => {
         updated[p.code] = {
           ...p,
           quantity: selectedProducts[p.code]?.quantity || 1,
         };
       });
+      setSelectedProducts(updated);
     }
-
-    setSelectedProducts(updated);
   };
 
   const handleOpenModal = () => {
@@ -181,10 +182,12 @@ const PrintQrCodeContent = () => {
     );
 
     if (toPrint.length === 0) {
-      alert("Seleccione al menos un producto con cantidad válida.");
+      setMessage({
+        text: "Seleccione al menos un producto",
+        type: "info",
+      });
       return;
     }
-
     setShowModal(true);
   };
 
@@ -222,8 +225,8 @@ const PrintQrCodeContent = () => {
       return;
     }
 
-    setPendingExport(true); // marcamos intención de exportar
-    setShowModalBranches(true); // mostramos modal branches
+    setPendingExport(true);
+    setShowModalBranches(true);
   };
 
   const handleSaveBranchesOrder = () => {
@@ -242,7 +245,7 @@ const PrintQrCodeContent = () => {
     }));
 
     downloadPdfProducts(
-      { products: toPrint, branchOrder: orderedBranches },
+      { products: toPrint, branchOrder: orderedBranches, removeStockZero },
       {
         onSuccess: () => {
           setShowModalBranches(false);
@@ -305,6 +308,12 @@ const PrintQrCodeContent = () => {
 
   return (
     <div className="w-full flex flex-col gap-6 py-6 px-4 bg-[#fffdf8]">
+      <Message
+        message={message.text}
+        type={message.type}
+        duration={3000}
+        onClose={() => setMessage({ text: "" })}
+      />
       {/* Header */}
       <div className="w-full flex justify-around items-center">
         <h1 className="text-3xl font-bold text-[var(--brown-dark-900)]">
@@ -313,12 +322,7 @@ const PrintQrCodeContent = () => {
             Selecciona productos para crear un PDF
           </span>
         </h1>
-        <button
-          onClick={handleOpenModal}
-          className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-xl shadow transition"
-        >
-          Visualizar Selección
-        </button>
+        <Button text={"Visualizar Selección"} onClick={handleOpenModal} />
       </div>
 
       {/* Search input */}
@@ -346,120 +350,32 @@ const PrintQrCodeContent = () => {
 
       {/* Modal de Productos Seleccionados */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-center items-center">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 w-[95%] max-w-3xl animate-fade-in-up">
-            <h2 className="text-2xl font-bold text-center text-[var(--brown-dark-900)] mb-6">
-              Productos Seleccionados
-            </h2>
-
-            <ul className="space-y-3 max-h-80 overflow-y-auto pr-2">
-              {Object.values(selectedProducts).map((product) => (
-                <li
-                  key={product.code}
-                  className="flex justify-between items-center border-b border-gray-200 pb-2"
-                >
-                  <span className="text-[var(--brown-dark-900)] font-medium">
-                    {product.name}{" "}
-                    <span className="text-[var(--brown-ligth-400)] text-sm">
-                      ({product.code})
-                    </span>
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <span className="font-semibold text-green-600">
-                      x{product.quantity}
-                    </span>
-                    <button
-                      onClick={() => handleRemoveProduct(product.code)}
-                      title="Eliminar producto"
-                      className="text-red-600 hover:text-red-800 transition"
-                    >
-                      <Delete />
-                    </button>
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            {/* Modal Actions */}
-            <div className="flex flex-wrap justify-end gap-4 mt-8">
-              <button
-                onClick={() => setShowModal(false)}
-                className="bg-gray-400 hover:bg-gray-500 text-white px-5 py-2 rounded-xl shadow transition"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleClearSelection}
-                className="bg-[var(--brown-dark-900)] hover:bg-[var(--brown-dark-700)] text-white px-5 py-2 rounded-xl shadow transition"
-              >
-                🗑 Borrar selección
-              </button>
-              <button
-                onClick={handlePrint}
-                disabled={isPending}
-                className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl shadow transition disabled:opacity-50"
-              >
-                {isPending ? "Generando..." : "Descargar QRs"}
-              </button>
-              <button
-                onClick={handleDownloadProducts}
-                disabled={isPendingPdfProducts}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-5 py-2 rounded-xl shadow transition disabled:opacity-50"
-              >
-                {isPendingPdfProducts ? "Generando..." : "Exportar Catálogo"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <SelecetedProductsQrModal
+          setShowModal={setShowModal}
+          selectedProducts={selectedProducts}
+          handleRemoveProduct={removeProduct}
+          handleClearSelection={handleClearSelection}
+          handlePrint={handlePrint}
+          isPending={isPending}
+          handleDownloadProducts={handleDownloadProducts}
+          isPendingPdfProducts={isPendingPdfProducts}
+        />
       )}
 
       {/* Modal de Sucursales con drag & drop */}
       {showModalBranches && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-center items-center">
-          <div className="bg-[var(--brown-ligth-50)] rounded-2xl shadow-xl w-[600px] max-h-[80vh] p-6 overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4 text-[var(--brown-dark-900)] flex flex-col items-center justify-center">
-              <span className="flex items-center gap-2">
-                REORDENAR SUCURSALES{" "}
-                <span className="flex">
-                  <StockIcon /> <StockIcon type={"low"} />
-                </span>
-              </span>
-              <p className="text-md text-[var(--brown-dark-500)] font-normal mt-2">
-                (Arrastra y suelta las sucursales para reordenarlas.)
-              </p>
-            </h2>
-
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={orderedBranches.map((b) => b.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                {orderedBranches.map((branch) => (
-                  <SortableBranch key={branch.id} branch={branch} />
-                ))}
-              </SortableContext>
-            </DndContext>
-
-            <div className="flex justify-end mt-6 gap-2">
-              <button
-                onClick={() => setShowModalBranches(false)}
-                className="px-4 py-2 rounded-xl bg-[var(--brown-dark-700)] text-white hover:bg-[var(--brown-dark-800)]"
-              >
-                Cerrar
-              </button>
-              <button
-                onClick={handleSaveBranchesOrder}
-                className="px-4 py-2 rounded-xl bg-[var(--brown-ligth-400)] text-[var(--brown-dark-900)] hover:bg-[var(--brown-ligth-300)]"
-              >
-                Guardar Orden
-              </button>
-            </div>
-          </div>
-        </div>
+        <ReorganizeBranchesModal
+          handleSaveBranchesOrder={handleSaveBranchesOrder}
+          sensors={sensors}
+          closestCenter={closestCenter}
+          handleDragEnd={handleDragEnd}
+          orderedBranches={orderedBranches}
+          removeStockZero={removeStockZero}
+          setShowModalBranches={setShowModalBranches}
+          setRemoveStockZero={setRemoveStockZero}
+          verticalListSortingStrategy={verticalListSortingStrategy}
+          SortableBranch={SortableBranch}
+        />
       )}
     </div>
   );

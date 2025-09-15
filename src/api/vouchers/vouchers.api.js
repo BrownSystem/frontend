@@ -27,6 +27,11 @@ export const searchReservedVouchers = async (params) => {
   return response.data;
 };
 
+export const getOneVoucher = async (id) => {
+  const response = await AxiosInitializer.get(`/voucher/one/${id}`);
+  return response.data;
+};
+
 export const updateReservedStatus = async ({ id, isReserved }) => {
   const response = await AxiosInitializer.patch(
     `/voucher/reserved-update/${id}`,

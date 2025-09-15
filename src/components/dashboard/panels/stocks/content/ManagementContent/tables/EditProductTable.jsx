@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useAuthStore } from "../../../../../../../api/auth/auth.store";
 import { usePaginatedTableData } from "../../../../../../../hooks/usePaginatedTableData";
 import { Delete, Duplicate, Edit } from "../../../../../../../assets/icons";
-import { GenericTable, Message } from "../../../../../widgets";
+import { Button, GenericTable, Message } from "../../../../../widgets";
 import {
   useUploadProducts,
   useUpdateProduct,
@@ -119,7 +119,6 @@ const EditProductTable = () => {
 
       queryClient.invalidateQueries(["products"]);
     } catch (err) {
-      console.log(err);
       setMessage({
         text: `${err.response?.data?.message || "Error al eliminar ❌"}`,
         type: "error",
@@ -247,6 +246,35 @@ const EditProductTable = () => {
     );
   }
 
+  const fileInputRef = useRef(null);
+
+  const handleButtonClick = () => {
+    if (isLoading) return; // evita clicks cuando está cargando
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
+
+    // Validaciones opcionales
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+    if (selectedFile.size > MAX_SIZE) {
+      alert("El archivo supera el tamaño máximo (5MB).");
+      e.target.value = "";
+      return;
+    }
+
+    setFile(selectedFile);
+    // si uploadProducts devuelve promesa, manejar errores
+    Promise.resolve(uploadProducts(selectedFile)).catch((err) => {
+      console.error("Error subiendo archivo:", err);
+    });
+
+    // reset para poder seleccionar el mismo archivo otra vez
+    e.target.value = "";
+  };
+
   return (
     <div className="w-full h-full overflow-x-auto py-2">
       <Message
@@ -273,37 +301,28 @@ const EditProductTable = () => {
         />
 
         <div className="flex items-center justify-center gap-4">
-          <label
-            htmlFor="fileUpload"
-            className={`px-4 py-2 rounded cursor-pointer ${
-              isLoading
-                ? "bg-gray-400 text-white cursor-not-allowed"
-                : "bg-green-600 text-white hover:opacity-80"
-            }`}
-          >
-            {isLoading ? "Subiendo archivo..." : "Subir archivo"}
-          </label>
+          {/* Botón que dispara el input de archivo */}
+          <div className="relative flex">
+            {/* Si tu Button acepta onClick, úsalo; si no, usa un <button> nativo */}
+            <Button
+              text={isLoading ? "Subiendo archivo..." : "Subir archivo"}
+              disabled={isLoading}
+              onClick={handleButtonClick} // <- importante
+            />
 
-          <input
-            id="fileUpload"
-            type="file"
-            className="hidden"
-            disabled={isLoading}
-            onChange={(e) => {
-              const selectedFile = e.target.files[0];
-              if (selectedFile) {
-                setFile(selectedFile);
-                uploadProducts(selectedFile);
-              }
-            }}
-          />
+            <input
+              ref={fileInputRef}
+              id="fileUpload"
+              type="file"
+              accept=".xlsx,.csv" // opcional: limitar tipos
+              className="hidden"
+              disabled={isLoading}
+              onChange={handleFileChange}
+            />
+          </div>
 
-          <button
-            className="bg-[var(--brown-dark-800)] py-2 px-3 rounded text-white cursor-pointer"
-            onClick={handleAddProduct}
-          >
-            + Añadir
-          </button>
+          {/* Botón para añadir producto manualmente */}
+          <Button text="+ Añadir" onClick={handleAddProduct} />
         </div>
       </div>
 

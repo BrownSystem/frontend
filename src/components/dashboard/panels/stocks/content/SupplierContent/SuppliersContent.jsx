@@ -19,9 +19,9 @@ const SuppliersContent = () => {
 
   return (
     <>
-      <div className="w-full h-full  rounded-lg  p-4">
+      <div className="w-full h-full rounded-lg  p-4">
         <div className="flex justify-between items-center">
-          <div className="w-full flex  gap-4">
+          <div className="w-full flex justify-start pl-7 gap-4">
             <OptionCard
               text={"Ingresar factura"}
               onClick={() => setView("createInvoice")}
@@ -39,7 +39,7 @@ const SuppliersContent = () => {
           </div>
         </div>
 
-        <div className="w-full   px-4 py-2 mt-2 rounded-xl ">
+        <div className="w-full px-4 rounded-xl ">
           <RenderOptions viewMap={viewMap} defaultView={"createInvoice"} />
         </div>
       </div>
