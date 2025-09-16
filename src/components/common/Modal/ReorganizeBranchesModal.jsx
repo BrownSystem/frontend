@@ -35,36 +35,38 @@ const ReorganizeBranchesModal = ({
           </div>
         </div>
 
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <div className="w-full flex justify-center gap-2 bg-[var(--brown-ligth-200)] border-2 border-[var(--brown-dark-900)] rounded-xl shadow-md py-4 hover:bg-[var(--brown-ligth-200)]">
-            <label
-              htmlFor="removeStock"
-              className="text-[var(--brown-dark-900)] text-md font-semibold"
-            >
-              ¿QUIERE QUITAR LOS PRODUCTOS CON STOCK 0?
-            </label>
-            <input
-              type="checkbox"
-              name="removeStock"
-              id="removeStock"
-              checked={removeStockZero} // 👈 input controlado
-              onChange={(e) => setRemoveStockZero(e.target.checked)}
-            />
-          </div>
-
-          <SortableContext
-            items={orderedBranches.map((b) => b.id)}
-            strategy={verticalListSortingStrategy}
+        <div className="max-h-[50vh] overflow-y-auto px-2">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
           >
-            {orderedBranches?.map((branch) => (
-              <SortableBranch key={branch.id} branch={branch} />
-            ))}
-          </SortableContext>
-        </DndContext>
+            <div className="w-full flex justify-center gap-2 bg-[var(--brown-ligth-200)] border-2 border-[var(--brown-dark-900)] rounded-xl shadow-md py-4 hover:bg-[var(--brown-ligth-200)]">
+              <label
+                htmlFor="removeStock"
+                className="text-[var(--brown-dark-900)] text-md font-semibold"
+              >
+                ¿QUIERE QUITAR LOS PRODUCTOS CON STOCK 0?
+              </label>
+              <input
+                type="checkbox"
+                name="removeStock"
+                id="removeStock"
+                checked={removeStockZero} // 👈 input controlado
+                onChange={(e) => setRemoveStockZero(e.target.checked)}
+              />
+            </div>
+
+            <SortableContext
+              items={orderedBranches.map((b) => b.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {orderedBranches?.map((branch) => (
+                <SortableBranch key={branch.id} branch={branch} />
+              ))}
+            </SortableContext>
+          </DndContext>
+        </div>
 
         <div className="flex justify-end mt-6 gap-2">
           <Button text={"Cerrar"} onClick={() => setShowModalBranches(false)} />

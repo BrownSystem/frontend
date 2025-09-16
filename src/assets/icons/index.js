@@ -49,4 +49,4 @@ export { default as IvaCondition } from "./IvaCondition";
 export { default as CloseModal } from "./CloseModal";
 export { default as AddCard } from "./AddCard";
 export { default as Location } from "./Location";
-export { default as Products } from "./Products";
+export { default as ProductsIcon } from "./ProductsIcon";

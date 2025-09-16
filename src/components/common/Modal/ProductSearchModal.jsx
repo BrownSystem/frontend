@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchProducts } from "../../../api/products/products.store";
 import { useCreateProduct } from "../../../api/products/products.queries";
-import { Products } from "../../../assets/icons";
 import { Button } from "../../dashboard/widgets";
 import VoucherProducts from "../../dashboard/panels/voucher/Containers/Products/VoucherProducts";
+import { ProductsIcon } from "../../../assets/icons";
 
 const ProductSearchModal = ({ isOpen, branchId, onClose, onSelect, index }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -56,13 +56,13 @@ const ProductSearchModal = ({ isOpen, branchId, onClose, onSelect, index }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-[rgba(0,0,0,0.6)] flex justify-center items-center z-999999 transition-opacity">
-      <div className="bg-[var(--brown-ligth-100)] rounded-3xl shadow-2xl py-6 px-8 w-full max-w-3xl max-h-[85vh] transition-all">
+    <div className="fixed inset-0 bg-[rgba(0,0,0,0.6)] flex justify-center items-center z-999999 ">
+      <div className="bg-[var(--brown-ligth-100)] rounded-3xl py-6 px-8 w-full max-w-3xl max-h-[85vh] ">
         {/* Header */}
         <div className="flex gap-4 justify-between items-center mb-4 border-b-[1px] p-4 border-[var(--brown-ligth-200)]">
           <div className="flex gap-4 items-center">
             <div className="bg-[var(--brown-ligth-300)] p-2 rounded-full">
-              <Products size={36} />
+              <ProductsIcon size={36} />
             </div>
             <div>
               <h3 className="text-lg font-bold text-[var(--brown-dark-900)]">
@@ -78,14 +78,9 @@ const ProductSearchModal = ({ isOpen, branchId, onClose, onSelect, index }) => {
             <div className="flex justify-end mb-4 mt-2 gap-2">
               <Button
                 onClick={() => setIsAddModalOpen(true)}
-                className="bg-[var(--brown-dark-700)] hover:bg-[var(--brown-dark-800)] text-white font-medium px-5 py-2 rounded-xl shadow transition"
                 text="Añadir producto"
               />
-              <Button
-                onClick={() => onClose(true)}
-                className="bg-[var(--brown-dark-700)] hover:bg-[var(--brown-dark-800)] text-white font-medium px-5 py-2 rounded-xl shadow transition"
-                text="Cerrar"
-              />
+              <Button onClick={() => onClose(true)} text="Cerrar" />
             </div>
           </div>
         </div>
@@ -121,7 +116,7 @@ const ProductSearchModal = ({ isOpen, branchId, onClose, onSelect, index }) => {
               >
                 <VoucherProducts
                   data={producto}
-                  icon={<Products size={28} />}
+                  icon={<ProductsIcon size={28} />}
                   color={200}
                 />
               </div>
@@ -138,13 +133,13 @@ const ProductSearchModal = ({ isOpen, branchId, onClose, onSelect, index }) => {
         {/* Sub-modal para agregar producto */}
         {/* Sub-modal para agregar producto */}
         {isAddModalOpen && (
-          <div className="fixed inset-0 bg-[rgba(0,0,0,0.55)] backdrop-blur-sm flex justify-center items-center z-[1000000]">
-            <div className="bg-[var(--brown-ligth-100)] rounded-3xl shadow-2xl py-6 px-8 w-full max-w-3xl max-h-[85vh] transition-all">
+          <div className="fixed inset-0  flex justify-center items-center z-[1000000]">
+            <div className="bg-[var(--brown-ligth-100)] rounded-3xl py-6 px-8 w-full max-w-3xl max-h-[85vh] transition-all">
               {/* Header */}
               <div className="flex gap-4 justify-between items-center mb-4 border-b-[1px] p-4 border-[var(--brown-ligth-200)]">
                 <div className="flex gap-4 items-center">
                   <div className="bg-[var(--brown-ligth-300)] p-2 rounded-full">
-                    <Products size={36} />
+                    <ProductsIcon size={36} />
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-[var(--brown-dark-900)]">

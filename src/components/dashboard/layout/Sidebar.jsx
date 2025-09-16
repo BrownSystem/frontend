@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Buy, Comprobantes, Logout, Notification } from "../../../assets/icons";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../../api/auth/auth.store";
@@ -8,14 +8,32 @@ import {
   useMarkAsRead,
   useNotifications,
 } from "../../../api/notification/notification.queries";
+import { Message } from "../widgets";
 
 const Sidebar = () => {
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
   const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [message, setMessage] = useState({
+    text: "",
+    type: "info",
+  });
   const { data: notificationsData = [], isLoading } = useNotifications(
     user?.branchId
   );
+
+  useEffect(() => {
+    if (notificationsData.length > 0) {
+      notificationsData?.map((n) => {
+        if (!n.read) {
+          setMessage({
+            text: n.title,
+            type: "info",
+          });
+        }
+      });
+    }
+  }, [notificationsData]);
 
   const { mutate: deleteNotification } = useDeleteNotification();
   const { mutate: markAsRead } = useMarkAsRead();
@@ -36,6 +54,12 @@ const Sidebar = () => {
 
   return (
     <div className="fixed z-[99999] top-0 h-full w-[4rem] bg-[var(--brown-dark-800)] shadow-md">
+      <Message
+        message={message.text}
+        type={message.type}
+        duration={3000}
+        onClose={() => setMessage({ text: "", type: "info" })}
+      />
       <div className="flex flex-col w-full h-full justify-center items-center pt-10 gap-[60px]">
         {/* Dashboard - ADMIN y MANAGEMENT */}
         {(isAdmin || isManagement) && (

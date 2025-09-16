@@ -1,6 +1,6 @@
 import React from "react";
 
-const Products = ({ size }) => {
+const ProductsIcon = ({ size }) => {
   return (
     <svg
       width={size || "24"}
@@ -28,4 +28,4 @@ const Products = ({ size }) => {
   );
 };
 
-export default Products;
+export default ProductsIcon;

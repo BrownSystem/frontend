@@ -7,12 +7,12 @@ import {
 } from "./notification.api";
 
 // Obtener todas por branch
-export const useNotifications = (branchId) => {
+export const useNotifications = () => {
   return useQuery({
-    queryKey: ["notifications", branchId],
-    queryFn: () => getNotificationsByBranch(branchId),
-    enabled: !!branchId,
+    queryKey: ["notifications"],
+    queryFn: () => getNotificationsByBranch(),
     keepPreviousData: true,
+    refetchInterval: 5000, // 🔄 cada 10s
   });
 };
 

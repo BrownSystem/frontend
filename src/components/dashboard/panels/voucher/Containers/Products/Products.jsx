@@ -1,3 +1,4 @@
+import { ProductsIcon } from "../../../../../../assets/icons";
 import VoucherProducts from "./VoucherProducts";
 
 const Products = ({ voucher }) => {
@@ -20,7 +21,11 @@ const Products = ({ voucher }) => {
       <div className="w-full px-6 flex gap-3">
         <div className="w-full px-6 flex flex-col gap-3">
           {voucher?.products?.map((item, index) => (
-            <VoucherProducts key={item.id ?? index} data={item} />
+            <VoucherProducts
+              key={item.id ?? index}
+              data={item}
+              icon={<ProductsIcon />}
+            />
           ))}
         </div>
       </div>

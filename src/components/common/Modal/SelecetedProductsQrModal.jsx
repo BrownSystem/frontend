@@ -1,4 +1,4 @@
-import { Delete, Products } from "../../../assets/icons";
+import { Delete, ProductsIcon } from "../../../assets/icons";
 import { Button } from "../../dashboard/widgets";
 
 const SelecetedProductsQrModal = ({
@@ -18,7 +18,7 @@ const SelecetedProductsQrModal = ({
         <div className="flex gap-4 justify-between items-center mb-4 border-b-[1px] p-4 border-[var(--brown-ligth-200)]">
           <div className="flex gap-4 items-center">
             <div className="bg-[var(--brown-ligth-300)] p-2 rounded-full">
-              <Products size={36} />
+              <ProductsIcon size={36} />
             </div>
             <div>
               <h3 className="text-lg font-bold text-[var(--brown-dark-900)]">

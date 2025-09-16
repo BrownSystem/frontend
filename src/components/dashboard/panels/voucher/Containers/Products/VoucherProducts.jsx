@@ -30,7 +30,7 @@ const VoucherProducts = ({ data, icon, color }) => {
     },
     {
       label: "CANTIDAD",
-      value: data?.quantity != null ? `${data.quantity} Unidades` : null,
+      value: data?.quantity != null ? `${data.quantity}` : null,
     },
     {
       label: "SUBTOTAL",
@@ -49,25 +49,26 @@ const VoucherProducts = ({ data, icon, color }) => {
     <div
       className={`bg-[var(--brown-ligth-${
         color || 100
-      })] px-6 pt-3 pb-3 rounded-xl shadow-md flex items-start gap-8`}
+      })] px-6 pt-3 pb-3 rounded-xl shadow-md flex items-center gap-8 `}
     >
       <div className="bg-[var(--brown-ligth-300)] p-2 rounded-full">
         {icon || <InvoiceIcon size={24} />}
       </div>
-      <div className="flex gap-4">
+      <div className="flex gap-4 flex-wrap">
         {visibleFields.map((f, i) => (
           <div
             key={f.label}
-            className={`pr-5 ${
+            className={`pr-3 ${
               i < visibleFields.length - 1
-                ? "border-r-[2px] border-[var(--brown-ligth-300)]"
+                ? "border-r-[2px] border-[var(--brown-ligth-300)] max-w-[300px] truncate-text"
                 : ""
             }`}
           >
-            <h3 className="text-xs font-medium text-[var(--brown-dark-700)]">
+            <h3 className="text-xs font-medium text-[var(--brown-dark-700)] w-full">
               {f.label}
             </h3>
-            <p className="text-sm font-bold text-[var(--brown-dark-900)]">
+
+            <p className="text-sm font-bold text-[var(--brown-dark-900)] text-start">
               {f.render || f.value}
             </p>
           </div>

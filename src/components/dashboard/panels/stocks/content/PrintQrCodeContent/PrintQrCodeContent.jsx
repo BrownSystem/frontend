@@ -75,13 +75,19 @@ const PrintQrCodeContent = () => {
   const [removeStockZero, setRemoveStockZero] = useState(false);
   const { data: branches } = useFindAllBranch();
   const [orderedBranches, setOrderedBranches] = useState([]);
-  const [message, setMessage] = useState({ text: "", type: "info" });
+  const [message, setMessage] = useState({
+    text: "",
+    type: "info",
+  });
 
   useEffect(() => {
     if (selectedProducts && Object.keys(selectedProducts).length > 0) {
-      setMessage({ text: "Ya hay productos seleccionados", type: "error" });
+      setMessage({
+        text: "YA HAY PRODUCTOS SELECCIONADOS",
+        type: "info",
+      });
     }
-  }, [selectedProducts]);
+  }, [showModal]);
 
   // Inicializar branches cuando llegan desde el backend
   useEffect(() => {
@@ -312,7 +318,7 @@ const PrintQrCodeContent = () => {
         message={message.text}
         type={message.type}
         duration={3000}
-        onClose={() => setMessage({ text: "" })}
+        onClose={() => setMessage({ text: "", type: "info" })}
       />
       {/* Header */}
       <div className="w-full flex justify-around items-center">
