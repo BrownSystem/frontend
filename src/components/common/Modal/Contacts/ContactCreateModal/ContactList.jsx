@@ -17,12 +17,18 @@ const ContactList = ({
   debouncedSearch,
   setSelectedContact,
 }) => {
+  const apiTypeMap = {
+    cliente: "CLIENT",
+    proveedor: "SUPPLIER",
+    vendedor: "SELLER", // 👈 asumiendo que tu backend lo reconoce así
+  };
+
   const [message, setMessage] = useState({ text: "", type: "success" });
 
   const { data: contacts = [], isLoading } = useSearchContacts({
     search: debouncedSearch,
     branchId: branchId || undefined,
-    type: tipo === "cliente" ? "CLIENT" : "SUPPLIER",
+    type: apiTypeMap[tipo] || undefined,
     offset: 1,
     limit: 50,
   });

@@ -14,6 +14,12 @@ const initialNewContact = {
 };
 
 const ContactForm = ({ toggleView, tipo, branchId }) => {
+  const typeLabels = {
+    cliente: "Cliente",
+    proveedor: "Proveedor",
+    vendedor: "Vendedor",
+  };
+
   const [newContact, setNewContact] = useState(initialNewContact);
   const [message, setMessage] = useState({ text: "", type: "success" });
 
@@ -21,14 +27,12 @@ const ContactForm = ({ toggleView, tipo, branchId }) => {
     onSuccess: () => {
       setNewContact(initialNewContact);
       setMessage({
-        text: `${
-          tipo === "cliente" ? "Cliente" : "Proveedor"
-        } creado exitosamente`,
+        text: `${typeLabels[tipo] || "Contacto"} creado exitosamente`,
         type: "success",
       });
       setTimeout(() => {
         setMessage({ text: "" });
-        onClose();
+        toggleView();
       }, 2000);
     },
     onError: (error) => {
@@ -45,7 +49,7 @@ const ContactForm = ({ toggleView, tipo, branchId }) => {
     const cleaned = sanitizeContactData(newContact, tipo, branchId);
     if (
       newContact.name === "" ||
-      newContact.address === "" ||
+      (newContact.address === "" && typeLabels[tipo] !== "Vendedor") ||
       newContact.phone === ""
     ) {
       setMessage({
@@ -64,65 +68,97 @@ const ContactForm = ({ toggleView, tipo, branchId }) => {
         onClose={() => setMessage({ text: "" })}
         duration={2500}
       />
-      <div className="grid grid-cols-2 gap-3">
-        <InputField
-          label="Nombre"
-          required
-          value={newContact.name}
-          onChange={(v) => setNewContact({ ...newContact, name: v })}
-        />
-        <InputField
-          label="Razón Social"
-          value={newContact.businessName}
-          onChange={(v) => setNewContact({ ...newContact, businessName: v })}
-        />
-        <SelectField
-          label="Tipo Documento"
-          value={newContact.documentType}
-          options={["DNI", "CUIL", "CUIT"]}
-          onChange={(v) => setNewContact({ ...newContact, documentType: v })}
-        />
-        <InputField
-          label="Número Documento"
-          value={newContact.documentNumber}
-          onChange={(v) => setNewContact({ ...newContact, documentNumber: v })}
-        />
-        <SelectField
-          label="Condición IVA"
-          value={newContact.ivaCondition || "CONSUMIDOR_FINAL"}
-          options={[
-            "RESPONSABLE_INSCRIPTO",
-            "MONOTRIBUTISTA",
-            "EXENTO",
-            "CONSUMIDOR_FINAL",
-            "SUJETO_NO_CATEGORIZADO",
-            "PROVEEDOR_DEL_EXTERIOR",
-            "CLIENTE_DEL_EXTERIOR",
-            "IVA_LIBERADO_LEY_19640",
-            "IVA_NO_ALCANZADO",
-          ]}
-          onChange={(v) => setNewContact({ ...newContact, ivaCondition: v })}
-        />
-        <InputField
-          label="Teléfono"
-          required
-          value={newContact.phone}
-          onChange={(v) => setNewContact({ ...newContact, phone: v })}
-        />
-        <InputField
-          label="Email"
-          type="email"
-          value={newContact.email}
-          onChange={(v) => setNewContact({ ...newContact, email: v })}
-        />
-        <InputField
-          label="Dirección"
-          required
-          value={newContact.address}
-          onChange={(v) => setNewContact({ ...newContact, address: v })}
-        />
-      </div>
+      {typeLabels[tipo] !== "Vendedor" ? (
+        <div className="grid grid-cols-2 gap-3">
+          <InputField
+            label="Nombre"
+            required
+            value={newContact.name}
+            onChange={(v) => setNewContact({ ...newContact, name: v })}
+          />
+          <InputField
+            label="Razón Social"
+            value={newContact.businessName}
+            onChange={(v) => setNewContact({ ...newContact, businessName: v })}
+          />
+          <SelectField
+            label="Tipo Documento"
+            value={newContact.documentType}
+            options={["DNI", "CUIL", "CUIT"]}
+            onChange={(v) => setNewContact({ ...newContact, documentType: v })}
+          />
+          <InputField
+            label="Número Documento"
+            value={newContact.documentNumber}
+            onChange={(v) =>
+              setNewContact({ ...newContact, documentNumber: v })
+            }
+          />
+          <SelectField
+            label="Condición IVA"
+            value={newContact.ivaCondition || "CONSUMIDOR_FINAL"}
+            options={[
+              "RESPONSABLE_INSCRIPTO",
+              "MONOTRIBUTISTA",
+              "EXENTO",
+              "CONSUMIDOR_FINAL",
+              "SUJETO_NO_CATEGORIZADO",
+              "PROVEEDOR_DEL_EXTERIOR",
+              "CLIENTE_DEL_EXTERIOR",
+              "IVA_LIBERADO_LEY_19640",
+              "IVA_NO_ALCANZADO",
+            ]}
+            onChange={(v) => setNewContact({ ...newContact, ivaCondition: v })}
+          />
+          <InputField
+            label="Teléfono"
+            required
+            value={newContact.phone}
+            onChange={(v) => setNewContact({ ...newContact, phone: v })}
+          />
+          <InputField
+            label="Email"
+            type="email"
+            value={newContact.email}
+            onChange={(v) => setNewContact({ ...newContact, email: v })}
+          />
+          <InputField
+            label="Dirección"
+            required
+            value={newContact.address}
+            onChange={(v) => setNewContact({ ...newContact, address: v })}
+          />
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          <InputField
+            label="Nombre"
+            required
+            value={newContact.name}
+            onChange={(v) => setNewContact({ ...newContact, name: v })}
+          />
+          <SelectField
+            label="Tipo Documento"
+            value={newContact.documentType}
+            options={["DNI", "CUIL", "CUIT"]}
+            onChange={(v) => setNewContact({ ...newContact, documentType: v })}
+          />
+          <InputField
+            label="Número Documento"
+            value={newContact.documentNumber}
+            onChange={(v) =>
+              setNewContact({ ...newContact, documentNumber: v })
+            }
+          />
 
+          <InputField
+            label="Teléfono"
+            required
+            value={newContact.phone}
+            onChange={(v) => setNewContact({ ...newContact, phone: v })}
+          />
+        </div>
+      )}
       <div className="mt-4 flex justify-end gap-3">
         <Button
           type="button"

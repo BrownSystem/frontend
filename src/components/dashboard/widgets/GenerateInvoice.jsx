@@ -61,6 +61,11 @@ const CreateInvoice = ({ tipoOperacion }) => {
   const [selectedProductIndex, setSelectedProductIndex] = useState(null);
 
   const [selectedEntidadName, setSelectedEntidadName] = useState("");
+  const [selectedEntidadNameSeller, setSelectedEntidadNameSeller] =
+    useState("");
+
+  const [showContactModalSeller, setShowContactModalSeller] = useState(false);
+
   const [message, setMessage] = useState({ text: "", type: "info" });
 
   const tiposFactura = useMemo(() => {
@@ -79,6 +84,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
   }, [tipoOperacion]);
 
   const campoEntidad = tipoOperacion === "venta" ? "cliente" : "proveedor";
+  const campoEntidadSeller = "vendedor";
 
   const productos = watch("productos");
 
@@ -163,6 +169,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
   const onSubmit = (data) => {
     setMessage({ text: "", type: "info" }); // Limpiar mensaje previo
     setSelectedEntidadName("");
+    setSelectedEntidadNameSeller("");
     // Validación 1: verificar que haya al menos un producto válido
     if (!data.productos || data.productos.length === 0) {
       setMessage({ text: "Debe agregar al menos un producto.", type: "error" });
@@ -271,9 +278,9 @@ const CreateInvoice = ({ tipoOperacion }) => {
       paidAmount: parseFloat(totalPagado),
 
       available: true,
-      createdBy: setUser.id,
-      emittedBy: setUser.id,
-      deliveredBy: setUser.id,
+      createdBy: selectedEntidadNameSeller || setUser.id,
+      emittedBy: selectedEntidadNameSeller || setUser.id,
+      deliveredBy: selectedEntidadNameSeller || setUser.id,
       observation: data.observation || undefined,
       initialPayment: pagos.map((payment) => ({
         method: payment.method,
@@ -395,23 +402,25 @@ const CreateInvoice = ({ tipoOperacion }) => {
                 <LabelInvoice text="Vendedor" />
                 <input
                   type="text"
-                  value={selectedEntidadName}
+                  value={selectedEntidadNameSeller}
                   onChange={(e) => {
-                    setSearchEntidad(e.target.value);
+                    setSearchEntidadSeller(e.target.value);
                     setSelectedProductEqual(false);
                   }}
-                  placeholder="NO DISPONIBLE"
+                  placeholder="Clickea Icono"
                   className="w-full bg-[var(--brown-ligth-50)] border border-[var(--brown-ligth-400)] rounded px-3 py-2"
                   disabled={true}
                   onFocus={() => {
-                    origenSucursalSeleccionada && setShowContactModal(true);
+                    origenSucursalSeleccionada &&
+                      setShowContactModalSeller(true);
                     !origenSucursalSeleccionada && handleOpenProductModal();
                   }}
                 />
                 <span
                   className="absolute right-2 top-12 transform -translate-y-1/2 cursor-pointer"
                   onClick={() => {
-                    origenSucursalSeleccionada && setShowContactModal(true);
+                    origenSucursalSeleccionada &&
+                      setShowContactModalSeller(true);
                     !origenSucursalSeleccionada && handleOpenProductModal();
                   }}
                 >
@@ -615,6 +624,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
           payments={pagos}
         />
 
+        {/* CONTACTO CLIENTE / PROVEEDOR */}
         <ContactCreateModal
           isOpen={showContactModal}
           onClose={() => setShowContactModal(false)}
@@ -626,6 +636,22 @@ const CreateInvoice = ({ tipoOperacion }) => {
               type: "success",
             }); // notifica al padre
             setSelectedEntidadName(contact?.name);
+          }}
+          branchId={origenSucursal}
+        />
+
+        {/* VENDEDOR */}
+        <ContactCreateModal
+          isOpen={showContactModalSeller}
+          onClose={() => setShowContactModalSeller(false)}
+          tipo={campoEntidadSeller}
+          onSelect={(contact) => {
+            setValue(campoEntidadSeller, contact?.id);
+            setMessage({
+              text: `Seleccionaste a ${contact?.name}`,
+              type: "success",
+            }); // notifica al padre
+            setSelectedEntidadNameSeller(contact?.name);
           }}
           branchId={origenSucursal}
         />

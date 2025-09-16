@@ -14,6 +14,21 @@ const ContactCreateModal = ({
   branchId,
   mode = "crear",
 }) => {
+  const typeLabels = {
+    cliente: {
+      singular: "Cliente",
+      plural: "Clientes",
+    },
+    proveedor: {
+      singular: "Proveedor",
+      plural: "Proveedores",
+    },
+    vendedor: {
+      singular: "Vendedor",
+      plural: "Vendedores",
+    },
+  };
+
   const [selectedContact, setSelectedContact] = useState(null);
   const [message, setMessage] = useState({ text: "", type: "success" });
   const [viewMode, setViewMode] = useState(mode);
@@ -59,8 +74,8 @@ const ContactCreateModal = ({
         <div className="bg-[var(--brown-ligth-100)] rounded shadow-lg max-w-xl w-full max-h-[90vh]  p-6">
           <h2 className="text-sm font-sans font-semibold text-[var(--brown-dark-950)]">
             {viewMode === "crear"
-              ? `Crear ${tipo === "cliente" ? "Cliente" : "Proveedor"}`
-              : `Lista de ${tipo === "cliente" ? "Clientes" : "Proveedores"}`}
+              ? `Crear ${typeLabels[tipo]?.singular || "Contacto"}`
+              : `Lista de ${typeLabels[tipo]?.plural || "Contactos"}`}
           </h2>
 
           <div className="py-4">
@@ -70,7 +85,9 @@ const ContactCreateModal = ({
                 <div className="w-full">
                   <input
                     type="text"
-                    placeholder={`Buscar ${tipo}...`}
+                    placeholder={`Buscar ${
+                      typeLabels[tipo]?.singular || "Contacto"
+                    }...`}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="w-full px-3 py-2 border border-[var(--brown-ligth-400)] rounded-md bg-[var(--brown-ligth-50)] focus:outline-none focus:ring-2 focus:ring-[var(--brown-dark-600)]"

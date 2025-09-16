@@ -1,8 +1,14 @@
+const apiTypeMap = {
+  cliente: "CLIENT",
+  proveedor: "SUPPLIER",
+  vendedor: "SELLER", // 👈 agregamos soporte real
+};
+
 export const sanitizeContactData = (contact, tipo, branchId) => {
   return Object.fromEntries(
     Object.entries({
       ...contact,
-      type: tipo === "cliente" ? "CLIENT" : "SUPPLIER",
+      type: apiTypeMap[tipo] || "CLIENT", // fallback por si viene algo raro
       available: true,
       branchId,
     }).filter(
