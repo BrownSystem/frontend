@@ -37,8 +37,12 @@ const ProductSearchModal = ({ isOpen, branchId, onClose, onSelect, index }) => {
         description: newDescription,
       });
 
+      console.log("Producto creado:", result);
+
       onSelect(
         {
+          productId: result.id,
+          branchId,
           descripcion: result.description,
         },
         index
@@ -133,7 +137,7 @@ const ProductSearchModal = ({ isOpen, branchId, onClose, onSelect, index }) => {
         {/* Sub-modal para agregar producto */}
         {/* Sub-modal para agregar producto */}
         {isAddModalOpen && (
-          <div className="fixed inset-0  flex justify-center items-center z-[1000000]">
+          <div className="fixed inset-0  bg-[var(--brown-dark-950)]/80 flex justify-center items-center z-[1000000]">
             <div className="bg-[var(--brown-ligth-100)] rounded-3xl py-6 px-8 w-full max-w-3xl max-h-[85vh] transition-all">
               {/* Header */}
               <div className="flex gap-4 justify-between items-center mb-4 border-b-[1px] p-4 border-[var(--brown-ligth-200)]">

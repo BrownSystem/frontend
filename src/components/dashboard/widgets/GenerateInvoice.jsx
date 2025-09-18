@@ -23,8 +23,17 @@ import FormattedNumberInput from "./FormattedNumberInput";
 import ContactCreateModal from "../../common/Modal/Contacts/ContactCreateModal";
 import LabelInvoice from "./LabelInvoice";
 import { notifyVoucher } from "../../../api/notification/notifications";
+import { useEntityStore } from "../../../store/useEntityStore";
 
 const CreateInvoice = ({ tipoOperacion }) => {
+  const {
+    selectedEntidadName,
+    setSelectedEntidadName,
+    selectedEntidadNameSeller,
+    setSelectedEntidadNameSeller,
+    resetEntidad,
+  } = useEntityStore();
+
   const {
     replace,
     register,
@@ -59,10 +68,6 @@ const CreateInvoice = ({ tipoOperacion }) => {
   const [showContactModal, setShowContactModal] = useState(false);
   const [showProductModal, setShowProductModal] = useState(false);
   const [selectedProductIndex, setSelectedProductIndex] = useState(null);
-
-  const [selectedEntidadName, setSelectedEntidadName] = useState("");
-  const [selectedEntidadNameSeller, setSelectedEntidadNameSeller] =
-    useState("");
 
   const [showContactModalSeller, setShowContactModalSeller] = useState(false);
 
@@ -168,8 +173,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
 
   const onSubmit = (data) => {
     setMessage({ text: "", type: "info" }); // Limpiar mensaje previo
-    setSelectedEntidadName("");
-    setSelectedEntidadNameSeller("");
+
     // Validación 1: verificar que haya al menos un producto válido
     if (!data.productos || data.productos.length === 0) {
       setMessage({ text: "Debe agregar al menos un producto.", type: "error" });
@@ -305,6 +309,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
           notify,
         });
         reset();
+        resetEntidad();
       },
     });
   };
@@ -403,10 +408,6 @@ const CreateInvoice = ({ tipoOperacion }) => {
                 <input
                   type="text"
                   value={selectedEntidadNameSeller}
-                  onChange={(e) => {
-                    setSearchEntidadSeller(e.target.value);
-                    setSelectedProductEqual(false);
-                  }}
                   placeholder="Clickea Icono"
                   className="w-full bg-[var(--brown-ligth-50)] border border-[var(--brown-ligth-400)] rounded px-3 py-2"
                   disabled={true}
@@ -416,6 +417,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
                     !origenSucursalSeleccionada && handleOpenProductModal();
                   }}
                 />
+
                 <span
                   className="absolute right-2 top-12 transform -translate-y-1/2 cursor-pointer"
                   onClick={() => {
@@ -441,10 +443,6 @@ const CreateInvoice = ({ tipoOperacion }) => {
                   <input
                     type="text"
                     value={selectedEntidadName}
-                    onChange={(e) => {
-                      setSearchEntidad(e.target.value);
-                      setSelectedProductEqual(false);
-                    }}
                     placeholder="Clickear Icono"
                     className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
                     disabled={true}
