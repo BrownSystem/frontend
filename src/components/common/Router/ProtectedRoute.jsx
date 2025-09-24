@@ -12,7 +12,6 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     const validateToken = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
-        console.warn("[ProtectedRoute] No hay token");
         logout();
         setIsValidToken(false);
         setIsLoading(false);
@@ -32,6 +31,11 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     };
 
     validateToken();
+
+    // 👇 Se revalida cada 60 segundos
+    const interval = setInterval(validateToken, 10000);
+
+    return () => clearInterval(interval);
   }, []);
 
   if (isLoading) return null;

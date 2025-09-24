@@ -7,29 +7,39 @@ import { useCreateCard } from "../../../../../../api/card/card.queries";
 const ModalCreateCard = ({ showAddCardModal, setShowAddCardModal }) => {
   const [message, setMessage] = useState({ text: "", type: "info" });
   const createCardMutation = useCreateCard();
+  const [name, setName] = useState("");
+  const [type, setType] = useState("CREDIT");
+  const [cuotas, setCuotas] = useState(1);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const form = e.target;
-
+  const handleCreateCard = () => {
+    if (!name || !type || !cuotas) {
+      setMessage({
+        text: "Por favor completa todos los campos",
+        type: "error",
+      });
+      return;
+    }
     const newCardData = {
-      name: form.name.value,
-      cardType: form.type.value,
-      quotas: parseInt(form.cuotas.value),
+      name,
+      cardType: type,
+      quotas: parseInt(cuotas, 10),
       available: true,
     };
 
     createCardMutation.mutate(newCardData, {
       onSuccess: () => {
         setMessage({ text: "Tarjeta creada correctamente", type: "success" });
-        setShowAddCardModal(false);
+        setName("");
+        setType("CREDIT");
+        setCuotas(1);
+        setTimeout(() => {
+          setShowAddCardModal(false);
+        }, 1000);
       },
       onError: () => {
         setMessage({ text: "Error al crear la tarjeta", type: "error" });
       },
     });
-
-    form.reset();
   };
 
   return (
@@ -62,16 +72,16 @@ const ModalCreateCard = ({ showAddCardModal, setShowAddCardModal }) => {
                   </p>
                 </div>
               </div>
-              <form
-                onSubmit={handleSubmit}
-                className="flex flex-col gap-4 px-4 pb-4"
-              >
+
+              {/* div con id para capturar valores */}
+              <div id="cardForm" className="flex flex-col gap-4 px-4 pb-4">
                 <div className="flex w-full flex-col bg-[var(--brown-ligth-200)] p-3 rounded-md">
                   <LabelInvoice text="Tipo" />
                   <select
                     name="type"
                     className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
                     required
+                    onChange={(e) => setType(e.target.value)}
                   >
                     <option value="CREDIT">CREDITO</option>
                     <option value="DEBIT">DEBITO</option>
@@ -85,6 +95,7 @@ const ModalCreateCard = ({ showAddCardModal, setShowAddCardModal }) => {
                     type="text"
                     className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
                     required
+                    onChange={(e) => setName(e.target.value)}
                     placeholder="Agregar nombre de la tarjeta"
                   />
                 </div>
@@ -98,6 +109,7 @@ const ModalCreateCard = ({ showAddCardModal, setShowAddCardModal }) => {
                     className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
                     placeholder="Cantidad de cuotas"
                     required
+                    onChange={(e) => setCuotas(e.target.value)}
                   />
                 </div>
 
@@ -106,9 +118,9 @@ const ModalCreateCard = ({ showAddCardModal, setShowAddCardModal }) => {
                     text="Cancelar"
                     onClick={() => setShowAddCardModal(false)}
                   />
-                  <Button text="Crear" type="submit" />
+                  <Button text="Crear" onClick={() => handleCreateCard()} />
                 </div>
-              </form>
+              </div>
             </div>
           </motion.div>
         )}

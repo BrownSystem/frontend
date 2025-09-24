@@ -11,8 +11,7 @@ const Income = ({ type, branch }) => {
         <SalesChart type={type} branchId={branch} />
         <Money />
       </div>
-      <div className="flex gap-2 h-[250px]">
-        <MonthlyInvoicesChart type={type} branchId={branch} />
+      <div className="flex gap-2 h-auto">
         <EmployeeSales type={type} branchId={branch} />
       </div>
       <div>

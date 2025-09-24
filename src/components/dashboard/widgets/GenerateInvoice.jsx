@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, set } from "react-hook-form";
 import {
   CreateUser,
   Danger,
@@ -45,7 +45,11 @@ const CreateInvoice = ({ tipoOperacion }) => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      fecha: new Date().toISOString().split("T")[0],
+      fecha: new Date(
+        new Date().getTime() - new Date().getTimezoneOffset() * 60000
+      )
+        .toISOString()
+        .split("T")[0],
       proveedor: "",
       cliente: "",
       numeroFactura: "",
@@ -112,6 +116,8 @@ const CreateInvoice = ({ tipoOperacion }) => {
           quantity: 1,
         },
       ]);
+      selectedEntidadName && setSelectedEntidadName("");
+      selectedEntidadNameSeller && setSelectedEntidadNameSeller("");
     }
   }, [origenSucursal]);
 
@@ -119,7 +125,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
     type: tipoFactura,
     emissionBranchId: origenSucursalSeleccionada,
     enabled: !!tipoFactura && !!origenSucursal,
-    refetchInterval: 1000, // cada segundo
+    // refetchInterval: 1000, // cada segundo
   });
 
   const calcularTotales = () => {
@@ -136,10 +142,10 @@ const CreateInvoice = ({ tipoOperacion }) => {
   };
 
   const { total } = calcularTotales();
-  const totalPagos = pagos
+  let totalPagos = pagos
     .reduce((sum, p) => sum + parseFloat(p.amount || 0), 0)
     .toFixed(2);
-  const saldo = (total - totalPagos).toFixed(2);
+  let saldo = (total - totalPagos).toFixed(2);
 
   const setUser = useAuthStore((state) => state.user);
   const { data: branches = [] } = useFindAllBranch();
@@ -292,10 +298,17 @@ const CreateInvoice = ({ tipoOperacion }) => {
         currency: payment.currency || "ARS",
         receivedBy: setUser.id,
         bankId: payment.bankId || undefined,
+        cardId: payment.cardId || undefined,
         chequeNumber: payment.chequeNumber || undefined,
         chequeDueDate: payment.chequeDueDate || undefined,
         chequeStatus: payment.chequeStatus || undefined,
-        receivedAt: payment.receivedAt || new Date().toISOString(),
+        receivedAt:
+          payment.receivedAt ||
+          new Date(
+            new Date().getTime() - new Date().getTimezoneOffset() * 60000
+          )
+            .toISOString()
+            .split("T")[0],
       })),
     };
     createVoucher(payload, {
@@ -308,8 +321,10 @@ const CreateInvoice = ({ tipoOperacion }) => {
           numeroGenerado,
           notify,
         });
+        selectedEntidadName && setSelectedEntidadName("");
+        selectedEntidadNameSeller && setSelectedEntidadNameSeller("");
+        setPagos([]);
         reset();
-        resetEntidad();
       },
     });
   };
@@ -418,15 +433,23 @@ const CreateInvoice = ({ tipoOperacion }) => {
                   }}
                 />
 
-                <span
-                  className="absolute right-2 top-12 transform -translate-y-1/2 cursor-pointer"
-                  onClick={() => {
-                    origenSucursalSeleccionada &&
-                      setShowContactModalSeller(true);
-                    !origenSucursalSeleccionada && handleOpenProductModal();
-                  }}
-                >
-                  <PeopleTick color="#292828" size="24" />
+                <span className="absolute right-2 top-12 transform -translate-y-1/2 cursor-pointer">
+                  <div className="flex gap-2">
+                    {selectedEntidadNameSeller && (
+                      <span onClick={() => setSelectedEntidadNameSeller("")}>
+                        <Delete />
+                      </span>
+                    )}
+                    <span
+                      onClick={() => {
+                        origenSucursalSeleccionada &&
+                          setShowContactModalSeller(true);
+                        !origenSucursalSeleccionada && handleOpenProductModal();
+                      }}
+                    >
+                      <PeopleTick color="#292828" size="24" />
+                    </span>
+                  </div>
                 </span>
               </div>
             ) : (
@@ -457,14 +480,24 @@ const CreateInvoice = ({ tipoOperacion }) => {
                       Debes seleccionar una sucursal
                     </p>
                   )}
-                  <span
-                    className="absolute right-2 top-12 transform -translate-y-1/2 cursor-pointer"
-                    onClick={() => {
-                      origenSucursalSeleccionada && setShowContactModal(true);
-                      !origenSucursalSeleccionada && handleOpenProductModal();
-                    }}
-                  >
-                    <PeopleTick color="#292828" size="24" />
+                  <span className="absolute right-2 top-12 transform -translate-y-1/2 cursor-pointer">
+                    <div className="flex gap-2">
+                      {selectedEntidadName && (
+                        <span onClick={() => setSelectedEntidadName("")}>
+                          <Delete />
+                        </span>
+                      )}
+                      <span
+                        onClick={() => {
+                          origenSucursalSeleccionada &&
+                            setShowContactModal(true);
+                          !origenSucursalSeleccionada &&
+                            handleOpenProductModal();
+                        }}
+                      >
+                        <PeopleTick color="#292828" size="24" />
+                      </span>
+                    </div>
                   </span>
                 </div>
               ) : (
@@ -606,9 +639,10 @@ const CreateInvoice = ({ tipoOperacion }) => {
             />{" "}
           </div>
         </div>
-
+      </form>
+      {showPaymentModal && (
         <RegisterPaymentModal
-          isOpen={showPaymentModal}
+          saldo={saldo}
           onClose={() => setShowPaymentModal(false)}
           onRegister={(nuevoPago) => {
             // Si es un array, es porque se está reemplazando la lista
@@ -621,72 +655,72 @@ const CreateInvoice = ({ tipoOperacion }) => {
           hasProducts={productos.length > 0}
           payments={pagos}
         />
+      )}
 
-        {/* CONTACTO CLIENTE / PROVEEDOR */}
-        <ContactCreateModal
-          isOpen={showContactModal}
-          onClose={() => setShowContactModal(false)}
-          tipo={campoEntidad}
-          onSelect={(contact) => {
-            setValue(campoEntidad, contact?.id);
-            setMessage({
-              text: `Seleccionaste a ${contact?.name}`,
-              type: "success",
-            }); // notifica al padre
-            setSelectedEntidadName(contact?.name);
-          }}
-          branchId={origenSucursal}
-        />
+      {/* CONTACTO CLIENTE / PROVEEDOR */}
+      <ContactCreateModal
+        isOpen={showContactModal}
+        onClose={() => setShowContactModal(false)}
+        tipo={campoEntidad}
+        onSelect={(contact) => {
+          setValue(campoEntidad, contact?.id);
+          setMessage({
+            text: `Seleccionaste a ${contact?.name}`,
+            type: "success",
+          }); // notifica al padre
+          setSelectedEntidadName(contact?.name);
+        }}
+        branchId={origenSucursal}
+      />
 
-        {/* VENDEDOR */}
-        <ContactCreateModal
-          isOpen={showContactModalSeller}
-          onClose={() => setShowContactModalSeller(false)}
-          tipo={campoEntidadSeller}
-          onSelect={(contact) => {
-            setValue(campoEntidadSeller, contact?.id);
-            setMessage({
-              text: `Seleccionaste a ${contact?.name}`,
-              type: "success",
-            }); // notifica al padre
-            setSelectedEntidadNameSeller(contact?.name);
-          }}
-          branchId={origenSucursal}
-        />
+      {/* VENDEDOR */}
+      <ContactCreateModal
+        isOpen={showContactModalSeller}
+        onClose={() => setShowContactModalSeller(false)}
+        tipo={campoEntidadSeller}
+        onSelect={(contact) => {
+          setValue(campoEntidadSeller, contact?.id);
+          setMessage({
+            text: `Seleccionaste a ${contact?.name}`,
+            type: "success",
+          }); // notifica al padre
+          setSelectedEntidadNameSeller(contact?.name);
+        }}
+        branchId={origenSucursal}
+      />
 
-        <ProductSearchModal
-          isOpen={showProductModal}
-          branchId={origenSucursal}
-          onClose={() => setShowProductModal(false)}
-          index={selectedProductIndex}
-          onSelect={(producto, index) => {
-            const productosActuales = watch("productos");
-            const existenteIndex = productosActuales.findIndex(
-              (p) =>
-                p.productId === producto.productId &&
-                p.branchId === producto.branchId
+      <ProductSearchModal
+        isOpen={showProductModal}
+        branchId={origenSucursal}
+        onClose={() => setShowProductModal(false)}
+        index={selectedProductIndex}
+        onSelect={(producto, index) => {
+          const productosActuales = watch("productos");
+          const existenteIndex = productosActuales.findIndex(
+            (p) =>
+              p.productId === producto.productId &&
+              p.branchId === producto.branchId
+          );
+
+          if (existenteIndex !== -1 && existenteIndex !== index) {
+            // Si ya existe en otra fila, sumamos la cantidad
+            const cantidadActual =
+              parseFloat(productosActuales[existenteIndex].quantity) || 0;
+            setValue(
+              `productos.${existenteIndex}.quantity`,
+              cantidadActual + 1
             );
-
-            if (existenteIndex !== -1 && existenteIndex !== index) {
-              // Si ya existe en otra fila, sumamos la cantidad
-              const cantidadActual =
-                parseFloat(productosActuales[existenteIndex].quantity) || 0;
-              setValue(
-                `productos.${existenteIndex}.quantity`,
-                cantidadActual + 1
-              );
-              // Opcional: borrar la fila en la que ibas a ponerlo
-              remove(index);
-            } else {
-              // Si no existe, lo seteamos normalmente
-              setValue(`productos.${index}.productId`, producto.productId);
-              setValue(`productos.${index}.branchId`, producto.branchId);
-              setValue(`productos.${index}.descripcion`, producto.descripcion);
-              setValue(`productos.${index}.precio`, producto.precio || 0);
-            }
-          }}
-        />
-      </form>
+            // Opcional: borrar la fila en la que ibas a ponerlo
+            remove(index);
+          } else {
+            // Si no existe, lo seteamos normalmente
+            setValue(`productos.${index}.productId`, producto.productId);
+            setValue(`productos.${index}.branchId`, producto.branchId);
+            setValue(`productos.${index}.descripcion`, producto.descripcion);
+            setValue(`productos.${index}.precio`, producto.precio || 0);
+          }
+        }}
+      />
     </>
   );
 };

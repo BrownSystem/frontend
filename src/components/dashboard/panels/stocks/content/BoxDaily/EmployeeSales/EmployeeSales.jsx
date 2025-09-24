@@ -3,6 +3,7 @@ import { useAuthStore } from "../../../../../../../api/auth/auth.store";
 import { ArrowDown, ProfileMan } from "../../../../../../../assets/icons";
 import { useGetAllUsers } from "../../../../../../../api/auth/auth.queries";
 import { useSearchContacts } from "../../../../../../../api/contacts/contacts.queries";
+import { Button } from "../../../../../widgets";
 
 const EmployeeSales = ({ branchId, type }) => {
   const currentUser = useAuthStore((state) => state.user);
@@ -28,10 +29,10 @@ const EmployeeSales = ({ branchId, type }) => {
   // 👉 según type elige la lista a mostrar
   const isIncome = type === "income";
   const list = isIncome ? users : contacts;
-  const title = isIncome ? "Ventas de empleados" : "Proveedores";
+  const title = isIncome ? "VENTAS POR EMPLEADOS" : "SALDO POR PROVEEDORES";
 
   return (
-    <div className="bg-[var(--brown-ligth-100)] p-4 rounded-xl shadow-md font-[var(--font-outfit)] text-[var(--brown-dark-950)] w-[300px] md:w-[500px] overflow-y-auto">
+    <div className="bg-[var(--brown-ligth-100)] p-4 rounded-xl shadow-md font-[var(--font-outfit)] text-[var(--brown-dark-950)] w-full  overflow-y-auto">
       <h2 className="text-sm font-normal text-[var(--brown-dark-950)] mb-4">
         {title}
       </h2>
@@ -45,7 +46,6 @@ const EmployeeSales = ({ branchId, type }) => {
           return (
             <li
               key={id || index}
-              onClick={() => setSelected(id)}
               className={`flex items-center justify-between px-3 py-2 rounded-md transition shadow-sm cursor-pointer
                 ${
                   isSelected
@@ -67,8 +67,11 @@ const EmployeeSales = ({ branchId, type }) => {
                 </div>
               </div>
               <div>
-                <p className="font-semibold bg-[var(--brown-ligth-400)] rounded-full w-[16px] h-[16px] flex items-center justify-center">
-                  <ArrowDown color={"var(--brown-dark-900)"} size={32} />
+                <p className="font-semibold bg-[var(--brown-ligth-400)] rounded-full  flex items-center justify-center">
+                  <Button
+                    text={selected === id ? "Seleccionado" : "Seleccionar"}
+                    onClick={() => setSelected(!selected ? id : null)}
+                  />
                 </p>
               </div>
             </li>

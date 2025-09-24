@@ -104,7 +104,8 @@ const ModalPaymentCreate = ({ voucher, setShowPaymentModal, currentUser }) => {
               <p className="text-[var(--brown-dark-800)]">
                 Saldo Pendiente:
                 <span className="text-[var(--text-state-red)] pl-2">
-                  ${saldo?.toLocaleString("es-AR")}
+                  $
+                  {saldo?.toLocaleString("es-AR", { minimumFractionDigits: 2 })}
                 </span>
               </p>
             </div>

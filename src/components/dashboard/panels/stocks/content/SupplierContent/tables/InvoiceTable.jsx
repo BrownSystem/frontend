@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { usePaginatedTableData } from "../../../../../../../hooks/usePaginatedTableData";
 import { Delete, HideEyes, ShowEyes } from "../../../../../../../assets/icons";
-import { GenericTable, FilterPanel } from "../../../../../widgets";
+import { GenericTable, FilterPanel, Message } from "../../../../../widgets";
 import { useAuthStore } from "../../../../../../../api/auth/auth.store";
 import { searchVoucher } from "../../../../../../../api/vouchers/vouchers.api";
 import { useFindAllBranch } from "../../../../../../../api/branch/branch.queries";
@@ -10,6 +10,8 @@ import { useVerifyPassword } from "../../../../../../../api/auth/auth.queries";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSalesViewStockStore } from "../../../../../../../store/useTagsStore";
+import { PasswordConfirmModal } from "../../../../../../common";
+import { useMessageStore } from "../../../../../../../store/useMessage";
 
 export const formatFechaISO = (isoDate) => {
   if (!isoDate) return "";
@@ -24,6 +26,8 @@ const InvoiceTable = () => {
   const [voucherToDelete, setVoucherToDelete] = useState(null);
   const [deleteType, setDeleteType] = useState(null);
   const [tempPassword, setTempPassword] = useState("");
+  const [modalConfirmation, setModalConfirmation] = useState(false);
+  const { message, setMessage } = useMessageStore();
 
   // filtros
   const [dateFrom, setDateFrom] = useState("");
@@ -91,15 +95,19 @@ const InvoiceTable = () => {
         setTempPassword("");
       },
       onError: (error) => {
+        setMessage({
+          text: `No se pudo eliminar el comprobante: ${error}`,
+          type: "error",
+        });
         console.error("Error al borrar voucher:", error);
       },
     }
   );
 
   const handlerDelete = (row, actionType) => {
+    setModalConfirmation(true);
     setVoucherToDelete(row);
     setDeleteType(actionType);
-    setTempPassword("");
   };
 
   const confirmPasswordAndDelete = (password) => {
@@ -107,9 +115,25 @@ const InvoiceTable = () => {
       { email: user.email, password },
       {
         onSuccess: () => {
-          deleteVoucherMutate({
-            id: voucherToDelete.id,
-            typeOfDelete: deleteType,
+          deleteVoucherMutate(
+            { id: voucherToDelete.id, typeOfDelete: deleteType },
+            {
+              onSuccess: () => {
+                // cerrar modal y limpiar estados
+                setModalConfirmation(false);
+                setVoucherToDelete(null);
+                setDeleteType(null);
+                setTempPassword("");
+                setPage(1); // refrescar la tabla
+                setMessage({ text: "Comprobante eliminado", type: "success" });
+              },
+            }
+          );
+        },
+        onError: (error) => {
+          setMessage({
+            text: `No se pudo eliminar el comprobante: ${error}`,
+            type: "error",
           });
         },
       }
@@ -237,7 +261,6 @@ const InvoiceTable = () => {
         render: (_, row) => (
           <div className="flex gap-2 justify-center items-center">
             <div className="cursor-pointer" onClick={() => openVoucher(row)}>
-              {/* Contenedor de los ojos */}
               <motion.div
                 className="cursor-pointer"
                 initial="closed"
@@ -388,6 +411,28 @@ const InvoiceTable = () => {
 
   return (
     <div className="w-full h-full bg-white rounded-lg shadow p-4">
+      <Message
+        message={message.text}
+        type={message.type}
+        duration={3000}
+        onClose={() => setMessage({ text: "" })}
+      />
+      {modalConfirmation && (
+        <PasswordConfirmModal
+          password={tempPassword}
+          onPasswordChange={setTempPassword}
+          onCancel={() => {
+            setModalConfirmation(false);
+            setVoucherToDelete(null);
+            setDeleteType(null);
+            setTempPassword("");
+          }}
+          onConfirm={(password) => confirmPasswordAndDelete(password)}
+          isLoading={verifying || deleting}
+          error={verifyError?.message}
+        />
+      )}
+
       {/* tabs */}
       <div className="flex text-[15px] font-medium rounded-t-lg overflow-hidden bg-[var(--brown-ligth-200)]">
         <div className={tabClass("remito")} onClick={() => setTags("remito")}>

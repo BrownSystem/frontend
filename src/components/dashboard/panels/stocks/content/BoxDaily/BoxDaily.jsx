@@ -18,7 +18,7 @@ const BoxDaily = () => {
   const [selectedBranch, setSelectedBranch] = useState(user?.branchId || "");
   return (
     <div className="mt-4 flex justify-center w-full h-screen px-4">
-      <div className="w-full h-full rounded-md lg:w-[70%] lg:mt-8">
+      <div className="w-full h-full rounded-md lg:w-[90%] lg:mt-8">
         <div className="flex gap-4 mb-4 justify-between w-full">
           <div className="flex items-center gap-4">
             {/* Ingresos */}

@@ -37,8 +37,6 @@ const ProductSearchModal = ({ isOpen, branchId, onClose, onSelect, index }) => {
         description: newDescription,
       });
 
-      console.log("Producto creado:", result);
-
       onSelect(
         {
           productId: result.id,

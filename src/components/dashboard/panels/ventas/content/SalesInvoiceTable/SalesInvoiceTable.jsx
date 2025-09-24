@@ -1,12 +1,16 @@
 import { useState } from "react";
-import { FilterPanel, GenericTable } from "../../../../widgets";
+import { FilterPanel, GenericTable, Message } from "../../../../widgets";
 import { usePaginatedTableData } from "../../../../../../hooks/usePaginatedTableData";
 import { searchVoucher } from "../../../../../../api/vouchers/vouchers.api";
-import { HideEyes, ShowEyes } from "../../../../../../assets/icons";
+import { Delete, HideEyes, ShowEyes } from "../../../../../../assets/icons";
 import { formatFechaISO } from "../../../stocks/content/SupplierContent/tables/InvoiceTable";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSalesViewShopStore } from "../../../../../../store/useTagsStore";
+import { useDeleteVoucher } from "../../../../../../api/vouchers/vouchers.queries";
+import { PasswordConfirmModal } from "../../../../../common";
+import { useVerifyPassword } from "../../../../../../api/auth/auth.queries";
+import { useAuthStore } from "../../../../../../api/auth/auth.store";
 
 const SalesInvoiceTable = () => {
   const navigate = useNavigate();
@@ -14,14 +18,20 @@ const SalesInvoiceTable = () => {
   const tags = useSalesViewShopStore((state) => state.tags);
   const setTags = useSalesViewShopStore((state) => state.setTags);
   const [searchText, setSearchText] = useState("");
+  const [voucherToDelete, setVoucherToDelete] = useState(null);
+  const [deleteType, setDeleteType] = useState(null);
+  const [tempPassword, setTempPassword] = useState("");
+  const [modalConfirmation, setModalConfirmation] = useState(false);
+  const [message, setMessage] = useState({ text: "", type: "info" });
+  const user = useAuthStore((state) => state.user);
 
   // Filtros
   const [dateFrom, setDateFrom] = useState("");
   const [dateUntil, setDateUntil] = useState("");
   const [contactId, setContactId] = useState("");
   const [branch, setBranch] = useState("");
-  const [montoMin, setMontoMin] = useState("");
-  const [montoMax, setMontoMax] = useState("");
+  // const [montoMin, setMontoMin] = useState("");
+  // const [montoMax, setMontoMax] = useState("");
 
   const limit = 100;
 
@@ -32,6 +42,68 @@ const SalesInvoiceTable = () => {
   };
 
   const conditionPaymentSelect = conditionPaymentMap[tags];
+
+  const {
+    mutate: verifyPassword,
+    isLoading: verifying,
+    error: verifyError,
+  } = useVerifyPassword();
+
+  const { mutate: deleteVoucherMutate, isLoading: deleting } = useDeleteVoucher(
+    {
+      onSuccess: () => {
+        setMessage({ text: "Comprobante eliminado", type: "success" });
+        setPage(1);
+        setVoucherToDelete(null);
+        setDeleteType(null);
+        setTempPassword("");
+      },
+      onError: (error) => {
+        setMessage({
+          text: `No se pudo eliminar el comprobante: ${error}`,
+          type: "error",
+        });
+        console.error("Error al borrar voucher:", error);
+      },
+    }
+  );
+
+  // DELETE VOUCHER
+  const handlerDelete = (row, actionType) => {
+    setModalConfirmation(true);
+    setVoucherToDelete(row);
+    setDeleteType(actionType);
+  };
+
+  const confirmPasswordAndDelete = (password) => {
+    verifyPassword(
+      { email: user.email, password },
+      {
+        onSuccess: () => {
+          deleteVoucherMutate(
+            { id: voucherToDelete.id, typeOfDelete: deleteType },
+            {
+              onSuccess: () => {
+                // cerrar modal y limpiar estados
+                setModalConfirmation(false);
+                setVoucherToDelete(null);
+                setDeleteType(null);
+                setTempPassword("");
+                setPage(1); // refrescar la tabla
+                setMessage({ text: "Comprobante eliminado", type: "success" });
+              },
+            }
+          );
+        },
+        onError: (error) => {
+          setMessage({
+            text: `No se pudo eliminar el comprobante: ${error}`,
+            type: "error",
+          });
+        },
+      }
+    );
+  };
 
   const additionalParams = {
     conditionPayment: conditionPaymentSelect,
@@ -249,6 +321,11 @@ const SalesInvoiceTable = () => {
               </div>
             </motion.div>
           </div>
+          {row.type === "NOTA_CREDITO_CLIENTE" && (
+            <div title="Borrar" onClick={() => handlerDelete(row, "REPLENISH")}>
+              <Delete />
+            </div>
+          )}
         </div>
       ),
     },
@@ -262,6 +339,27 @@ const SalesInvoiceTable = () => {
 
   return (
     <>
+      <Message
+        message={message.text}
+        type={message.type}
+        duration={3000}
+        onClose={() => setMessage({ text: "" })}
+      />
+      {modalConfirmation && (
+        <PasswordConfirmModal
+          password={tempPassword}
+          onPasswordChange={setTempPassword}
+          onCancel={() => {
+            setModalConfirmation(false);
+            setVoucherToDelete(null);
+            setDeleteType(null);
+            setTempPassword("");
+          }}
+          onConfirm={(password) => confirmPasswordAndDelete(password)}
+          isLoading={verifying || deleting}
+          error={verifyError?.message}
+        />
+      )}
       {/* CONTENEDOR */}
       <div className="w-full h-full bg-white rounded-lg shadow ">
         <div className="w-full h-full bg-white rounded-lg shadow p-4">

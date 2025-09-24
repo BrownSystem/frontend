@@ -50,3 +50,4 @@ export { default as CloseModal } from "./CloseModal";
 export { default as AddCard } from "./AddCard";
 export { default as Location } from "./Location";
 export { default as ProductsIcon } from "./ProductsIcon";
+export { default as Unlock } from "./Unlock";

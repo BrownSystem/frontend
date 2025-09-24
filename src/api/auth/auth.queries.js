@@ -41,6 +41,7 @@ export const useVerifyPassword = () => {
   return useMutation({
     mutationFn: async ({ email, password }) => {
       const res = await loginApi({ email, password });
+
       return res.data; // si no tira error, es correcto
     },
   });

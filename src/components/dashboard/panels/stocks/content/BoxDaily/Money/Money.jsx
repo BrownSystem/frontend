@@ -14,28 +14,28 @@ const Money = () => {
       <EntryCard
         icon={<Dollar color="var(--brown-dark-700)" size={28} />}
         method="EFECTIVO"
-        mount="$69,736"
+        mount="69,736"
       />
 
       {/* TARJETA DE CREDITO */}
       <EntryCard
         icon={<CreditCard color="var(--brown-dark-700)" size={28} />}
         method="TARJETA DE CRÉDITO"
-        mount="$50,000"
+        mount="50,000"
       />
 
       {/* TRANSFERENCIA */}
       <EntryCard
         icon={<Transfer color="var(--brown-dark-900)" size={25} />}
         method="TRANSFERENCIA"
-        mount="$30,000"
+        mount="30,000"
       />
 
       {/* CHEQUE */}
       <EntryCard
         icon={<Cheque color="var(--brown-dark-900)" size={25} />}
         method="CHEQUE"
-        mount="$20,000"
+        mount="20,000"
       />
     </div>
   );
