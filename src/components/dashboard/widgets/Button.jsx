@@ -1,4 +1,12 @@
-const Button = ({ text, onClick, type, Icon, textSize, disabled = false }) => {
+const Button = ({
+  text,
+  onClick,
+  type,
+  Icon,
+  textSize,
+  disabled = false,
+  width,
+}) => {
   return (
     <button
       type={type}
@@ -8,7 +16,7 @@ const Button = ({ text, onClick, type, Icon, textSize, disabled = false }) => {
         disabled
           ? " border-[1px] border-[var(--brown-ligth-200)] text-[var(--brown-dark-950)"
           : "bg-[var(--brown-ligth-50)]  border-[1px] border-[var(--brown-ligth-400)] text-[var(--brown-dark-950)] hover:bg-[var(--brown-ligth-200)]"
-      } w-auto`}
+      } ${width || "w-auto"} `}
     >
       {Icon}
       <p className={` ${textSize || "text-md"} `}>{text}</p>

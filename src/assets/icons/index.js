@@ -51,3 +51,6 @@ export { default as AddCard } from "./AddCard";
 export { default as Location } from "./Location";
 export { default as ProductsIcon } from "./ProductsIcon";
 export { default as Unlock } from "./Unlock";
+export { default as TransactionsIcon } from "./TransactionsIcon";
+export { default as NotFound } from "./NotFound";
+export { default as Initial } from "./Initial";

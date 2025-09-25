@@ -1,0 +1,46 @@
+import React from "react";
+
+const TransactionsIcon = ({ size }) => {
+  return (
+    <svg
+      width={size || "24"}
+      height={size || "24"}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect
+        x="3"
+        y="4"
+        width="18"
+        height="16"
+        rx="2"
+        fill="#7E869E"
+        fill-opacity="0.25"
+      />
+      <path
+        d="M8 10L8 16"
+        stroke="#222222"
+        stroke-width="1.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M12 12V16"
+        stroke="#222222"
+        stroke-width="1.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M16 8V16"
+        stroke="#222222"
+        stroke-width="1.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  );
+};
+
+export default TransactionsIcon;

@@ -4,16 +4,16 @@ import { useAuthStore } from "../../../../../../api/auth/auth.store";
 
 import { DatePickerCustom } from "../../../../widgets";
 import { useState } from "react";
-import Income from "./View/Income/Income";
-import Discharge from "./View/Discharge/Discharge";
+import CurrentBox from "./View/CurrentBox/CurrentBox";
+import PreviousBoxes from "./View/PreviousBoxes/PreviousBoxes";
 
 const BoxDaily = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const { data: branches } = useFindAllBranch();
   const user = useAuthStore((state) => state.user);
 
-  // Estado para controlar qué vista está activa (default = "income")
-  const [activeView, setActiveView] = useState("income");
+  // Estado para controlar qué vista está activa (default = "current_box")
+  const [activeView, setActiveView] = useState("current_box");
   // Estado para la sucursal seleccionada
   const [selectedBranch, setSelectedBranch] = useState(user?.branchId || "");
   return (
@@ -21,40 +21,59 @@ const BoxDaily = () => {
       <div className="w-full h-full rounded-md lg:w-[90%] lg:mt-8">
         <div className="flex gap-4 mb-4 justify-between w-full">
           <div className="flex items-center gap-4">
-            {/* Ingresos */}
+            {/* Caja Actual */}
             <div
               className="flex justify-center flex-col items-center cursor-pointer"
-              onClick={() => setActiveView("income")}
+              onClick={() => setActiveView("current_box")}
             >
               <h2
                 className={`text-md font-normal ${
-                  activeView === "income"
+                  activeView === "current_box"
                     ? "text-[var(--brown-dark-900)]"
                     : "text-[var(--brown-dark-700)]"
                 }`}
               >
-                Ingresos
+                Caja Actual
               </h2>
-              {activeView === "income" && (
+              {activeView === "current_box" && (
                 <div className="w-10 h-[2px] bg-[var(--brown-ligth-400)] mt-1 rounded-full"></div>
               )}
             </div>
 
-            {/* Egresos */}
+            {/* Caja antetoriores */}
             <div
               className="flex justify-center flex-col items-center cursor-pointer"
-              onClick={() => setActiveView("discharge")}
+              onClick={() => setActiveView("previous_boxes")}
             >
               <h2
                 className={`text-md font-normal ${
-                  activeView === "discharge"
+                  activeView === "previous_boxes"
                     ? "text-[var(--brown-dark-900)]"
                     : "text-[var(--brown-dark-700)]"
                 }`}
               >
-                Egresos
+                Caja Anteriores
               </h2>
-              {activeView === "discharge" && (
+              {activeView === "previous_boxes" && (
+                <div className="w-10 h-[2px] bg-[var(--brown-ligth-400)] mt-1 rounded-full"></div>
+              )}
+            </div>
+
+            {/* Reportes */}
+            <div
+              className="flex justify-center flex-col items-center cursor-pointer"
+              onClick={() => setActiveView("reports")}
+            >
+              <h2
+                className={`text-md font-normal ${
+                  activeView === "reports"
+                    ? "text-[var(--brown-dark-900)]"
+                    : "text-[var(--brown-dark-700)]"
+                }`}
+              >
+                Reportes
+              </h2>
+              {activeView === "reports" && (
                 <div className="w-10 h-[2px] bg-[var(--brown-ligth-400)] mt-1 rounded-full"></div>
               )}
             </div>
@@ -63,13 +82,11 @@ const BoxDaily = () => {
           {/* Filtros */}
           <div className="flex gap-6">
             {/* Seleccionar fecha */}
-            <div className="flex gap-2 items-center cursor-pointer">
-              <DatePickerCustom
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-                Icon={Calender}
-              />
-            </div>
+            {activeView === "current_box" && (
+              <div className="flex gap-2 items-center cursor-pointer">
+                <DatePickerCustom selectedDate={selectedDate} Icon={Calender} />
+              </div>
+            )}
 
             {/* Seleccionar sucursal */}
             <div className="flex gap-2 items-center cursor-pointer">
@@ -96,10 +113,10 @@ const BoxDaily = () => {
 
         {/* Renderiza según la vista activa */}
         {selectedBranch &&
-          (activeView === "income" ? (
-            <Income type={"income"} branch={selectedBranch} />
+          (activeView === "current_box" ? (
+            <CurrentBox branch={selectedBranch} />
           ) : (
-            <Discharge type={"discharge"} branch={selectedBranch} />
+            <PreviousBoxes />
           ))}
       </div>
     </div>

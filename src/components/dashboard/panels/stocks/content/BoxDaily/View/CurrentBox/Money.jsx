@@ -1,15 +1,15 @@
 import React from "react";
+import { EntryCard } from "../../../../../../widgets";
 import {
   Cheque,
   CreditCard,
   Dollar,
   Transfer,
-} from "../../../../../../../assets/icons";
-import EntryCard from "../../../../../widgets/EntryCard";
+} from "../../../../../../../../assets/icons";
 
 const Money = () => {
   return (
-    <div className="rounded-xl w-[1000px] max-w-sm font-[var(--font-outfit)]">
+    <div className="rounded-xl w-full h-full font-[var(--font-outfit)]">
       {/* EFECTIVO */}
       <EntryCard
         icon={<Dollar color="var(--brown-dark-700)" size={28} />}
