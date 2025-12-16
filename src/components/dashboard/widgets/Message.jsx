@@ -24,7 +24,7 @@ const Message = ({
   title = "Notificación",
   message,
   type = "info",
-  duration = 3000,
+  duration = 10000,
   onClose,
 }) => {
   useEffect(() => {
@@ -40,7 +40,7 @@ const Message = ({
 
   return (
     <div
-      className={`fixed top-6 right-6 px-5 py-4 border rounded-xl shadow-lg z-[99999999999] w-[320px] animate-fadeInUp ${variantStyles[type]}`}
+      className={`fixed top-6 right-6 px-5 py-4 border rounded-xl shadow-lg z-[99999999999999999] w-[320px] animate-fadeInUp ${variantStyles[type]}`}
     >
       <div className="flex items-start gap-3">
         {/* Icono dinámico */}

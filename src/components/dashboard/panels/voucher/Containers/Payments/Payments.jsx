@@ -12,15 +12,15 @@ import ModalPaymentCreate from "./ModalPaymentCreate";
 import { useState } from "react";
 import ModalPaymentDetail from "./ModalPaymentDetail";
 
-const Payments = ({ voucher }) => {
+const Payments = ({ voucher, boxDaily }) => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [message, setMessage] = useState({ text: "", type: "info" });
   const [selectedPayment, setSelectedPayment] = useState(null);
 
   const paymentIcons = {
     EFECTIVO: <Dollar />,
     TARJETA: <CreditCard />,
     CHEQUE: <Cheque />,
+    CHEQUE_TERCERO: <Cheque />,
     TRANSFERENCIA: <Transfer />,
     DOLLAR: <Dollar />,
   };
@@ -60,12 +60,6 @@ const Payments = ({ voucher }) => {
     <>
       {voucher?.type !== "REMITO" && (
         <div className="flex flex-col items-center justify-center gap-3  w-full py-2 rounded-md ">
-          <Message
-            message={message.text}
-            type={message.type}
-            duration={3000}
-            onClose={() => setMessage({ text: "" })}
-          />
           <div className="flex  px-5 self-start justify-center p-4 bg-[var(--brown-ligth-200)] rounded-md w-full">
             <div className="w-full flex flex-col justify-center">
               <span className="text-[var(--brown-dark-950)] font-semibold">
@@ -118,7 +112,7 @@ const Payments = ({ voucher }) => {
           </div>
 
           {/* Render dinámico de campos de metodos de pago */}
-          <div className="w-full px-13 grid grid-cols-2 gap-3">
+          <div className="w-full px-13 grid grid-cols-2 gap-3 ">
             {voucher?.payments?.map((item, index, arr) => {
               const isLast = index === arr.length - 1;
               const isOdd = arr.length % 2 !== 0; // true si es impar
@@ -141,6 +135,7 @@ const Payments = ({ voucher }) => {
             })}
           </div>
 
+          {/* {boxDaily?.length === 0 || */}
           {voucher?.type !== "NOTA_CREDITO_CLIENTE" &&
             voucher?.type !== "NOTA_CREDITO_PROVEEDOR" &&
             voucher?.remainingAmount !== 0 && (
@@ -158,6 +153,7 @@ const Payments = ({ voucher }) => {
           {showPaymentModal && (
             <ModalPaymentCreate
               voucher={voucher}
+              boxDaily={boxDaily}
               setShowPaymentModal={setShowPaymentModal}
             />
           )}

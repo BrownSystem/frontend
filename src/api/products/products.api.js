@@ -20,7 +20,10 @@ export const searchProducts = async ({
     ...(filterbystock !== undefined ? { filterbystock } : {}), // no enviar search vacío
   };
 
-  const response = await AxiosInitializer.get("/products/search", { params });
+  const response = await AxiosInitializer.get("/products/search", {
+    params,
+    disableLoader: true,
+  });
   return response.data;
 };
 
@@ -39,6 +42,7 @@ export const searchProductsByBranches = async ({
 
   const response = await AxiosInitializer.get("/products/by-branches", {
     params,
+    disableLoader: true,
   });
   return response.data;
 };
@@ -105,5 +109,14 @@ export const uploadProducts = async (file) => {
 export const updateProduct = async (product) => {
   const { id, ...rest } = product;
   const response = await AxiosInitializer.patch(`/products/update/${id}`, rest);
+  return response.data;
+};
+
+export const updateStockFromList = async (stocks) => {
+  const response = await AxiosInitializer.patch(
+    "/inventory/bulk-update-stock",
+    stocks
+  );
+
   return response.data;
 };

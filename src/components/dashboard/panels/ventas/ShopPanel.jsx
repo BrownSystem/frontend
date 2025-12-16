@@ -57,7 +57,7 @@ const ShopPanel = () => {
 
   return (
     <>
-      <div className="w-full flex justify-center ">
+      <div className="w-full flex justify-center pt-4">
         <div className="w-auto flex  justify-center h-[70px] gap-2">
           <ActionCard
             svgAction={<Folder color={"#ffff"} />}

@@ -2,6 +2,7 @@ import {
   createProduct,
   downloadPdfProducts,
   updateProduct,
+  updateStockFromList,
   uploadProducts,
 } from "./products.api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -69,6 +70,27 @@ export const useUpdateProduct = ({ onSuccess, onError } = {}) => {
     mutationFn: updateProduct,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      if (onSuccess) onSuccess(data);
+    },
+    onError,
+  });
+};
+
+export const useUpdateStockFromList = ({ onSuccess, onError } = {}) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateStockFromList,
+    onSuccess: (data) => {
+      // 🔄 refresca tablas de productos / stock
+      queryClient.invalidateQueries({
+        queryKey: ["products"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["products-branches"],
+      });
+
       if (onSuccess) onSuccess(data);
     },
     onError,

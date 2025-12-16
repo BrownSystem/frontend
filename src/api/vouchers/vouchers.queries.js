@@ -9,6 +9,9 @@ import {
   generateVoucherNumber,
   deleteVoucher,
   getOneVoucher,
+  deletePayment,
+  salesMonthlyVoucherByBranch,
+  salesVoucherByBranch,
 } from "./vouchers.api";
 
 export const useCreateVoucher = ({ onSuccess, onError } = {}) => {
@@ -123,18 +126,6 @@ export const useUpdateReservedStatus = ({ onSuccess, onError } = {}) => {
   });
 };
 
-export const useDeleteVoucher = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: deleteVoucher,
-    onSuccess: () => {
-      // Invalida y refetch la lista de vouchers
-      queryClient.invalidateQueries({ queryKey: ["vouchers"] });
-    },
-  });
-};
-
 export const useDownloadVoucherHtml = () => {
   return useMutation({
     mutationFn: downloadVoucherHtml,
@@ -154,4 +145,43 @@ export const useGenerateVoucherNumber = ({
     refetchOnWindowFocus: false,
     staleTime: 0,
     refetchInterval, // <-- esto lo activará cada N milisegundos si se pasa
+  });
+
+export const useDeleteVoucher = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteVoucher,
+    onSuccess: () => {
+      // Invalida y refetch la lista de vouchers
+      queryClient.invalidateQueries({ queryKey: ["vouchers"] });
+    },
+  });
+};
+
+export const useDeletePayment = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deletePayment,
+    onSuccess: () => {
+      // Invalida y refetch la lista de vouchers
+      queryClient.invalidateQueries({ queryKey: ["vouchers"] });
+    },
+  });
+};
+
+// ANALISIS DE DATOS
+export const useSalesMonthlyVoucherByBranch = (params) =>
+  useQuery({
+    queryKey: ["branch-vouchers", params],
+    queryFn: () => salesMonthlyVoucherByBranch(params),
+    keepPreviousData: true, // Mantiene data mientras carga nueva
+  });
+
+export const useSalesVoucherByBranch = (params) =>
+  useQuery({
+    queryKey: ["branch-vouchers", params],
+    queryFn: () => salesVoucherByBranch(params),
+    keepPreviousData: true, // Mantiene data mientras carga nueva
   });

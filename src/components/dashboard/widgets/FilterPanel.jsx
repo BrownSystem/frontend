@@ -11,52 +11,71 @@ const FilterPanel = ({
   setDateUntil,
   setContactId,
   setBranch,
+  branchId,
+  showBothContacts = false,
 }) => {
   const { data: branches = [] } = useFindAllBranch();
 
-  // Estado para manejar el modal de contacto
+  // Estados
   const [showContactModal, setShowContactModal] = useState(false);
-  const [selectedContactName, setSelectedContactName] = useState("");
+  const [contactType, setContactType] = useState(null);
+  const [selectedClientName, setSelectedClientName] = useState("");
+  const [selectedSupplierName, setSelectedSupplierName] = useState("");
 
   return (
     <div className="p-4 rounded-lg">
-      {/* Modal de selección de contacto */}
-      <ContactCreateModal
-        isOpen={showContactModal}
-        onClose={() => setShowContactModal(false)}
-        tipo={contact} // o SUPPLIER según necesites
-        editContact={false}
-        onSelect={(contact) => {
-          setContactId(contact?.id); // Guarda el id del contacto en el filtro
-          setSelectedContactName(contact?.name); // Muestra el nombre en el input
-          setShowContactModal(false); // Cierra el modal
-        }}
-      />
+      {setContactId && (contact || showBothContacts) && (
+        <ContactCreateModal
+          isOpen={showContactModal}
+          branchId={branchId}
+          onClose={() => setShowContactModal(false)}
+          tipo={contactType || contact}
+          editContact={false}
+          onSelect={(selected) => {
+            if (contactType === "cliente") {
+              setSelectedClientName(selected?.name);
+              setContactId((prev) => ({
+                ...prev,
+                clienteId: selected?.id || "",
+              }));
+            } else {
+              setSelectedSupplierName(selected?.name);
+              setContactId((prev) => ({
+                ...prev,
+                proveedorId: selected?.id || "",
+              }));
+            }
+            setShowContactModal(false);
+          }}
+        />
+      )}
 
       <div className="grid grid-cols-2 gap-1 relative">
         {/* Fechas */}
-        <div className="col-span-2 flex w-full justify-center gap-2 bg-[var(--brown-ligth-100)] p-5 rounded-md">
-          <div className="w-full">
-            <label className="block text-sm">Fecha desde</label>
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
-            />
+        {setDateFrom && (
+          <div className="col-span-2 flex w-full justify-center gap-2 bg-[var(--brown-ligth-100)] p-5 rounded-md">
+            <div className="w-full">
+              <label className="block text-sm">Fecha desde</label>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+              />
+            </div>
+            <div className="w-full">
+              <label className="block text-sm">Fecha hasta</label>
+              <input
+                type="date"
+                value={dateUntil}
+                onChange={(e) => setDateUntil(e.target.value)}
+                className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+              />
+            </div>
           </div>
-          <div className="w-full">
-            <label className="block text-sm">Fecha hasta</label>
-            <input
-              type="date"
-              value={dateUntil}
-              onChange={(e) => setDateUntil(e.target.value)}
-              className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
-            />
-          </div>
-        </div>
+        )}
 
-        {/* Cliente y sucursal */}
+        {/* Sucursal + contactos */}
         <div className="col-span-2 flex w-full justify-center gap-2 bg-[var(--brown-ligth-100)] p-5 rounded-md">
           <div className="w-full">
             <label className="block text-sm">Sucursal</label>
@@ -73,73 +92,141 @@ const FilterPanel = ({
             </select>
           </div>
 
-          <div className="w-full">
-            <label className="block text-sm">
-              {contact === "proveedor" ? "Proveedor" : "Cliente"}
-            </label>
-            <div className="flex gap-2 relative ">
-              <input
-                type="text"
-                value={selectedContactName || ""}
-                readOnly
-                className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
-                placeholder="Seleccionar cliente..."
-              />
-              <span className="absolute flex right-2 top-5 transform -translate-y-1/2 cursor-pointer">
-                {selectedContactName && (
-                  <button
-                    className="cursor-pointer"
-                    onClick={() => {
-                      setSelectedContactName("");
-                      setContactId("");
-                    }}
-                  >
-                    <Delete />
-                  </button>
-                )}
-                <button
-                  className="cursor-pointer"
-                  onClick={() => setShowContactModal(true)}
-                >
-                  <PeopleTick color="#292828" size="24" />
-                </button>
-              </span>
-            </div>
-          </div>
+          {/* Si muestra ambos contactos */}
+          {showBothContacts ? (
+            <>
+              {/* Cliente */}
+              <div className="w-full">
+                <label className="block text-sm">Cliente</label>
+                <div className="flex gap-2 relative">
+                  <input
+                    type="text"
+                    value={selectedClientName || ""}
+                    readOnly
+                    placeholder="Seleccionar cliente..."
+                    className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+                  />
+                  <span className="absolute flex right-2 top-5 transform -translate-y-1/2 cursor-pointer">
+                    {selectedClientName && (
+                      <button
+                        onClick={() => {
+                          setSelectedClientName("");
+                          setContactId((prev) => ({
+                            ...prev,
+                            clienteId: "",
+                          }));
+                        }}
+                      >
+                        <Delete />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        setContactType("cliente");
+                        setShowContactModal(true);
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <PeopleTick color="#292828" size="24" />
+                    </button>
+                  </span>
+                </div>
+              </div>
+
+              {/* Proveedor */}
+              <div className="w-full">
+                <label className="block text-sm">Proveedor</label>
+                <div className="flex gap-2 relative">
+                  <input
+                    type="text"
+                    value={selectedSupplierName || ""}
+                    readOnly
+                    placeholder="Seleccionar proveedor..."
+                    className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+                  />
+                  <span className="absolute flex right-2 top-5 transform -translate-y-1/2 cursor-pointer">
+                    {selectedSupplierName && (
+                      <button
+                        onClick={() => {
+                          setSelectedSupplierName("");
+                          setContactId((prev) => ({
+                            ...prev,
+                            proveedorId: "",
+                          }));
+                        }}
+                      >
+                        <Delete />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        setContactType("proveedor");
+                        setShowContactModal(true);
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <PeopleTick color="#292828" size="24" />
+                    </button>
+                  </span>
+                </div>
+              </div>
+            </>
+          ) : (
+            // Si solo hay un tipo de contacto
+            setContactId &&
+            contact && (
+              <div className="w-full">
+                <label className="block text-sm">
+                  {contact === "proveedor" ? "Proveedor" : "Cliente"}
+                </label>
+                <div className="flex gap-2 relative ">
+                  <input
+                    type="text"
+                    value={
+                      contact === "proveedor"
+                        ? selectedSupplierName
+                        : selectedClientName
+                    }
+                    readOnly
+                    className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+                    placeholder={`Seleccionar ${
+                      contact === "proveedor" ? "proveedor" : "cliente"
+                    }...`}
+                  />
+                  <span className="absolute flex right-2 top-5 transform -translate-y-1/2 cursor-pointer">
+                    {(contact === "proveedor"
+                      ? selectedSupplierName
+                      : selectedClientName) && (
+                      <button
+                        onClick={() => {
+                          if (contact === "proveedor") {
+                            setSelectedSupplierName("");
+                            setContactId("");
+                          } else {
+                            setSelectedClientName("");
+                            setContactId("");
+                          }
+                        }}
+                      >
+                        <Delete />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        setContactType(contact);
+                        setShowContactModal(true);
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <PeopleTick color="#292828" size="24" />
+                    </button>
+                  </span>
+                </div>
+              </div>
+            )
+          )}
         </div>
-
-        {/* Montos */}
-        {/* <div className="col-span-2 flex w-full justify-center gap-2 bg-[var(--brown-ligth-100)] p-5 rounded-md">
-          <div className="w-full">
-            <label className="block text-sm">Monto mínimo</label>
-            <input
-              type="number"
-              value={montoMin}
-              onChange={(e) => setMontoMin(e.target.value)}
-              className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
-            />
-          </div>
-          <div className="w-full">
-            <label className="block text-sm">Monto máximo</label>
-            <input
-              type="number"
-              value={montoMax}
-              onChange={(e) => setMontoMax(e.target.value)}
-              className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
-            />
-          </div>
-        </div> */}
       </div>
-
-      {/* Botón limpiar
-      <div className="flex justify-end mt-4 gap-2">
-        <button
-          onClick={limpiarFiltros}
-          className="px-4 py-2 border rounded-md bg-gray-200 hover:bg-gray-300"
-        >
-          Limpiar
-        </button>
-      </div> */}
     </div>
   );
 };

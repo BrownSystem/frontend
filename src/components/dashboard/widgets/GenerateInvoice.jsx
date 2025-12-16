@@ -1,39 +1,53 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useForm, useFieldArray, set } from "react-hook-form";
-import {
-  CreateUser,
-  Danger,
-  Delete,
-  PeopleTick,
-  Warning,
-} from "../../../assets/icons";
+import { useEffect, useMemo, useState } from "react";
+import { useForm, useFieldArray } from "react-hook-form";
+
+import { Danger, Delete, InvoiceIcon, PeopleTick } from "../../../assets/icons";
 import Button from "./Button";
-import { ProductSearchModal, RegisterPaymentModal } from "../../common";
-import { useSearchContacts } from "../../../api/contacts/contacts.queries";
+import Message from "./Message";
+import FormattedAmount from "./FormattedAmount";
+import FormattedNumberInput from "./FormattedNumberInput";
+import LabelInvoice from "./LabelInvoice";
+
+import {
+  BoxDailyOpenModal,
+  ProductSearchModal,
+  RegisterPaymentModal,
+} from "../../common";
+import ContactCreateModal from "../../common/Modal/Contacts/ContactCreateModal";
+
 import { useAuthStore } from "../../../api/auth/auth.store";
+import { useEntityStore } from "../../../store/useEntityStore";
+
 import { useFindAllBranch } from "../../../api/branch/branch.queries";
+import { useFindAllBoxDaily } from "../../../api/boxDaily/boxDaily.queries";
 import {
   useCreateVoucher,
   useGenerateVoucherNumber,
 } from "../../../api/vouchers/vouchers.queries";
-import Message from "./Message";
 import { useCreateNotification } from "../../../api/notification/notification.queries";
-import FormattedAmount from "./FormattedAmount";
-import FormattedNumberInput from "./FormattedNumberInput";
-import ContactCreateModal from "../../common/Modal/Contacts/ContactCreateModal";
-import LabelInvoice from "./LabelInvoice";
 import { notifyVoucher } from "../../../api/notification/notifications";
-import { useEntityStore } from "../../../store/useEntityStore";
+import CreditNoteModal from "../../common/Modal/CreditNote/CreditNoteModal/CreditNoteModal";
+import { useMessageStore } from "../../../store/useMessage";
+import { useDeleteCheckBook } from "../../../api/check-book/check-book.queries";
 
 const CreateInvoice = ({ tipoOperacion }) => {
+  /** ----------------------------
+   * STORES & ESTADOS GLOBALES
+   * ---------------------------- */
   const {
     selectedEntidadName,
     setSelectedEntidadName,
     selectedEntidadNameSeller,
     setSelectedEntidadNameSeller,
-    resetEntidad,
+    selectedEntidadInvoice,
+    setSelectedEntidadInvoice,
   } = useEntityStore();
 
+  const setUser = useAuthStore((state) => state.user);
+
+  /** ----------------------------
+   * FORMULARIO
+   * ---------------------------- */
   const {
     replace,
     register,
@@ -65,18 +79,81 @@ const CreateInvoice = ({ tipoOperacion }) => {
     },
   });
 
-  const { mutate: notify } = useCreateNotification();
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "productos",
+  });
 
+  /** ----------------------------
+   * QUERIES
+   * ---------------------------- */
+  const { mutate: notify } = useCreateNotification();
+  const { data: branches = [] } = useFindAllBranch();
+
+  const tipoFactura = watch("tipoFactura");
+  const origenSucursal = watch("origenSucursal");
+  const origenSucursalSeleccionada = watch("origenSucursal");
+
+  const branchName = useMemo(
+    () => branches.find((b) => b.id === origenSucursal)?.name,
+    [origenSucursal, branches]
+  );
+
+  const { data: boxDaily } = useFindAllBoxDaily(
+    {
+      branch: branchName,
+      status: "OPEN",
+    },
+    {
+      enabled: !!origenSucursal && !!branchName, // solo ejecuta cuando hay sucursal
+    }
+  );
+
+  const { data: numeroGenerado } = useGenerateVoucherNumber({
+    type: tipoFactura,
+    emissionBranchId: origenSucursalSeleccionada,
+    enabled: !!tipoFactura && !!origenSucursal,
+  });
+
+  const { mutate: deleteCheckBook } = useDeleteCheckBook();
+
+  const { mutate: createVoucher, isPending: savingInvoice } = useCreateVoucher({
+    onSuccess: (data) => {
+      if (data.data.status >= 400) {
+        setMessage({
+          text: data.data.message,
+          type: "error",
+        });
+        return;
+      }
+      setMessage({ text: "Factura creada correctamente", type: "success" });
+    },
+    onError: (error) => {
+      const msg =
+        error?.response?.data?.message || "Hubo un error al crear la factura";
+      setMessage({ text: msg, type: "error" });
+      console.error("Error al crear factura:", error);
+    },
+  });
+
+  /** ----------------------------
+   * ESTADOS LOCALES
+   * ---------------------------- */
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [pagos, setPagos] = useState([]);
   const [showContactModal, setShowContactModal] = useState(false);
+  const [showInvoicesToConnect, setShowInvoicesToConnect] = useState(false);
   const [showProductModal, setShowProductModal] = useState(false);
   const [selectedProductIndex, setSelectedProductIndex] = useState(null);
-
   const [showContactModalSeller, setShowContactModalSeller] = useState(false);
+  const { setMessage } = useMessageStore();
 
-  const [message, setMessage] = useState({ text: "", type: "info" });
+  const [showModalBoxDaily, setShowModalBoxDaily] = useState(false);
+  const [disableButton, setDisableButton] = useState(false);
 
+  /** ----------------------------
+   * DERIVADOS
+   * ---------------------------- */
   const tiposFactura = useMemo(() => {
     if (tipoOperacion === "compra") {
       return [
@@ -94,40 +171,34 @@ const CreateInvoice = ({ tipoOperacion }) => {
 
   const campoEntidad = tipoOperacion === "venta" ? "cliente" : "proveedor";
   const campoEntidadSeller = "vendedor";
-
   const productos = watch("productos");
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "productos",
-  });
+  /** ----------------------------
+   * EFFECTS
+   * ---------------------------- */
+  // useEffect(() => {
+  //   if (boxDaily) {
+  //     remove();
+  //     setPagos([]);
+  //     selectedEntidadName && setSelectedEntidadName("");
+  //     selectedEntidadNameSeller && setSelectedEntidadNameSeller("");
 
-  const tipoFactura = watch("tipoFactura");
-  const origenSucursal = watch("origenSucursal");
-  const origenSucursalSeleccionada = watch("origenSucursal");
+  //     if (boxDaily.length === 0) {
+  //       setShowModalBoxDaily(true);
+  //       setDisableButton(true);
+  //       setMessage({
+  //         text: `DEBES ABRIR LA CAJA DE LA SUCURSAL: ${branchName}`,
+  //         type: "error",
+  //       });
+  //     } else {
+  //       setDisableButton(false);
+  //     }
+  //   }
+  // }, [boxDaily]);
 
-  useEffect(() => {
-    if (origenSucursal) {
-      remove([
-        {
-          descripcion: "",
-          isReserved: false,
-          precio: 0,
-          quantity: 1,
-        },
-      ]);
-      selectedEntidadName && setSelectedEntidadName("");
-      selectedEntidadNameSeller && setSelectedEntidadNameSeller("");
-    }
-  }, [origenSucursal]);
-
-  const { data: numeroGenerado } = useGenerateVoucherNumber({
-    type: tipoFactura,
-    emissionBranchId: origenSucursalSeleccionada,
-    enabled: !!tipoFactura && !!origenSucursal,
-    // refetchInterval: 1000, // cada segundo
-  });
-
+  /** ----------------------------
+   * FUNCIONES AUXILIARES
+   * ---------------------------- */
   const calcularTotales = () => {
     let subtotal = 0;
     productos.forEach((prod) => {
@@ -147,35 +218,17 @@ const CreateInvoice = ({ tipoOperacion }) => {
     .toFixed(2);
   let saldo = (total - totalPagos).toFixed(2);
 
-  const setUser = useAuthStore((state) => state.user);
-  const { data: branches = [] } = useFindAllBranch();
-  const { mutate: createVoucher, isPending: savingInvoice } = useCreateVoucher({
-    onSuccess: (data) => {
-      if (data.data.status >= 400) {
-        setMessage({
-          text: data.data.message,
-          type: "error",
-        });
-        return;
-      }
-      setMessage({ text: "Factura creada correctamente", type: "success" });
-      // reset(); si querés limpiar el formulario
-    },
-    onError: (error) => {
-      const msg =
-        error?.response?.data?.message || "Hubo un error al crear la factura";
-      setMessage({ text: msg, type: "error" });
-      console.error("Error al crear factura:", error);
-    },
-  });
-
   const handleOpenProductModal = () => {
     if (!origenSucursalSeleccionada) {
       setMessage({ text: "selecciona una sucursal", type: "info" });
-
       return;
     }
   };
+
+  //     // Buscar nombre de sucursal emisora
+  const sucursalOrigenName =
+    branches.find((b) => b.id === origenSucursalSeleccionada)?.name ||
+    "Sucursal origen";
 
   const onSubmit = (data) => {
     setMessage({ text: "", type: "info" }); // Limpiar mensaje previo
@@ -243,19 +296,14 @@ const CreateInvoice = ({ tipoOperacion }) => {
       return;
     }
 
-    //     // Buscar nombre de sucursal emisora
-    const sucursalOrigenName =
-      branches.find((b) => b.id === data.origenSucursal)?.name ||
-      "Sucursal origen";
-
     const sucursalDestinoName =
       branches.find((b) => b.id === data.destinoSucursal)?.name ||
       "Sucursal destino";
     // Si pasamos todas las validaciones, mostrar mensaje y crear la factura
     setMessage({ text: "Creando factura...", type: "info" });
-
     const isRemito = data.tipoFactura === "REMITO";
     const payload = {
+      boxId: boxDaily[0]?.id,
       type: data.tipoFactura,
       emissionDate: fechaSeleccionada.toISOString(),
       emissionBranchId: data.origenSucursal,
@@ -298,8 +346,11 @@ const CreateInvoice = ({ tipoOperacion }) => {
         currency: payment.currency || "ARS",
         receivedBy: setUser.id,
         bankId: payment.bankId || undefined,
+        branchId: origenSucursalSeleccionada,
+        branchName: sucursalOrigenName,
         cardId: payment.cardId || undefined,
         chequeNumber: payment.chequeNumber || undefined,
+        chequeBank: payment.chequeBank,
         chequeDueDate: payment.chequeDueDate || undefined,
         chequeStatus: payment.chequeStatus || undefined,
         receivedAt:
@@ -311,6 +362,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
             .split("T")[0],
       })),
     };
+
     createVoucher(payload, {
       onSuccess: (response) => {
         if (response.data.status >= 400) return;
@@ -323,20 +375,33 @@ const CreateInvoice = ({ tipoOperacion }) => {
         });
         selectedEntidadName && setSelectedEntidadName("");
         selectedEntidadNameSeller && setSelectedEntidadNameSeller("");
-        setPagos([]);
+        selectedEntidadInvoice && setSelectedEntidadInvoice("");
+
+        // TODO: ELIMINACION DE CHEQUE DE TERCERO
+        if (payload.initialPayment.length > 0) {
+          pagos.map((payment) => {
+            if (payment.method === "CHEQUE_TERCERO") {
+              deleteCheckBook(payment?.id);
+            }
+          });
+        }
         reset();
       },
     });
   };
-
   return (
     <>
-      <Message
-        message={message.text}
-        type={message.type}
-        duration={3000}
-        onClose={() => setMessage({ text: "" })}
-      />
+      {/* {showModalBoxDaily && (
+        <BoxDailyOpenModal
+          setShowModalBoxDaily={setShowModalBoxDaily}
+          setMessage={setMessage}
+          openedBy={setUser?.name}
+          origenSucursalSeleccionada={origenSucursalSeleccionada}
+          branchName={branchName}
+          onClose={() => setShowModalBoxDaily(false)}
+        />
+      )} */}
+
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="rounded-md space-y-4 h-full mt-6"
@@ -521,6 +586,55 @@ const CreateInvoice = ({ tipoOperacion }) => {
             </div>
           </div>
 
+          {/* VINCULACION FACATURA / P */}
+          {watch("tipoFactura") !== "REMITO" &&
+            watch("tipoFactura") !== "FACTURA" &&
+            watch("tipoFactura") !== "P" && (
+              <div className="col-span-2 flex w-full justify-center gap-2 bg-[var(--brown-ligth-100)] p-5 rounded-md">
+                <div className="relative w-full">
+                  <LabelInvoice text="Comprobante a vincular" />
+                  <input
+                    type="text"
+                    value={selectedEntidadInvoice}
+                    placeholder="0001"
+                    className="w-full bg-[var(--brown-ligth-50)] border border-[var(--brown-ligth-400)] rounded px-3 py-2"
+                    disabled={true}
+                    onFocus={() => {
+                      origenSucursalSeleccionada &&
+                        setShowInvoicesToConnect(true);
+                      !origenSucursalSeleccionada && handleOpenProductModal();
+                    }}
+                  />
+                  {!origenSucursalSeleccionada && (
+                    <p className="text-red-700 flex items-center gap-2 pt-1">
+                      <Danger color="red" size={"20"} />
+                      Debes seleccionar sucursal
+                    </p>
+                  )}
+
+                  <span className="absolute right-2 top-12 transform -translate-y-1/2 cursor-pointer">
+                    <div className="flex gap-2">
+                      {selectedEntidadInvoice && (
+                        <span onClick={() => setSelectedEntidadInvoice("")}>
+                          <Delete />
+                        </span>
+                      )}
+                      <span
+                        onClick={() => {
+                          origenSucursalSeleccionada &&
+                            setShowInvoicesToConnect(true);
+                          !origenSucursalSeleccionada &&
+                            handleOpenProductModal();
+                        }}
+                      >
+                        <InvoiceIcon color="#292828" size="24" />
+                      </span>
+                    </div>
+                  </span>
+                </div>
+              </div>
+            )}
+
           {/* OBSERVACION */}
           <div className="col-span-2 flex w-full justify-center gap-2 bg-[var(--brown-ligth-100)] p-5 rounded-md">
             <div className="w-full">
@@ -535,6 +649,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
           </div>
         </div>
 
+        {/* PRODUCTOS */}
         <div className="space-y-2 px-5">
           <div className="grid grid-cols-5 gap-2 font-medium text-[var(--brown-dark-950)] bg-[var(--brown-ligth-200)] rounded-t-md px-4 py-2 border border-[var(--brown-ligth-400)]">
             <div className="text-start">DESCRIPCIÓN</div>
@@ -622,8 +737,13 @@ const CreateInvoice = ({ tipoOperacion }) => {
               text="Generar Pago"
               type="button"
               onClick={() => setShowPaymentModal(true)}
+              disabled={disableButton ? true : false}
             />
-            <Button type="submit" text="Guardar Factura" />
+            <Button
+              type="submit"
+              text="Guardar Factura"
+              disabled={disableButton ? true : false}
+            />
           </div>
           <div className="text-right space-y-1 text-brown-900 font-medium">
             <FormattedAmount label="Total:" value={total} />{" "}
@@ -642,9 +762,12 @@ const CreateInvoice = ({ tipoOperacion }) => {
       </form>
       {showPaymentModal && (
         <RegisterPaymentModal
+          voucherType={tipoFactura}
+          tipoOperacion={tipoOperacion}
           saldo={saldo}
           onClose={() => setShowPaymentModal(false)}
           onRegister={(nuevoPago) => {
+            console.log(nuevoPago);
             // Si es un array, es porque se está reemplazando la lista
             if (Array.isArray(nuevoPago)) {
               setPagos(nuevoPago);
@@ -671,6 +794,56 @@ const CreateInvoice = ({ tipoOperacion }) => {
           setSelectedEntidadName(contact?.name);
         }}
         branchId={origenSucursal}
+      />
+
+      {/* VINCULACION DE FACTURAS */}
+      <CreditNoteModal
+        isOpen={showInvoicesToConnect}
+        onClose={() => setShowInvoicesToConnect(false)}
+        onSelect={(invoice) => {
+          setValue("invoiceId", invoice?.id);
+
+          setMessage({
+            text: `Seleccionaste factura: ${invoice?.number}`,
+            type: "success",
+          }); // notifica al padre
+          setSelectedEntidadInvoice(invoice?.number);
+
+          if (invoice?.products?.length) {
+            remove();
+            append(
+              invoice.products.map((p) => ({
+                productId: p.productId,
+                id: p.id,
+                branchId: p.branchId,
+                descripcion: p.description,
+                quantity: p.quantity,
+                precio: p.price,
+                isReserved: p.isReserved,
+              }))
+            );
+
+            // ✅ Ahora cargamos los pagos
+            if (invoice?.payments?.length) {
+              setPagos(
+                invoice.payments.map((pay) => ({
+                  amount: pay?.amount,
+                  bankId: pay?.bankId,
+                  cardId: pay?.cardId,
+                  currency: pay?.currency,
+                  method: pay?.method,
+                  observation: pay?.observation,
+                }))
+              );
+            } else {
+              setPagos([]); // Si no hay pagos, dejamos vacío
+            }
+          }
+        }}
+        tipo={tipoFactura}
+        branchId={origenSucursal}
+        selectedEntidadNameSeller={selectedEntidadNameSeller}
+        selectedEntidadName={selectedEntidadName}
       />
 
       {/* VENDEDOR */}

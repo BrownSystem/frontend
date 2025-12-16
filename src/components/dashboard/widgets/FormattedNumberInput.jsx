@@ -61,7 +61,7 @@ const FormattedNumberInput = ({
                   : 0
               }`}
               onChange={handleChange}
-              className={`border border-[var(--brown-ligth-400)] rounded px-2 py-1 text-left ${className}`}
+              className={`border border-[var(--brown-ligth-400)] rounded px-2 py-1 !text-left ${className}`}
             />
           </div>
         );

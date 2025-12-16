@@ -66,9 +66,9 @@ const GenericTable = ({
 
   return (
     <div className="w-full flex justify-center py-2">
-      <div className="w-full bg-[#fdfaf6] rounded-3xl shadow-2xl p-4 border border-[#e4d7c5]">
+      <div className="w-full bg-[var(--brown-ligth-45)] rounded-3xl shadow-lg p-4 border border-[var(--brown-ligth-200)]">
         {/* Filtro y botón añadir */}
-        {(enableFilter || showAddButton) && !externalPagination && (
+        {enableFilter && !externalPagination && (
           <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
             {enableFilter && (
               <input

@@ -6,9 +6,12 @@ export const useEntityStore = create(
     (set) => ({
       selectedEntidadName: "",
       selectedEntidadNameSeller: "",
+      selectedEntidadNotaCredito: "",
       setSelectedEntidadName: (name) => set({ selectedEntidadName: name }),
       setSelectedEntidadNameSeller: (name) =>
         set({ selectedEntidadNameSeller: name }),
+      setSelectedEntidadInvoice: (invoice) =>
+        set({ selectedEntidadInvoice: invoice }),
       resetEntidad: () =>
         set({ selectedEntidadName: "", selectedEntidadNameSeller: "" }),
     }),

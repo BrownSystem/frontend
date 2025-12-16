@@ -44,7 +44,7 @@ const EntryCard = ({
           onClick={onClick}
         >
           <div className="flex items-center justify-center relative w-7 h-7">
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="sync">
               {/* Ojo cerrado */}
               <motion.div
                 key="closed"

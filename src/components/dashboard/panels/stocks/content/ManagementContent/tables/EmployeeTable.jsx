@@ -8,6 +8,7 @@ import {
 import { useFindAllBranch } from "../../../../../../../api/branch/branch.queries";
 import { useForm } from "react-hook-form";
 import { useAuthStore } from "../../../../../../../api/auth/auth.store";
+import { useMessageStore } from "../../../../../../../store/useMessage";
 
 const EmployeeTable = () => {
   const currentUser = useAuthStore((state) => state.user);
@@ -16,7 +17,7 @@ const EmployeeTable = () => {
   const { mutate: updateUser } = useUpdateUser();
 
   const [selectedUser, setSelectedUser] = useState(null);
-  const [message, setMessage] = useState({ text: "", type: "success" });
+  const { setMessage } = useMessageStore();
 
   const {
     register,
@@ -117,13 +118,7 @@ const EmployeeTable = () => {
   ];
 
   return (
-    <div className="w-full h-full overflow-x-auto mt-3">
-      <Message
-        message={message.text}
-        type={message.type}
-        onClose={() => setMessage({ text: "" })}
-        duration={3000}
-      />
+    <div className="w-full h-screen overflow-x-auto mt-3">
       <div className="flex justify-center items-center w-full px-4 mb-2">
         <h2 className="text-2xl font-semibold text-[#2c2b2a]">
           USUARIOS REGISTRADOS

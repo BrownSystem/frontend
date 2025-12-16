@@ -27,6 +27,7 @@ import { CSS } from "@dnd-kit/utilities";
 import SelecetedProductsQrModal from "../../../../../common/Modal/SelecetedProductsQrModal";
 import { ReorganizeBranchesModal } from "../../../../../common";
 import { useQrStore } from "../../../../../../store/useQrStore";
+import { useMessageStore } from "../../../../../../store/useMessage";
 
 // Componente para cada sucursal arrastrable
 const SortableBranch = ({ branch }) => {
@@ -75,10 +76,7 @@ const PrintQrCodeContent = () => {
   const [removeStockZero, setRemoveStockZero] = useState(false);
   const { data: branches } = useFindAllBranch();
   const [orderedBranches, setOrderedBranches] = useState([]);
-  const [message, setMessage] = useState({
-    text: "",
-    type: "info",
-  });
+  const { setMessage } = useMessageStore();
 
   useEffect(() => {
     if (selectedProducts && Object.keys(selectedProducts).length > 0) {
@@ -313,13 +311,7 @@ const PrintQrCodeContent = () => {
   }
 
   return (
-    <div className="w-full flex flex-col gap-6 py-6 px-4 bg-[#fffdf8]">
-      <Message
-        message={message.text}
-        type={message.type}
-        duration={3000}
-        onClose={() => setMessage({ text: "", type: "info" })}
-      />
+    <div className="w-full flex flex-col gap-6 py-6 px-4 bg-[var(--fill)] ">
       {/* Header */}
       <div className="w-full flex justify-around items-center">
         <h1 className="text-3xl font-bold text-[var(--brown-dark-900)]">
@@ -335,7 +327,7 @@ const PrintQrCodeContent = () => {
       <input
         type="text"
         placeholder="🔍 Buscar producto por nombre o código..."
-        className="border border-[var(--brown-ligth-200)] px-4 py-3 rounded-xl shadow-sm w-full max-w-lg focus:outline-none focus:ring-2 focus:ring-[var(--brown-dark-700)] transition mx-auto"
+        className="border border-[var(--brown-dark-700)] px-4 py-3 rounded-xl shadow-sm w-full max-w-lg focus:outline-none focus:ring-2 focus:ring-[var(--brown-dark-700)] transition mx-auto bg-[var(--brown-ligth-50)]"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />

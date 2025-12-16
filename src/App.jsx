@@ -9,56 +9,67 @@ import {
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/common/Router/ProtectedRoute";
 import PublicRoute from "./components/common/Router/PublicRoute";
+import MessageProvider from "./store/MessageProvider";
+import GlobalLoader from "./store/GlobalLoader";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={["ADMIN", "MANAGEMENT", "SELLER"]}>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        >
+    <>
+      <MessageProvider />
+      <GlobalLoader />
+
+      <Router>
+        <Routes>
           <Route
-            index
+            path="/dashboard"
             element={
-              <ProtectedRoute allowedRoles={["ADMIN", "MANAGEMENT"]}>
-                <StockPanel />
+              <ProtectedRoute allowedRoles={["ADMIN", "MANAGEMENT", "SELLER"]}>
+                <Dashboard />
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="ventas"
-            element={
-              <ProtectedRoute allowedRoles={["SELLER", "MANAGEMENT", "ADMIN"]}>
-                <ShopPanel />
-              </ProtectedRoute>
-            }
-          />
+          >
+            <Route
+              index
+              element={
+                <ProtectedRoute allowedRoles={["ADMIN", "MANAGEMENT"]}>
+                  <StockPanel />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="ventas"
+              element={
+                <ProtectedRoute
+                  allowedRoles={["SELLER", "MANAGEMENT", "ADMIN"]}
+                >
+                  <ShopPanel />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="comprobantes/:id"
+              element={
+                <ProtectedRoute
+                  allowedRoles={["SELLER", "MANAGEMENT", "ADMIN"]}
+                >
+                  <VoucherPanel />
+                </ProtectedRoute>
+              }
+            />
+          </Route>
 
           <Route
-            path="comprobantes/:id"
+            path="/"
             element={
-              <ProtectedRoute allowedRoles={["SELLER", "MANAGEMENT", "ADMIN"]}>
-                <VoucherPanel />
-              </ProtectedRoute>
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
             }
           />
-        </Route>
-
-        <Route
-          path="/"
-          element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          }
-        />
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
+    </>
   );
 }
 

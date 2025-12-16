@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { createCard, getAllCard, getOneCard } from "./card.api";
+import { createCard, getAllCard, getOneCard, updateCard } from "./card.api";
 
 // Hook para obtener todas las tarjetas
 export const useGetAllCards = () => {
@@ -26,6 +26,21 @@ export const useCreateCard = () => {
     onSuccess: (newCard) => {
       // invalidar o actualizar cache de tarjetas
       queryClient.invalidateQueries({ queryKey: ["cards"] });
+    },
+  });
+};
+
+export const useUpdateCard = ({ onSuccess, onError }) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }) => updateCard(id, data),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["cards"] });
+      if (onSuccess) onSuccess(data);
+    },
+    onError: (error) => {
+      if (onError) onError(error);
     },
   });
 };

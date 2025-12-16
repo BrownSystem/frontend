@@ -14,3 +14,8 @@ export const getOneCard = async (id) => {
   const response = await AxiosInitializer.get(`/card/${id}`);
   return response.data;
 };
+
+export const updateCard = async (id, data) => {
+  const response = await AxiosInitializer.patch(`/card/${id}`, data);
+  return response.data;
+};

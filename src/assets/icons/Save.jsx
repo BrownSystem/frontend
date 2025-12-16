@@ -3,8 +3,9 @@ import React from "react";
 const Save = ({ size }) => {
   return (
     <svg
-      width={size || "30"}
-      height={size || "30"}
+      className="rotate-16 cursor-pointer"
+      width={size || "24"}
+      height={size || "24"}
       viewBox="0 0 30 30"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

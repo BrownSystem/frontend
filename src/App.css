@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
+/* BOSQUE SRL */
 @theme {
-  /* FONTS */
   --font-outfit: "Outfit", sans-serif;
 
   --brown-dark-950: #1b1b1b;
@@ -14,6 +14,7 @@
   --brown-ligth-200: #e2d1c3;
   --brown-ligth-100: #f0e6dc;
   --brown-ligth-50: #faf5f1;
+  --brown-ligth-45: #fdfaf6;
   --bg-state-red: #ffd6d1;
   --text-state-red: #a83228;
   --text-state-red-ligth: #e15d52;
@@ -24,3 +25,34 @@
   --text-state-green-ligth: #32b56c;
   --text-state-green-300: #90e5b5;
 }
+
+/* EFA */
+/* @theme {
+  --font-outfit: "Outfit", sans-serif;
+  --fill: #f0e6dc;
+
+  --brown-dark-950: #3e1a03;
+  --brown-dark-900: #7a3a0a; 
+  --brown-dark-800: #a14a0b; 
+  --brown-dark-700: #cc5702; 
+  --brown-dark-500: #fd7400; 
+  --brown-ligth-400: #ff950c;
+  --brown-ligth-300: #ffb33f; 
+  --brown-ligth-200: #ffcb72; 
+  --brown-ligth-100: #ffe6b5; 
+  --brown-ligth-50: #fff3d3; 
+  --brown-ligth-45: #fffaec; 
+
+
+  --bg-state-red: #ffd6d1; 
+  --text-state-red: #a83228; 
+  --text-state-red-ligth: #e15d52; 
+
+  --bg-state-yellow: #fff4b5; 
+  --text-state-yellow: #8a5d12; 
+
+  --bg-state-green: #d6f7e4;
+  --text-state-green: #1a4d32; 
+  --text-state-green-ligth: #32b56c; 
+  --text-state-green-300: #90e5b5; 
+} */

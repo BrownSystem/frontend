@@ -11,6 +11,7 @@ import { useDeleteVoucher } from "../../../../../../api/vouchers/vouchers.querie
 import { PasswordConfirmModal } from "../../../../../common";
 import { useVerifyPassword } from "../../../../../../api/auth/auth.queries";
 import { useAuthStore } from "../../../../../../api/auth/auth.store";
+import { useMessageStore } from "../../../../../../store/useMessage";
 
 const SalesInvoiceTable = () => {
   const navigate = useNavigate();
@@ -22,7 +23,8 @@ const SalesInvoiceTable = () => {
   const [deleteType, setDeleteType] = useState(null);
   const [tempPassword, setTempPassword] = useState("");
   const [modalConfirmation, setModalConfirmation] = useState(false);
-  const [message, setMessage] = useState({ text: "", type: "info" });
+  const { setMessage } = useMessageStore();
+
   const user = useAuthStore((state) => state.user);
 
   // Filtros
@@ -191,7 +193,7 @@ const SalesInvoiceTable = () => {
               whileHover="open"
             >
               <div className="flex items-center justify-center relative w-7 h-7">
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="sync">
                   {/* Ojo cerrado */}
                   <motion.div
                     key="closed"
@@ -291,7 +293,7 @@ const SalesInvoiceTable = () => {
               whileHover="open"
             >
               <div className="flex items-center justify-center relative w-7 h-7">
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="sync">
                   {/* Ojo cerrado */}
                   <motion.div
                     key="closed"
@@ -339,12 +341,6 @@ const SalesInvoiceTable = () => {
 
   return (
     <>
-      <Message
-        message={message.text}
-        type={message.type}
-        duration={3000}
-        onClose={() => setMessage({ text: "" })}
-      />
       {modalConfirmation && (
         <PasswordConfirmModal
           password={tempPassword}

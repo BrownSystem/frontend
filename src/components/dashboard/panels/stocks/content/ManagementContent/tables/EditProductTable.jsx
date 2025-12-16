@@ -10,12 +10,12 @@ import {
 } from "../../../../../../../api/products/products.queries";
 import { useQueryClient } from "@tanstack/react-query";
 import { searchProductsByBranches } from "../../../../../../../api/products/products.api";
+import { useMessageStore } from "../../../../../../../store/useMessage";
 
 const EditProductTable = () => {
   const [search, setSearch] = useState("");
   const [file, setFile] = useState(null);
-  const [message, setMessage] = useState({ text: "", type: "success" });
-
+  const { setMessage } = useMessageStore();
   const [editingRowId, setEditingRowId] = useState(null);
   const [editedRowData, setEditedRowData] = useState({});
   const [tempProducts, setTempProducts] = useState([]);
@@ -277,13 +277,6 @@ const EditProductTable = () => {
 
   return (
     <div className="w-full h-full overflow-x-auto py-2">
-      <Message
-        message={message.text}
-        type={message.type}
-        onClose={() => setMessage({ text: "" })}
-        duration={5000}
-      />
-
       <div className="flex flex-col md:flex-row justify-center items-center w-full px-4">
         <h2 className="text-2xl font-semibold text-[#2c2b2a]">
           EDITAR PRODUCTOS
@@ -294,7 +287,7 @@ const EditProductTable = () => {
         <input
           type="text"
           placeholder="Buscar producto..."
-          className="border px-2 rounded w-full max-w-md"
+          className="border px-2 rounded w-full max-w-md bg-[var(--brown-ligth-50)] focus:outline-none focus:ring-2 border-[var(--brown-ligth-400)] focus:ring-[var(--brown-dark-700)] transition"
           style={{ height: "40px" }}
           value={search}
           onChange={(e) => setSearch(e.target.value)}

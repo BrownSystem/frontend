@@ -4,7 +4,7 @@ import { BsEye } from "react-icons/bs";
 import { useState } from "react";
 import { useAuthStore } from "../../../../../../api/auth/auth.store";
 import { useShopViewStore } from "@store/useShopViewStore";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 import {
   useCreateBranch,
@@ -18,12 +18,14 @@ import {
   HideEyes,
   ShowEyes,
 } from "../../../../../../assets/icons";
+import { useMessageStore } from "../../../../../../store/useMessage";
 
 const DepositsContent = () => {
   const queryClient = useQueryClient();
   const { data: branches = [], isLoading } = useFindAllBranch();
   const setView = useShopViewStore((state) => state.setViewSafe);
-  const [message, setMessage] = useState({ text: "", type: "success" });
+  const { setMessage } = useMessageStore();
+
   const setUser = useAuthStore((state) => state.user);
   const isAdmin = setUser?.role === "ADMIN";
   const createBranchMutation = useCreateBranch();
@@ -200,33 +202,31 @@ const DepositsContent = () => {
               onClick={() => handleRowClick(row)}
             >
               <div className="flex items-center justify-center relative w-7 h-7">
-                <AnimatePresence mode="wait">
-                  {/* Ojo cerrado */}
-                  <motion.div
-                    key="closed"
-                    variants={{
-                      closed: { opacity: 1, scale: 1 },
-                      open: { opacity: 0, scale: 0.8 },
-                    }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute"
-                  >
-                    <HideEyes size={28} />
-                  </motion.div>
+                {/* Ojo cerrado */}
+                <motion.div
+                  key="closed"
+                  variants={{
+                    closed: { opacity: 1, scale: 1 },
+                    open: { opacity: 0, scale: 0.8 },
+                  }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute"
+                >
+                  <HideEyes size={28} />
+                </motion.div>
 
-                  {/* Ojo abierto */}
-                  <motion.div
-                    key="open"
-                    variants={{
-                      closed: { opacity: 0, scale: 0.8 },
-                      open: { opacity: 1, scale: 1 },
-                    }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute bottom-[0.5px] left-[0.5px]"
-                  >
-                    <ShowEyes size={30} />
-                  </motion.div>
-                </AnimatePresence>
+                {/* Ojo abierto */}
+                <motion.div
+                  key="open"
+                  variants={{
+                    closed: { opacity: 0, scale: 0.8 },
+                    open: { opacity: 1, scale: 1 },
+                  }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute bottom-[0.5px] left-[0.5px]"
+                >
+                  <ShowEyes size={30} />
+                </motion.div>
               </div>
             </motion.div>
             {isAdmin && (
@@ -254,12 +254,6 @@ const DepositsContent = () => {
 
   return (
     <div className="w-full flex flex-col gap-4 p-4 rounded-lg">
-      <Message
-        message={message.text}
-        type={message.type}
-        onClose={() => setMessage({ text: "" })}
-        duration={3000}
-      />
       <div className="w-full mt-1 flex flex-col justify-center items-center">
         <div className="text-3xl font-semibold text-[#3c2f1c]">
           DEPÓSITOS{" "}

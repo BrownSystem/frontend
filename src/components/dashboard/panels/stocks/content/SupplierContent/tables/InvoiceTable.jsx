@@ -27,7 +27,7 @@ const InvoiceTable = () => {
   const [deleteType, setDeleteType] = useState(null);
   const [tempPassword, setTempPassword] = useState("");
   const [modalConfirmation, setModalConfirmation] = useState(false);
-  const { message, setMessage } = useMessageStore();
+  const { setMessage } = useMessageStore();
 
   // filtros
   const [dateFrom, setDateFrom] = useState("");
@@ -148,6 +148,20 @@ const InvoiceTable = () => {
   const columnsFactura = useMemo(
     () => [
       {
+        key: "status",
+        render: (value) => (
+          <p
+            className={` bg-[var(${
+              value !== "PENDIENTE" ? "--bg-state-green" : "--bg-state-yellow"
+            })] cursor-pointer border-[1px] border-[var(${
+              value !== "PENDIENTE"
+                ? "--text-state-green"
+                : "--text-state-yellow"
+            })] text-[var(--brown-dark-950)] px-2 py-2 text-xs rounded-full w-auto text-center`}
+          ></p>
+        ),
+      },
+      {
         key: "emissionDate",
         label: "FECHA",
         className: "text-center",
@@ -179,6 +193,7 @@ const InvoiceTable = () => {
         label: "SUCURSAL",
         className: "text-center",
       },
+
       {
         key: "acciones",
         label: "DETALLES",
@@ -191,7 +206,7 @@ const InvoiceTable = () => {
                 whileHover="open"
               >
                 <div className="flex items-center justify-center relative w-7 h-7">
-                  <AnimatePresence mode="wait">
+                  <AnimatePresence mode="sync">
                     {/* Ojo cerrado */}
                     <motion.div
                       key="closed"
@@ -267,7 +282,7 @@ const InvoiceTable = () => {
                 whileHover="open"
               >
                 <div className="flex items-center justify-center relative w-7 h-7">
-                  <AnimatePresence mode="wait">
+                  <AnimatePresence mode="sync">
                     {/* Ojo cerrado */}
                     <motion.div
                       key="closed"
@@ -362,7 +377,7 @@ const InvoiceTable = () => {
                 whileHover="open"
               >
                 <div className="flex items-center justify-center relative w-7 h-7">
-                  <AnimatePresence mode="wait">
+                  <AnimatePresence mode="sync">
                     {/* Ojo cerrado */}
                     <motion.div
                       key="closed"
@@ -405,18 +420,12 @@ const InvoiceTable = () => {
   const tabClass = (selected) =>
     `w-full px-4 py-2 text-xl text-center cursor-pointer ${
       tags === selected
-        ? "bg-white text-[var(--brown-dark-700)] border-t-2 border-x-2 border-[var(--brown-dark-600)] rounded-t-md shadow-md"
+        ? "bg-[var(--brown-ligth-50)] text-[var(--brown-dark-700)] border-t-2 border-x-2 border-[var(--brown-dark-600)] rounded-t-md shadow-md"
         : "text-[var(--brown-ligth-400)] border-b-2 border-[var(--brown-dark-600)]"
     }`;
 
   return (
-    <div className="w-full h-full bg-white rounded-lg shadow p-4">
-      <Message
-        message={message.text}
-        type={message.type}
-        duration={3000}
-        onClose={() => setMessage({ text: "" })}
-      />
+    <div className="w-full h-full bg-[var(--brown-ligth-50)]  rounded-lg shadow p-4 mt-3">
       {modalConfirmation && (
         <PasswordConfirmModal
           password={tempPassword}

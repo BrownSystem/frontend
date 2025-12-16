@@ -4,6 +4,7 @@ import { Button, Message } from "../../../../dashboard/widgets";
 import InputField from "./fields/InputField";
 import SelectField from "./fields/SelectField";
 import { sanitizeContactData } from "./utils/sanitize";
+import { useMessageStore } from "../../../../../store/useMessage";
 
 const initialNewContact = {
   name: "",
@@ -21,7 +22,7 @@ const ContactForm = ({ toggleView, tipo, branchId }) => {
   };
 
   const [newContact, setNewContact] = useState(initialNewContact);
-  const [message, setMessage] = useState({ text: "", type: "success" });
+  const { setMessage } = useMessageStore();
 
   const { mutate: createContactMutate, isPending: saving } = useCreateContact({
     onSuccess: () => {
@@ -62,12 +63,6 @@ const ContactForm = ({ toggleView, tipo, branchId }) => {
   };
   return (
     <>
-      <Message
-        message={message.text}
-        type={message.type}
-        onClose={() => setMessage({ text: "" })}
-        duration={2500}
-      />
       {typeLabels[tipo] !== "Vendedor" ? (
         <div className="grid grid-cols-2 gap-3">
           <InputField

@@ -8,6 +8,34 @@ export const createVoucher = async (data) => {
 export const searchVoucher = async (params) => {
   const response = await AxiosInitializer.get(`/voucher/search`, {
     params,
+    disableLoader: true,
+  });
+  return response.data;
+};
+
+export const salesVoucherByBranch = async (params) => {
+  const response = await AxiosInitializer.get(`/voucher/sales-by-branch`, {
+    params,
+    disableLoader: false,
+  });
+  return response.data;
+};
+
+export const salesMonthlyVoucherByBranch = async (params) => {
+  const response = await AxiosInitializer.get(
+    `/voucher/sales-monthly-by-branch`,
+    {
+      params,
+      disableLoader: false,
+    }
+  );
+  return response.data;
+};
+
+export const searchVoucherByContact = async (params) => {
+  const response = await AxiosInitializer.get(`/voucher/search-by-contact`, {
+    params,
+    disableLoader: true,
   });
   return response.data;
 };
@@ -59,6 +87,13 @@ export const deleteVoucher = async ({ id, typeOfDelete }) => {
     {
       typeOfDelete,
     }
+  );
+  return response.data;
+};
+
+export const deletePayment = async ({ paymentId }) => {
+  const response = await AxiosInitializer.delete(
+    `/voucher/delete-payment/${paymentId}`
   );
   return response.data;
 };

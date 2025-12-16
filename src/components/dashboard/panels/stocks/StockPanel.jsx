@@ -30,7 +30,7 @@ const StockPanel = () => {
 
   return (
     <>
-      <div className="w-full  flex  max-h-full roundend-lg">
+      <div className="w-full  flex  max-h-full roundend-lg pt-4">
         <div className="w-full flex justify-center h-[70px] gap-5">
           <ActionCard
             svgAction={<DailyBox />}
@@ -57,7 +57,7 @@ const StockPanel = () => {
             hasNotifications={false}
           />
           <ActionCard
-            svgAction={<MenuKebab />}
+            svgAction={<MenuKebab size={24} color={"white"} />}
             action={"Ingresar"}
             onClick={handleViewManagementContent}
             title={"Gestión"}

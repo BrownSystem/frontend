@@ -3,10 +3,10 @@ import {
   Button,
   FormattedNumberInput,
   LabelInvoice,
-  Message,
 } from "../../../../widgets";
 import {
   AddCard,
+  BankIcon,
   Cheque,
   CreditCard,
   Danger,
@@ -19,15 +19,46 @@ import { motion } from "framer-motion";
 import ModalCreateCard from "./ModalCreateCard";
 import { useGetAllCards } from "../../../../../../api/card/card.queries";
 import { useRegisterPayment } from "../../../../../../api/vouchers/vouchers.queries";
+import { useBanks } from "../../../../../../api/banks/banks.queries";
+import ModalCreateBank from "./ModalCreateBank";
+import { useMessageStore } from "../../../../../../store/useMessage";
+import {
+  useCheckBook,
+  useDeleteCheckBook,
+} from "../../../../../../api/check-book/check-book.queries";
+import { useFindAllBranch } from "../../../../../../api/branch/branch.queries";
+import { formatFechaISO } from "../../../stocks/content/SupplierContent/tables/InvoiceTable";
 
-const ModalPaymentCreate = ({ voucher, setShowPaymentModal, currentUser }) => {
-  const [message, setMessage] = useState({ text: "", type: "success" });
+const ModalPaymentCreate = ({
+  voucher,
+  setShowPaymentModal,
+  currentUser,
+  boxDaily,
+}) => {
+  // Calcular fechas
+  const today = new Date();
+  const emissionDate = today.toISOString().split("T")[0]; // formato YYYY-MM-DD
+  const dueDate = new Date(today.setDate(today.getDate() + 30))
+    .toISOString()
+    .split("T")[0];
+  const { setMessage } = useMessageStore();
+
   const [selectedMethod, setSelectedMethod] = useState("");
   const [selectedCurrency, setSelectedCurrency] = useState("");
+  const [selectedCheque, setSelectedCheque] = useState("");
   const [selectedCard, setSelectedCard] = useState(null);
-  const [showAddCardModal, setShowAddCardModal] = useState(false);
+  const [selectedBank, setSelectedBank] = useState(null);
+  const [selectedCheckBook, setSelectedCheckBook] = useState(null);
 
-  const { control, handleSubmit, watch, register } = useForm({
+  const [nameBank, setNameBank] = useState("");
+  const [chequeNumber, setChequeNumber] = useState("");
+  const [emissionDateValue, setEmissionDateValue] = useState(emissionDate);
+  const [dueDateValue, setDueDateValue] = useState(dueDate);
+
+  const [showAddCardModal, setShowAddCardModal] = useState(false);
+  const [showAddBankModal, setShowAddBankModal] = useState(false);
+
+  const { control, handleSubmit, watch, register, setValue, reset } = useForm({
     defaultValues: { monto: 0, observations: "" },
   });
 
@@ -35,7 +66,7 @@ const ModalPaymentCreate = ({ voucher, setShowPaymentModal, currentUser }) => {
   const saldo = voucher?.remainingAmount - monto;
 
   const { data: cards } = useGetAllCards();
-
+  const { data: banks, isLoading: isBanksLoading } = useBanks();
   const { mutate, isLoading } = useRegisterPayment({
     onSuccess: () => {
       setMessage({ text: "Pago registrado correctamente ✅", type: "success" });
@@ -48,6 +79,30 @@ const ModalPaymentCreate = ({ voucher, setShowPaymentModal, currentUser }) => {
       });
     },
   });
+  const { mutate: deleteCheckBook } = useDeleteCheckBook();
+
+  const { data: branch } = useFindAllBranch();
+  const { data: checkBooks } = useCheckBook();
+
+  const resetMethodStates = () => {
+    setSelectedCard(null);
+    setSelectedBank(null);
+    setSelectedCheque("");
+    setSelectedCheckBook(null);
+    setChequeNumber("");
+    setNameBank("");
+    setSelectedCurrency("");
+    setValue("monto", 0);
+    reset({ monto: 0, observations: "" }); // opcional
+  };
+
+  const onSelect = (checkBook) => {
+    setSelectedCheckBook(checkBook);
+    setValue("monto", parseFloat(checkBook.amount));
+
+    setChequeNumber(checkBook.chequeNumber || "");
+    setNameBank(checkBook.chequeBank || "");
+  };
 
   const handleSubmitPayment = (data) => {
     // Validaciones adicionales
@@ -60,17 +115,32 @@ const ModalPaymentCreate = ({ voucher, setShowPaymentModal, currentUser }) => {
 
     const paymentPayload = {
       voucherId: voucher.id,
-      method: selectedMethod,
+      method:
+        selectedMethod === "CHEQUE" && selectedCheque
+          ? `${
+              selectedCheque === "CHEQUE DE TERCERO"
+                ? "CHEQUE_TERCERO"
+                : "CHEQUE"
+            }`
+          : selectedMethod,
       amount: parseFloat(monto),
       currency: selectedCurrency === "PESOS" ? "ARS" : "USD",
       exchangeRate: 1,
       originalAmount: parseFloat(monto),
       cardId: selectedCard?.id || null,
-      receivedBy: currentUser?.id || "usuarioId",
+      bankId: selectedBank?.id || null,
+      receivedBy: currentUser?.id || null,
       observation: data.observations || "",
+      // boxId: boxDaily[0].id,
+      chequeNumber: chequeNumber || null,
+      chequeDueDate: selectedMethod === "CHEQUE" ? dueDateValue : "",
+      chequeReceived: selectedMethod === "CHEQUE" ? emissionDateValue : "",
+      chequeBank: nameBank || null,
+      receivedAt: emissionDateValue,
     };
 
     setMessage({ text: "Pago registrado correctamente ✅", type: "success" });
+    deleteCheckBook(selectedCheckBook?.id);
     mutate(paymentPayload);
   };
 
@@ -83,13 +153,6 @@ const ModalPaymentCreate = ({ voucher, setShowPaymentModal, currentUser }) => {
 
   return (
     <div className="fixed inset-0 flex justify-center items-center bg-[var(--brown-dark-900)]/40 w-full">
-      <Message
-        message={message.text}
-        type={message.type}
-        duration={3000}
-        onClose={() => setMessage({ text: "" })}
-      />
-
       <div className="w-[80%] pb-10 rounded-md bg-[var(--brown-ligth-100)] max-h-full">
         {/* HEADER */}
         <div className="flex justify-between px-6 pb-3 pt-6 border-b-[1px] pr-5 border-[var(--brown-ligth-200)] rounded-t-md">
@@ -101,12 +164,25 @@ const ModalPaymentCreate = ({ voucher, setShowPaymentModal, currentUser }) => {
               <h1 className="font-semibold text-[var(--brown-dark-900)] text-lg">
                 REGISTRAR PAGOS
               </h1>
-              <p className="text-[var(--brown-dark-800)]">
+              <p className="text-[var(--brown-dark-800)] flex items-center">
                 Saldo Pendiente:
-                <span className="text-[var(--text-state-red)] pl-2">
+                <span
+                  className={`pl-2 ${
+                    saldo < 0
+                      ? "text-[var(--text-state-red)]"
+                      : "text-[var(--text-state-green)]"
+                  }`}
+                >
                   $
-                  {saldo?.toLocaleString("es-AR", { minimumFractionDigits: 2 })}
+                  {voucher?.remainingAmount?.toLocaleString("es-AR", {
+                    minimumFractionDigits: 2,
+                  })}
                 </span>
+                {saldo < 0 && (
+                  <span className="pl-2 flex items-center">
+                    <Danger size={22} color={"#a83228"} />
+                  </span>
+                )}
               </p>
             </div>
           </div>
@@ -145,7 +221,7 @@ const ModalPaymentCreate = ({ voucher, setShowPaymentModal, currentUser }) => {
                       setSelectedMethod(
                         selectedMethod === m.label ? "" : m.label
                       );
-                      if (m.label !== "TARJETA") setSelectedCard(null);
+                      resetMethodStates();
                     }}
                   />
                 </motion.div>
@@ -187,13 +263,273 @@ const ModalPaymentCreate = ({ voucher, setShowPaymentModal, currentUser }) => {
                 >
                   <Method
                     icon={<AddCard />}
-                    label="Agregar tarjeta"
+                    label="Gestionar tarjeta"
                     onClick={() => setShowAddCardModal(true)}
                   />
                 </motion.div>
               </div>
             </div>
           )}
+
+          {/* SELECCIÓN DE BANCOS */}
+          {selectedMethod === "TRANSFERENCIA" && (
+            <div className="px-6 pt-4">
+              <LabelInvoice text="Seleccionar banco" />
+              <div className="flex gap-4 flex-wrap mt-2">
+                {banks?.map((bank) => (
+                  <motion.div
+                    key={bank.id}
+                    animate={{
+                      opacity: selectedBank?.id === bank.id ? 1 : 0.5,
+                      scale: selectedBank?.id === bank.id ? 1.05 : 1,
+                    }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Method
+                      icon={<CreditCard />}
+                      label={bank.name}
+                      type={
+                        bank.accountType === "CAJA_AHORRO"
+                          ? "CAJA DE AHORRO"
+                          : "CUENTA CORRIENTE"
+                      }
+                      holderName={bank.holderName}
+                      selected={selectedBank?.id === bank.id}
+                      onClick={() =>
+                        setSelectedBank(
+                          selectedBank?.id === bank.id ? null : bank
+                        )
+                      }
+                    />
+                  </motion.div>
+                ))}
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Method
+                    icon={<BankIcon size={24} />}
+                    label="Gestionar banco"
+                    onClick={() => setShowAddBankModal(true)}
+                  />
+                </motion.div>
+              </div>
+            </div>
+          )}
+
+          {/* SELECCION DE CHEQUE */}
+          {selectedMethod === "CHEQUE" && (
+            <div className="px-6 pt-4 w-full">
+              <LabelInvoice text={"Tipo de Cheque"} />
+              <div
+                className={`flex px-6 mt-2 w-full transition-all duration-500 gap-4`}
+              >
+                {(voucher?.type !== "P"
+                  ? ["CHEQUE PROPIO", "CHEQUE DE TERCERO"]
+                  : ["CHEQUE DE TERCERO"]
+                ).map((c) => (
+                  <motion.div
+                    key={c}
+                    animate={{
+                      opacity: selectedCheque
+                        ? selectedCheque === c
+                          ? 1
+                          : 0.4
+                        : 1,
+                      scale: selectedCheque === c ? 1.04 : 1,
+                    }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full"
+                  >
+                    <Method
+                      icon={<Cheque />}
+                      label={c}
+                      selected={selectedCheque === c}
+                      onClick={() =>
+                        setSelectedCheque(selectedCheque === c ? "" : c)
+                      }
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* FORM DE CHEQUES SI ABONAN*/}
+          {selectedCheque === "CHEQUE PROPIO" &&
+            voucher?.type === "FACTURA" && (
+              <div className="w-full grid grid-cols-2 px-8">
+                {/* NÚMERO DE CHEQUE  */}
+                <div className="flex w-full flex-col  p-3 rounded-md">
+                  <LabelInvoice text="Número de cheque" />
+                  <input
+                    name="chequeNumber"
+                    type="text"
+                    className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+                    required
+                    onChange={(e) => setChequeNumber(e.target.value)}
+                    placeholder="0000"
+                  />
+                </div>
+                {/* BANCO  */}
+                <div className="flex w-full flex-col  p-3 rounded-md">
+                  <LabelInvoice text="Banco emisor" />
+                  <input
+                    name="chequeBank"
+                    type="text"
+                    className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+                    required
+                    onChange={(e) => setNameBank(e.target.value)}
+                    placeholder="BANCO NACION"
+                  />
+                </div>
+
+                {/* FECHA DE EMISION   */}
+                <div className="flex w-full flex-col  p-3 rounded-md">
+                  <LabelInvoice text="Fecha de emisión" />
+                  <input
+                    name="chequeEmissionDate"
+                    type="date"
+                    defaultValue={emissionDate}
+                    className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+                    required
+                  />
+                </div>
+
+                {/* FECHA DE VENCIMIENTO   */}
+                <div className="flex w-full flex-col  p-3 rounded-md">
+                  <LabelInvoice text="Fecha de vencimiento" />
+                  <input
+                    name="chequeDueDate"
+                    type="date"
+                    defaultValue={dueDate}
+                    className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
+          {/* FORM DE CHEQUES SI ABONAN*/}
+          {selectedCheque === "CHEQUE DE TERCERO" && voucher?.type === "P" && (
+            <div className="w-full grid grid-cols-2 px-8">
+              {/* NÚMERO DE CHEQUE  */}
+              <div className="flex w-full flex-col  p-3 rounded-md">
+                <LabelInvoice text="Número de cheque" />
+                <input
+                  name="chequeNumber"
+                  type="text"
+                  className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+                  required
+                  onChange={(e) => setChequeNumber(e.target.value)}
+                  placeholder="0000"
+                />
+              </div>
+              {/* BANCO  */}
+              <div className="flex w-full flex-col  p-3 rounded-md">
+                <LabelInvoice text="Banco emisor" />
+                <input
+                  name="chequeBank"
+                  type="text"
+                  className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+                  required
+                  onChange={(e) => setNameBank(e.target.value)}
+                  placeholder="BANCO NACION"
+                />
+              </div>
+
+              {/* FECHA DE EMISION   */}
+              <div className="flex w-full flex-col  p-3 rounded-md">
+                <LabelInvoice text="Fecha de emisión" />
+                <input
+                  name="chequeEmissionDate"
+                  value={emissionDateValue}
+                  onChange={(e) => setEmissionDateValue(e.target.value)}
+                  type="date"
+                  defaultValue={emissionDate}
+                  className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+                  required
+                />
+              </div>
+
+              {/* FECHA DE VENCIMIENTO   */}
+              <div className="flex w-full flex-col  p-3 rounded-md">
+                <LabelInvoice text="Fecha de vencimiento" />
+                <input
+                  value={dueDateValue}
+                  onChange={(e) => setDueDateValue(e.target.value)}
+                  name="chequeDueDate"
+                  type="date"
+                  defaultValue={dueDate}
+                  className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+                  required
+                />
+              </div>
+            </div>
+          )}
+
+          {/* CARTERA DE CHEQUE */}
+          {selectedCheque === "CHEQUE DE TERCERO" &&
+            voucher?.type === "FACTURA" && (
+              <div className="space-y-4 overflow-y-scroll max-h-[250px] scroll-pl-6  p-5 ">
+                <LabelInvoice text={"Selecciona el cheque:"} />
+
+                <ul className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 px-10 w-full">
+                  {checkBooks?.map((item) => (
+                    <li
+                      key={item?.id}
+                      onClick={() => onSelect(item)}
+                      className="w-full"
+                    >
+                      <div
+                        className={`flex items-center justify-between px-3 py-2 rounded-md transition shadow-sm cursor-pointer
+              ${
+                selectedCheckBook?.id === item.id
+                  ? "bg-[var(--brown-ligth-200)] ring-2 ring-[var(--brown-dark-600)]"
+                  : "bg-[var(--brown-ligth-50)] hover:bg-[var(--brown-ligth-200)]"
+              }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="bg-[var(--brown-ligth-300)] p-2 rounded-full">
+                            <Cheque size="30" />
+                          </div>
+                          <div>
+                            <span className="flex gap-2 justify-start items-center">
+                              <p className="text-sm font-medium text-[var(--brown-dark-900)]">
+                                $
+                                <span className="font-bold">
+                                  {item?.amount.toLocaleString("es-AR")}
+                                </span>
+                                <span className=" pl-2 font-normal text-[var(--brown-dark-700)]">
+                                  ( {item?.chequeNumber} ){" "}
+                                  <span>( {item?.chequeBank})</span>
+                                </span>
+                              </p>
+                            </span>
+                            <span className="flex gap-2 justify-start items-center">
+                              <p className="text-sm font-medium text-[var(--brown-dark-800)]">
+                                {
+                                  branch.find((b) => b?.id === item?.branchId)
+                                    .name
+                                }
+                                <span className="text-[var(--brown-dark-700)] pl-2">
+                                  (vto: {formatFechaISO(item.chequeDueDate)})
+                                </span>
+                              </p>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                  {checkBooks?.length === 0 && (
+                    <div className="flex justify-center bg-[var(--brown-ligth-200)] p-2 rounded-md">
+                      <p>No hay cheques en la cartera</p>
+                    </div>
+                  )}
+                </ul>
+              </div>
+            )}
 
           {/* MONEDA */}
           <div className="px-6 pt-4 w-full">
@@ -227,27 +563,48 @@ const ModalPaymentCreate = ({ voucher, setShowPaymentModal, currentUser }) => {
           </div>
 
           {/* MONTO */}
-          <div className="px-6 pt-4 w-full mb-5">
-            <LabelInvoice text={"Monto a abonar"} />
-            <div className="relative flex flex-col px-6 w-full">
-              <FormattedNumberInput
-                name="monto"
-                control={control}
-                decimals={2}
-                className="w-full bg-[var(--brown-ligth-50)] border border-[var(--brown-ligth-400)] rounded px-3 py-2"
-              />
-              {monto > voucher?.remainingAmount && (
-                <span className="absolute top-2 right-10">
-                  <Danger color={"#b91c1c"} />
-                </span>
+          {selectedCheque === "CHEQUE DE TERCERO" &&
+          voucher?.type === "FACTURA" ? (
+            ""
+          ) : (
+            <div className="flex px-12 gap-2">
+              {selectedMethod !== "CHEQUE" && (
+                <div className=" pt-4 w-full mb-5">
+                  <LabelInvoice text="Fecha de emisión" />
+                  <input
+                    name="receivetAt"
+                    type="date"
+                    value={emissionDateValue}
+                    onChange={(e) => setEmissionDateValue(e.target.value)}
+                    className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
+                    required
+                  />
+                </div>
               )}
-              <p className="text-[var(--text-state-red)]">
-                {monto > voucher?.remainingAmount
-                  ? "Monto mayor al saldo adeudado"
-                  : ""}
-              </p>
+              <div className="pt-4 w-full mb-5">
+                <LabelInvoice text={"Monto a abonar"} />
+                <div className="relative flex flex-col w-full">
+                  <FormattedNumberInput
+                    name="monto"
+                    control={control}
+                    decimals={2}
+                    className={`w-full bg-[var(--brown-ligth-50)] border border-[var(--brown-ligth-400)] rounded px-3 py-2 `}
+                  />
+
+                  {monto > voucher?.remainingAmount && (
+                    <span className="absolute top-2 right-10">
+                      <Danger color={"#b91c1c"} />
+                    </span>
+                  )}
+                  <p className="text-[var(--text-state-red)]">
+                    {monto > voucher?.remainingAmount
+                      ? "Monto mayor al saldo adeudado"
+                      : ""}
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* OBSERVACIONES */}
           <div className="px-6 pt-4 w-full mb-5">
@@ -284,6 +641,11 @@ const ModalPaymentCreate = ({ voucher, setShowPaymentModal, currentUser }) => {
       <ModalCreateCard
         showAddCardModal={showAddCardModal}
         setShowAddCardModal={setShowAddCardModal}
+      />
+
+      <ModalCreateBank
+        showAddBankModal={showAddBankModal}
+        setShowAddBankModal={setShowAddBankModal}
       />
     </div>
   );

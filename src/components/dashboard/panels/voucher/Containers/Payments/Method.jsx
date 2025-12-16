@@ -1,4 +1,12 @@
-const Method = ({ icon, label, selected, onClick, quotas, type }) => {
+const Method = ({
+  icon,
+  label,
+  selected,
+  onClick,
+  quotas,
+  type,
+  holderName,
+}) => {
   return (
     <div
       onClick={onClick}
@@ -16,6 +24,12 @@ const Method = ({ icon, label, selected, onClick, quotas, type }) => {
         <div>
           <h3 className="text-[14px] font-medium text-[var(--brown-dark-900)]">
             {label} {type ? `(${type})` : null}
+            {holderName ? (
+              <p className="text-xs text-[var(--brown-dark-700)] font-normal">
+                <span className="text-[var(--brown-dark-800)]">Titular: </span>
+                {`${holderName}`}
+              </p>
+            ) : null}
             {quotas ? (
               <p className="text-xs text-[var(--brown-dark-700)] font-normal">{`En ${quotas} Cuotas`}</p>
             ) : null}

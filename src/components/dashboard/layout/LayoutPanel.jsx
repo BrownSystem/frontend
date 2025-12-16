@@ -7,7 +7,7 @@ const LayoutPanel = ({ children }) => {
   const { data: branches = [] } = useFindAllBranch();
 
   return (
-    <div className="w-full flex flex-col bg-white   ml-[4rem] gap-4 ">
+    <div className="w-full flex flex-col bg-[var(--fill)]   ml-[4rem] ">
       <div className="w-full flex justify-center bg-[var(--brown-dark-800)] py-2 text-white gap-2">
         <span className="flex gap-2">
           NOMBRE: {setUser.name}{" "}

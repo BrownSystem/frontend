@@ -1,18 +1,11 @@
-import React from "react";
-import {
-  CreateUser,
-  Edit,
-  Ventas,
-  Wallet,
-} from "../../../../../../assets/icons";
+import { CreateUser, Edit } from "../../../../../../assets/icons";
 import { useViewStore } from "../../../../../../store/useViewStore";
 import { OptionCard, RenderOptions } from "../../../../widgets";
-import { AddBankForm, AddEmployeeForm, EditProductTable } from "./tables";
+import { AddEmployeeForm, EditProductTable } from "./tables";
 import EmployeeTable from "./tables/EmployeeTable";
 
 const viewMap = {
   createUser: AddEmployeeForm,
-  addBanks: AddBankForm,
   editProducts: EditProductTable,
   employeedTable: EmployeeTable,
 };
@@ -22,7 +15,7 @@ const MoreOptionsContent = () => {
 
   return (
     <>
-      <div className="w-auto h-full bg-white   p-4">
+      <div className="w-auto h-full bg-[var(--fill)]   p-4">
         <div className="flex ">
           <div className="w-[90%] flex justify-start pl-7 items-center gap-4">
             <OptionCard
@@ -40,14 +33,6 @@ const MoreOptionsContent = () => {
               <CreateUser />
             </OptionCard>
             <OptionCard
-              text={"Añadir Bancos"}
-              onClick={() => setView("addBanks")}
-              name="addBanks"
-            >
-              <Wallet color={"#fff"} x={"24"} y={"24"} />
-            </OptionCard>
-
-            <OptionCard
               text={"Editar Productos"}
               onClick={() => setView("editProducts")}
               name="editProducts"
@@ -57,7 +42,7 @@ const MoreOptionsContent = () => {
           </div>
         </div>
 
-        <div className="w-full  bg-white px-4 mt-1 ">
+        <div className="w-full  bg-[var(--fill)] px-4 mt-1 ">
           <RenderOptions viewMap={viewMap} defaultView={"createUser"} />
         </div>
       </div>

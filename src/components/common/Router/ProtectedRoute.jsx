@@ -33,9 +33,6 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     validateToken();
 
     // 👇 Se revalida cada 60 segundos
-    const interval = setInterval(validateToken, 10000);
-
-    return () => clearInterval(interval);
   }, []);
 
   if (isLoading) return null;

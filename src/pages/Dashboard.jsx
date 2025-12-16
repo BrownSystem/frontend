@@ -16,7 +16,7 @@ const Dashboard = () => {
     closeModal();
   };
   return (
-    <div className="font-outfit">
+    <div className="font-outfit ">
       <div
         className="bg-[var(--brown-ligth-50)] flex relative"
         style={{ gridTemplateColumns: "75% 25%" }}

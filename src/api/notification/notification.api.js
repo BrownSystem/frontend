@@ -10,6 +10,7 @@ export const createNotification = async (data) => {
 export const getNotificationsByBranch = async (branchId) => {
   const response = await AxiosInitializer.get("/notifications", {
     params: { branchId },
+    disableLoader: true,
   });
   return response.data;
 };

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useCreateContact } from "../../../../../api/contacts/contacts.queries";
 import { Button, Message } from "../../../../dashboard/widgets";
 import ContactForm from "./ContactForm";
 import ContactList from "./ContactList";
 import { CreateUser, Tick } from "../../../../../assets/icons";
+import { useMessageStore } from "../../../../../store/useMessage";
 
 const ContactCreateModal = ({
   isOpen,
@@ -30,7 +30,8 @@ const ContactCreateModal = ({
   };
 
   const [selectedContact, setSelectedContact] = useState(null);
-  const [message, setMessage] = useState({ text: "", type: "success" });
+  const { setMessage } = useMessageStore();
+
   const [viewMode, setViewMode] = useState(mode);
   const [search, setSearch] = useState("");
 
@@ -64,12 +65,6 @@ const ContactCreateModal = ({
 
   return (
     <>
-      <Message
-        message={message.text}
-        type={message.type}
-        onClose={() => setMessage({ text: "" })}
-        duration={3000}
-      />
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <div className="bg-[var(--brown-ligth-100)] rounded shadow-lg max-w-xl w-full max-h-[90vh]  p-6">
           <h2 className="text-sm font-sans font-semibold text-[var(--brown-dark-950)]">

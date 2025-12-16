@@ -7,6 +7,7 @@ import { ArrowDown, Delete, ProfileMan } from "../../../../../assets/icons";
 import { Button, Message } from "../../../../dashboard/widgets";
 import InputField from "./fields/InputField";
 import SelectField from "./fields/SelectField";
+import { useMessageStore } from "../../../../../store/useMessage";
 
 const ContactList = ({
   onSelect,
@@ -23,7 +24,7 @@ const ContactList = ({
     vendedor: "SELLER", // 👈 asumiendo que tu backend lo reconoce así
   };
 
-  const [message, setMessage] = useState({ text: "", type: "success" });
+  const { setMessage } = useMessageStore();
 
   const { data: contacts = [], isLoading } = useSearchContacts({
     search: debouncedSearch,
@@ -57,12 +58,6 @@ const ContactList = ({
 
   return (
     <div className="space-y-4 overflow-y-scroll max-h-[250px] scroll-pl-6  p-5">
-      <Message
-        message={message.text}
-        type={message.type}
-        onClose={() => setMessage({ text: "" })}
-        duration={2500}
-      />
       <ul className="space-y-3">
         {contacts?.data?.map((item) => (
           <li

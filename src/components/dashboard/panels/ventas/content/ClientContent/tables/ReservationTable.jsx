@@ -4,13 +4,14 @@ import { GenericTable, Message } from "../../../../../widgets";
 import { searchReservedVouchers } from "../../../../../../../api/vouchers/vouchers.api";
 import { usePaginatedTableReservationData } from "../../../../../../../hooks/usePaginatedTableReservationData";
 import { useUpdateReservedStatus } from "../../../../../../../api/vouchers/vouchers.queries";
+import { useMessageStore } from "../../../../../../../store/useMessage";
 
 const ReservationTable = () => {
   const user = useAuthStore((state) => state.user);
   const { mutate: updateStatus } = useUpdateReservedStatus();
   const branchId = user?.branchId;
   const [search, setSearch] = useState("");
-  const [message, setMessage] = useState({ text: "", type: "success" });
+  const { setMessage } = useMessageStore();
 
   const limit = 4;
 
@@ -113,12 +114,6 @@ const ReservationTable = () => {
 
   return (
     <div className="w-full h-full rounded-lg shadow overflow-x-auto p-2">
-      <Message
-        message={message.text}
-        type={message.type}
-        onClose={() => setMessage({ text: "" })}
-        duration={3000}
-      />
       <div className="flex flex-col md:flex-row justify-center items-center w-full px-4 mb-4">
         <h2 className="text-2xl font-semibold text-[#2c2b2a]">RESERVAS</h2>
       </div>

@@ -9,3 +9,4 @@ export { default as NotificationModal } from "./Modal/NotificationModal";
 export { default as PasswordConfirmModal } from "./Modal/PasswordConfirmModal";
 export { default as SelectedProductsQrModal } from "./Modal/SelecetedProductsQrModal";
 export { default as ReorganizeBranchesModal } from "./Modal/ReorganizeBranchesModal";
+export { default as BoxDailyOpenModal } from "./Modal/BoxDailyOpenModal";

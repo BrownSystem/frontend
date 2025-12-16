@@ -12,7 +12,7 @@ export const useNotifications = () => {
     queryKey: ["notifications"],
     queryFn: () => getNotificationsByBranch(),
     keepPreviousData: true,
-    refetchInterval: 5000, // 🔄 cada 10s
+    refetchInterval: 10000, // 🔄 cada 10s
   });
 };
 

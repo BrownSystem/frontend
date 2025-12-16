@@ -2,7 +2,7 @@ const VoucherContact = ({ icon, title, text }) => {
   return (
     <div className="bg-[var(--brown-ligth-100)] p-3 rounded-xl shadow-sm flex gap-4 font-[var(--font-outfit)] w-full">
       {/* Ícono */}
-      <div className="bg-[var(--brown-ligth-300)] p-2 rounded-full shrink-0">
+      <div className="bg-[var(--brown-ligth-300)] p-2 rounded-full shrink-0 flex justify-center items-center">
         {icon}
       </div>
 

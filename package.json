@@ -21,6 +21,7 @@
     "@types/react-router-dom": "5.3.3",
     "@types/tailwindcss": "3.0.11",
     "axios": "1.10.0",
+    "date-fns": "^4.1.0",
     "framer-motion": "^12.23.12",
     "html2pdf.js": "^0.10.3",
     "lucide-react": "^0.540.0",
