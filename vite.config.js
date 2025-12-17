@@ -4,7 +4,6 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
@@ -15,6 +14,13 @@ export default defineConfig({
     },
   },
   server: {
+    host: true,
+    port: 5173,
     allowedHosts: ["localhost", "bosquesrl.com", "bosquesrl.online"],
+    hmr: {
+      protocol: "wss",
+      host: "bosquesrl.com",
+      port: 443,
+    },
   },
 });
