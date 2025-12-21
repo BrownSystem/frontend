@@ -16,7 +16,7 @@ const ProductSearchModal = ({ isOpen, branchId, onClose, onSelect, index }) => {
   const { data: productosFiltrados, refetch } = useSearchProducts({
     search,
     branchId,
-    limit: 150,
+    limit: 25,
     offset: 1,
   });
 

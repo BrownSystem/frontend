@@ -112,7 +112,7 @@ const PrintQrCodeContent = () => {
   const { mutate: downloadPdfProducts, isPendingPdfProducts } =
     useDownloadPdfProducts();
 
-  const limit = 150;
+  const limit = 20;
 
   const {
     data: products,

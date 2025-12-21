@@ -1,31 +1,44 @@
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../../../../../../../api/auth/auth.store";
 import { usePaginatedTableData } from "../../../../../../../hooks/usePaginatedTableData";
-import { Delete, Duplicate, Edit } from "../../../../../../../assets/icons";
-import { Button, GenericTable, Message } from "../../../../../widgets";
 import {
   useUploadProducts,
   useUpdateProduct,
   useCreateProduct,
 } from "../../../../../../../api/products/products.queries";
-import { useQueryClient } from "@tanstack/react-query";
 import { searchProductsByBranches } from "../../../../../../../api/products/products.api";
 import { useMessageStore } from "../../../../../../../store/useMessage";
+import { Button, GenericTable } from "../../../../../widgets";
+import { Delete, Duplicate, Edit } from "../../../../../../../assets/icons";
 
+/* =======================
+   CONSTANTES
+======================= */
+const PAGE_LIMIT = 20;
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+/* =======================
+   COMPONENTE
+======================= */
 const EditProductTable = () => {
-  const [search, setSearch] = useState("");
-  const [file, setFile] = useState(null);
+  const queryClient = useQueryClient();
   const { setMessage } = useMessageStore();
-  const [editingRowId, setEditingRowId] = useState(null);
-  const [editedRowData, setEditedRowData] = useState({});
-  const [tempProducts, setTempProducts] = useState([]);
-
-  const user = useAuthStore((state) => state.user);
+  const user = useAuthStore((s) => s.user);
   const branchId = user?.branchId;
 
-  const limit = 200;
-  const queryClient = useQueryClient();
+  /* =======================
+     STATES
+  ======================= */
+  const [search, setSearch] = useState("");
+  const [tempProducts, setTempProducts] = useState([]);
+  const [editing, setEditing] = useState(null); // { id, description, isNew }
 
+  const fileInputRef = useRef(null);
+
+  /* =======================
+     DATA
+  ======================= */
   const {
     data: rawProducts,
     page,
@@ -37,158 +50,153 @@ const EditProductTable = () => {
     queryKeyBase: "products",
     search,
     branchId,
-    limit,
+    limit: PAGE_LIMIT,
     enabled: !!branchId,
   });
 
+  /* =======================
+     MUTATIONS
+  ======================= */
+  const createProduct = useCreateProduct();
+  const updateProduct = useUpdateProduct();
   const { mutate: uploadProducts } = useUploadProducts({
-    onSuccess: () => {
-      setMessage({ text: "Archivo subido correctamente ✅", type: "success" });
-    },
-    onError: () => {
-      setMessage({ text: "Error al subir archivo ❌", type: "error" });
-    },
+    onSuccess: () =>
+      setMessage({ text: "Archivo subido correctamente ✅", type: "success" }),
+    onError: () =>
+      setMessage({ text: "Error al subir archivo ❌", type: "error" }),
   });
 
-  const createProductMutation = useCreateProduct();
-  const updateProductMutation = useUpdateProduct();
-
-  const handleAddProduct = () => {
+  /* =======================
+     HANDLERS
+  ======================= */
+  const startCreate = useCallback(() => {
     const tempId = `temp-${Date.now()}`;
-    const newProduct = {
-      id: tempId,
-      description: "",
-      isNew: true,
-    };
+    const newProduct = { id: tempId, description: "", isNew: true };
 
-    setTempProducts((prev) => [newProduct, ...prev]);
-    setEditingRowId(tempId);
-    setEditedRowData(newProduct);
-  };
+    setTempProducts((p) => [newProduct, ...p]);
+    setEditing(newProduct);
+  }, []);
 
-  const handleDuplicateProduct = (row) => {
+  const startEdit = useCallback((row) => {
+    setEditing({ id: row.id, description: row.description, isNew: false });
+  }, []);
+
+  const cancelEdit = useCallback(() => {
+    if (editing?.isNew) {
+      setTempProducts((p) => p.filter((x) => x.id !== editing.id));
+    }
+    setEditing(null);
+  }, [editing]);
+
+  const saveProduct = useCallback(async () => {
+    if (!editing?.description?.trim()) {
+      setMessage({ text: "La descripción es obligatoria", type: "error" });
+      return;
+    }
+
+    try {
+      if (editing.isNew) {
+        await createProduct.mutateAsync({
+          description: editing.description,
+        });
+
+        setMessage({ text: "Producto creado ✅", type: "success" });
+
+        setTempProducts((p) => p.filter((x) => x.id !== editing.id));
+      } else {
+        await updateProduct.mutateAsync({
+          id: editing.id,
+          description: editing.description,
+        });
+
+        setMessage({ text: "Producto actualizado ✅", type: "success" });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    } catch (error) {
+      setMessage({
+        text: error?.response?.data?.message,
+        type: "error",
+      });
+    } finally {
+      setEditing(null);
+    }
+  }, [editing, createProduct, updateProduct, queryClient, setMessage]);
+
+  const deleteProduct = useCallback(
+    async (row) => {
+      if (!confirm("¿Eliminar producto?")) return;
+
+      try {
+        await updateProduct.mutateAsync({
+          id: row.id,
+          available: false,
+        });
+
+        setMessage({ text: "Producto eliminado ✅", type: "success" });
+        queryClient.invalidateQueries(["products"]);
+      } catch (error) {
+        console.log(error.response.data.message);
+        setMessage({
+          text: `Error: ${error.response.data.message} `,
+          type: "error",
+        });
+      }
+    },
+    [updateProduct, queryClient, setMessage]
+  );
+
+  const duplicateProduct = useCallback((row) => {
     const tempId = `temp-${Date.now()}`;
-    const newProduct = {
+    const duplicated = {
       id: tempId,
       description: row.description,
       isNew: true,
     };
 
-    setTempProducts((prev) => [newProduct, ...prev]);
-    setEditingRowId(tempId);
-    setEditedRowData(newProduct);
-  };
+    setTempProducts((p) => [duplicated, ...p]);
+    setEditing(duplicated);
+  }, []);
 
-  const handleEditCell = (id, key, value) => {
-    if (id === editingRowId) {
-      setEditedRowData((prev) => ({
-        ...prev,
-        [key]: value,
-      }));
-    }
-  };
+  /* =======================
+     FILE UPLOAD
+  ======================= */
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const handleEditProduct = (row) => {
-    setEditingRowId(row.id);
-    setEditedRowData({ description: row.description });
-  };
-
-  const handleCancelEdit = () => {
-    if (editedRowData.isNew) {
-      setTempProducts((prev) =>
-        prev.filter((product) => product.id !== editedRowData.id)
-      );
+    if (file.size > MAX_FILE_SIZE) {
+      alert("El archivo supera los 5MB");
+      return;
     }
 
-    setEditingRowId(null);
-    setEditedRowData({});
+    uploadProducts(file);
+    e.target.value = "";
   };
 
-  const handleDelete = async (row) => {
-    try {
-      if (!confirm("¿Desea eliminar el producto?")) return;
-      await updateProductMutation.mutateAsync({
-        id: row.id,
-        available: false,
-      });
-
-      setMessage({
-        text: "Producto deshabilitado correctamente ✅",
-        type: "success",
-      });
-
-      queryClient.invalidateQueries(["products"]);
-    } catch (err) {
-      setMessage({
-        text: `${err.response?.data?.message || "Error al eliminar ❌"}`,
-        type: "error",
-      });
-    }
-  };
-
-  const handleSaveProduct = async () => {
-    try {
-      if (editedRowData.isNew) {
-        await createProductMutation.mutateAsync({
-          description: editedRowData.description,
-          available: true,
-        });
-
-        setMessage({
-          text: "Producto creado correctamente ✅",
-          type: "success",
-        });
-
-        // Eliminar el temporal una vez guardado
-        setTempProducts((prev) =>
-          prev.filter((p) => p.id !== editedRowData.id)
-        );
-      } else {
-        await updateProductMutation.mutateAsync({
-          id: editingRowId,
-          description: editedRowData.description,
-        });
-
-        setMessage({
-          text: "Producto actualizado correctamente ✅",
-          type: "success",
-        });
-      }
-
-      queryClient.invalidateQueries(["products"]);
-    } catch (error) {
-      setMessage({ text: "Error al guardar producto ❌", type: "error" });
-    } finally {
-      setEditingRowId(null);
-      setEditedRowData({});
-    }
-  };
-
+  /* =======================
+     DATA NORMALIZADA
+  ======================= */
   const products = useMemo(() => {
-    const fromApi = rawProducts.map(({ product }) => ({
-      description: product?.description,
-      ...product,
-    }));
-
-    return [...tempProducts, ...fromApi];
+    const apiProducts = rawProducts.map(({ product }) => product);
+    return [...tempProducts, ...apiProducts];
   }, [rawProducts, tempProducts]);
 
+  /* =======================
+     COLUMNS
+  ======================= */
   const columns = [
-    {
-      key: "code",
-      label: "CÓDIGO",
-    },
+    { key: "code", label: "CÓDIGO" },
     {
       key: "description",
       label: "DESCRIPCIÓN",
       render: (_, row) =>
-        row.id === editingRowId ? (
+        editing?.id === row.id ? (
           <input
-            type="text"
             className="border px-2 py-1 rounded w-full"
-            value={editedRowData.description || ""}
+            value={editing.description}
             onChange={(e) =>
-              handleEditCell(row.id, "description", e.target.value)
+              setEditing((p) => ({ ...p, description: e.target.value }))
             }
           />
         ) : (
@@ -199,140 +207,75 @@ const EditProductTable = () => {
       key: "actions",
       label: "ACCIONES",
       render: (_, row) =>
-        row.id === editingRowId ? (
-          <div className="flex gap-2 justify-center items-center">
-            <button
-              onClick={handleSaveProduct}
-              className="text-green-600 text-xl"
-              title="Guardar"
-            >
-              ✔
-            </button>
-            <button
-              onClick={handleCancelEdit}
-              className="text-red-600 text-xl"
-              title="Cancelar"
-            >
-              ✖
-            </button>
+        editing?.id === row.id ? (
+          <div className="flex gap-2 justify-center">
+            <button onClick={saveProduct}>✔</button>
+            <button onClick={cancelEdit}>✖</button>
           </div>
         ) : (
-          <div className="flex gap-2 justify-center items-center">
-            <button className="text-gray-700" title="Editar producto">
-              <Edit color="black" onClick={() => handleEditProduct(row)} />
-            </button>
-
-            <button title="Duplicar producto">
-              <Duplicate
-                color="black"
-                size="22"
-                onClick={() => handleDuplicateProduct(row)}
-              />
-            </button>
-
-            <button title="Eliminar producto">
-              <Delete onClick={() => handleDelete(row)} />
-            </button>
+          <div className="flex gap-2 justify-center">
+            <Edit
+              color={"var(--brown-dark-800)"}
+              onClick={() => startEdit(row)}
+            />
+            <Duplicate
+              color={"var(--brown-dark-800)"}
+              onClick={() => duplicateProduct(row)}
+            />
+            <Delete onClick={() => deleteProduct(row)} />
           </div>
         ),
     },
   ];
 
+  /* =======================
+     RENDER
+  ======================= */
   if (!branchId) {
     return (
-      <div className="text-center text-red-500 mt-8">
-        No se encontró una sucursal asociada al usuario.
+      <div className="text-center text-red-500">
+        Usuario sin sucursal asignada
       </div>
     );
   }
 
-  const fileInputRef = useRef(null);
-
-  const handleButtonClick = () => {
-    if (isLoading) return; // evita clicks cuando está cargando
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files?.[0];
-    if (!selectedFile) return;
-
-    // Validaciones opcionales
-    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-    if (selectedFile.size > MAX_SIZE) {
-      alert("El archivo supera el tamaño máximo (5MB).");
-      e.target.value = "";
-      return;
-    }
-
-    setFile(selectedFile);
-    // si uploadProducts devuelve promesa, manejar errores
-    Promise.resolve(uploadProducts(selectedFile)).catch((err) => {
-      console.error("Error subiendo archivo:", err);
-    });
-
-    // reset para poder seleccionar el mismo archivo otra vez
-    e.target.value = "";
-  };
-
   return (
-    <div className="w-full h-full overflow-x-auto py-2">
-      <div className="flex flex-col md:flex-row justify-center items-center w-full px-4">
-        <h2 className="text-2xl font-semibold text-[#2c2b2a]">
-          EDITAR PRODUCTOS
-        </h2>
-      </div>
-
-      <div className="mt-6 flex justify-around items-center w-[90%]">
+    <div className="w-full h-full py-4">
+      <div className="flex justify-between items-center mb-4">
         <input
-          type="text"
-          placeholder="Buscar producto..."
-          className="border px-2 rounded w-full max-w-md bg-[var(--brown-ligth-50)] focus:outline-none focus:ring-2 border-[var(--brown-ligth-400)] focus:ring-[var(--brown-dark-700)] transition"
-          style={{ height: "40px" }}
+          placeholder="Buscar..."
+          className="border px-2 rounded"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        <div className="flex items-center justify-center gap-4">
-          {/* Botón que dispara el input de archivo */}
-          <div className="relative flex">
-            {/* Si tu Button acepta onClick, úsalo; si no, usa un <button> nativo */}
-            <Button
-              text={isLoading ? "Subiendo archivo..." : "Subir archivo"}
-              disabled={isLoading}
-              onClick={handleButtonClick} // <- importante
-            />
-
-            <input
-              ref={fileInputRef}
-              id="fileUpload"
-              type="file"
-              accept=".xlsx,.csv" // opcional: limitar tipos
-              className="hidden"
-              disabled={isLoading}
-              onChange={handleFileChange}
-            />
-          </div>
-
-          {/* Botón para añadir producto manualmente */}
-          <Button text="+ Añadir" onClick={handleAddProduct} />
+        <div className="flex gap-3">
+          <Button
+            text="Subir archivo"
+            onClick={() => fileInputRef.current.click()}
+          />
+          <Button text="+ Añadir" onClick={startCreate} />
         </div>
-      </div>
 
-      <div className="mt-4">
-        <GenericTable
-          columns={columns}
-          data={products}
-          enableFilter={false}
-          enablePagination={true}
-          externalPagination={true}
-          currentPage={page}
-          totalPages={totalPages}
-          onPageChange={setPage}
-          paginationDisabled={isLoading}
-          isLoading={isLoading}
+        <input
+          ref={fileInputRef}
+          type="file"
+          hidden
+          accept=".csv,.xlsx"
+          onChange={handleFileChange}
         />
       </div>
+
+      <GenericTable
+        columns={columns}
+        data={products}
+        enablePagination
+        externalPagination
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        isLoading={isLoading}
+      />
     </div>
   );
 };

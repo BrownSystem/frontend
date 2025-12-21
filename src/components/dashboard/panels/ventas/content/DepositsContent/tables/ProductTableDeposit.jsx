@@ -29,7 +29,7 @@ const ProductTableDeposit = ({
       filterbystock, // aquí pasa el parámetro al backend
     },
     branchId,
-    limit: 200,
+    limit: 20,
     enabled: !!branchId,
   });
 

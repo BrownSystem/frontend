@@ -31,7 +31,7 @@ const ContactList = ({
     branchId: branchId || undefined,
     type: apiTypeMap[tipo] || undefined,
     offset: 1,
-    limit: 50,
+    limit: 25,
   });
 
   const { mutate: updateContactMutate, isPending: updating } = useUpdateContact(

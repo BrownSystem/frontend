@@ -21,7 +21,7 @@ const CreditNoteList = ({
     branch: branchName || undefined,
     type: tipo === "NOTA_CREDITO_CLIENTE" ? "P" : "FACTURA",
     offset: 1,
-    limit: 50,
+    limit: 25,
   });
 
   // Mostrar solo la hora (HH:mm)

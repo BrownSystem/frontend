@@ -24,7 +24,7 @@ const Message = ({
   title = "Notificación",
   message,
   type = "info",
-  duration = 10000,
+  duration,
   onClose,
 }) => {
   useEffect(() => {
@@ -39,28 +39,30 @@ const Message = ({
   if (!message) return null;
 
   return (
-    <div
-      className={`fixed top-6 right-6 px-5 py-4 border rounded-xl shadow-lg z-[99999999999999999] w-[320px] animate-fadeInUp ${variantStyles[type]}`}
-    >
-      <div className="flex items-start gap-3">
-        {/* Icono dinámico */}
-        <div className="flex-shrink-0">{variantIcons[type]}</div>
+    <div className="rounded-md fixed flex justify-center items-center px-5 py-4 border shadow-lg z-[99999999999999999]   w-full h-full bg-black/30 top-0 left-0">
+      <div
+        className={`w-[320px] h-auto ${variantStyles[type]} rounded-md! border-2 shadow-md`}
+      >
+        <div className="flex items-start gap-3 p-5 ">
+          {/* Icono dinámico */}
+          <div className="flex-shrink-0">{variantIcons[type]}</div>
 
-        {/* Contenido */}
-        <div className="flex-1">
-          <p className="font-semibold text-sm">{title}</p>
-          <p className="text-sm opacity-90">{message}</p>
+          {/* Contenido */}
+          <div className="flex-1">
+            <p className="font-semibold text-sm">{title}</p>
+            <p className="text-sm opacity-90">{message || "asdasdsad"}</p>
+          </div>
+
+          {/* Botón de cerrar */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="text-lg leading-none ml-2 hover:opacity-70"
+            >
+              ×
+            </button>
+          )}
         </div>
-
-        {/* Botón de cerrar */}
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="text-lg leading-none ml-2 hover:opacity-70"
-          >
-            ×
-          </button>
-        )}
       </div>
     </div>
   );

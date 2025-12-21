@@ -19,7 +19,7 @@ const ProductTable = () => {
   const [tempPassword, setTempPassword] = useState("");
   const [modalConfirmation, setModalConfirmation] = useState(false);
 
-  const limit = 120;
+  const limit = 20;
 
   const {
     data: rawProducts = [],

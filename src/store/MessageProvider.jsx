@@ -21,7 +21,7 @@ const MessageProvider = () => {
       <Message
         message={message.text}
         type={message.type}
-        duration={3000}
+        duration={300000}
         onClose={clearMessage}
       />
     </div>

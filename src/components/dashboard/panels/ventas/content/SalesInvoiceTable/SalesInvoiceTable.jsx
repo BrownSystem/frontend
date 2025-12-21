@@ -35,7 +35,7 @@ const SalesInvoiceTable = () => {
   // const [montoMin, setMontoMin] = useState("");
   // const [montoMax, setMontoMax] = useState("");
 
-  const limit = 100;
+  const limit = 20;
 
   const conditionPaymentMap = {
     pagos: "CASH",

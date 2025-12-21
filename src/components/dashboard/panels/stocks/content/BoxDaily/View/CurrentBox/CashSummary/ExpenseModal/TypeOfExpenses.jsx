@@ -68,7 +68,7 @@ const TypeOfExpenses = ({
   const { data: contacts = [], isContactLoading } = useSearchContacts({
     type: "SELLER",
     offset: 1,
-    limit: 100,
+    limit: 20,
   });
   const { mutate: createExpenseTransfer, isLoading } =
     useExpenseTransferByBranch({
