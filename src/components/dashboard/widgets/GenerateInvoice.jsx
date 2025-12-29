@@ -385,6 +385,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
             }
           });
         }
+        setPagos([]);
         reset();
       },
     });
