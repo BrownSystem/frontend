@@ -27,7 +27,7 @@ instance.interceptors.request.use(
     const { hideLoader } = useLoaderStore.getState();
     hideLoader();
     return Promise.reject(error);
-  }
+  },
 );
 
 // Interceptor de response
@@ -59,7 +59,7 @@ instance.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default instance;
