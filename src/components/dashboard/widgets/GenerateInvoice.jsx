@@ -60,7 +60,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
   } = useForm({
     defaultValues: {
       fecha: new Date(
-        new Date().getTime() - new Date().getTimezoneOffset() * 60000
+        new Date().getTime() - new Date().getTimezoneOffset() * 60000,
       )
         .toISOString()
         .split("T")[0],
@@ -96,7 +96,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
 
   const branchName = useMemo(
     () => branches.find((b) => b.id === origenSucursal)?.name,
-    [origenSucursal, branches]
+    [origenSucursal, branches],
   );
 
   const { data: boxDaily } = useFindAllBoxDaily(
@@ -106,7 +106,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
     },
     {
       enabled: !!origenSucursal && !!branchName, // solo ejecuta cuando hay sucursal
-    }
+    },
   );
 
   const { data: numeroGenerado } = useGenerateVoucherNumber({
@@ -286,7 +286,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
     const totalFactura = calcularTotales().total;
     const totalPagado = pagos.reduce(
       (sum, p) => sum + parseFloat(p.amount || 0),
-      0
+      0,
     );
     if (totalPagado > totalFactura) {
       setMessage({
@@ -356,7 +356,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
         receivedAt:
           payment.receivedAt ||
           new Date(
-            new Date().getTime() - new Date().getTimezoneOffset() * 60000
+            new Date().getTime() - new Date().getTimezoneOffset() * 60000,
           )
             .toISOString()
             .split("T")[0],
@@ -821,7 +821,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
                 quantity: p.quantity,
                 precio: p.price,
                 isReserved: p.isReserved,
-              }))
+              })),
             );
 
             // ✅ Ahora cargamos los pagos
@@ -834,7 +834,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
                   currency: pay?.currency,
                   method: pay?.method,
                   observation: pay?.observation,
-                }))
+                })),
               );
             } else {
               setPagos([]); // Si no hay pagos, dejamos vacío
@@ -873,7 +873,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
           const existenteIndex = productosActuales.findIndex(
             (p) =>
               p.productId === producto.productId &&
-              p.branchId === producto.branchId
+              p.branchId === producto.branchId,
           );
 
           if (existenteIndex !== -1 && existenteIndex !== index) {
@@ -882,7 +882,7 @@ const CreateInvoice = ({ tipoOperacion }) => {
               parseFloat(productosActuales[existenteIndex].quantity) || 0;
             setValue(
               `productos.${existenteIndex}.quantity`,
-              cantidadActual + 1
+              cantidadActual + 1,
             );
             // Opcional: borrar la fila en la que ibas a ponerlo
             remove(index);

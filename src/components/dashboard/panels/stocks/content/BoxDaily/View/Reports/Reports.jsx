@@ -15,7 +15,7 @@ import { searchProducts } from "../../../../../../../../api/products/products.ap
 import RepostsMonthly from "./RepostsMonthly";
 
 const Reports = () => {
-  const limit = 10;
+  const limit = 5;
   const navigate = useNavigate();
 
   // 🟢 Estados controlados para mes y año
@@ -31,7 +31,6 @@ const Reports = () => {
     clienteId: "",
     proveedorId: "",
   });
-  const [search, setSearch] = useState("");
 
   // 🟢 Hook con parámetros dinámicos
 
@@ -88,22 +87,8 @@ const Reports = () => {
     queryKeyBase: "vouchers",
     search: "",
     additionalParams: voucherParams,
-    limit,
+    limit: 5,
     enabled: true,
-  });
-
-  // 🟢 Columnas para tabla de productos
-  const {
-    data: rawProducts,
-    page: pageProducts,
-    setPage: setPageProducts,
-    isLoading: isLoadingProducts,
-    totalPages: totalPagesProducts,
-  } = usePaginatedTableData({
-    fetchFunction: searchProducts,
-    queryKeyBase: "products-branches",
-    search,
-    limit,
   });
 
   const columnsFactura = useMemo(() => {
@@ -286,58 +271,11 @@ const Reports = () => {
         },
       },
     ],
-    [selectedIds]
-  );
-
-  const columnsProducts = useMemo(
-    () => [
-      {
-        key: "code",
-        label: "CÓDIGO",
-        className: "text-center",
-        render: (value) => (
-          <p className="bg-[var(--brown-ligth-100)] rounded-lg border-[1px] border-[var(--brown-dark-500)] text-center">
-            #{value}
-          </p>
-        ),
-      },
-      {
-        key: "description",
-        label: "NOMBRE",
-        className: "text-center",
-      },
-      {
-        key: "select",
-        label: "",
-        className: "text-center",
-        render: (value, row) => {
-          const rowId = row.id;
-          return (
-            <input
-              type="checkbox"
-              checked={selectedProductIds?.includes(rowId)}
-              onChange={(e) =>
-                handleCheckboxChangeProduct(rowId, e.target.checked)
-              }
-              onClick={(e) => e.stopPropagation()}
-            />
-          );
-        },
-      },
-    ],
-    [selectedProductIds]
+    [selectedIds],
   );
 
   return (
     <div>
-      <div className="flex flex-col px-5 self-start p-4 bg-[var(--brown-ligth-100)] rounded-md w-full mt-4">
-        <span className="text-[var(--brown-dark-950)] font-semibold">
-          PAGOS NO REALIZADOS
-        </span>
-        <p className="text-[var(--brown-dark-800)]">
-          Detalle de saldos pendientes por cliente y proveedor.
-        </p>
-      </div>
       {/* Filtros de búsqueda */}
       <FilterPanel
         showBothContacts={true}
@@ -346,6 +284,14 @@ const Reports = () => {
         branchId={branch}
       />
 
+      <div className="flex flex-col px-5 self-start p-4 bg-[var(--brown-ligth-100)] rounded-md w-full mt-4">
+        <span className="text-[var(--brown-dark-950)] font-semibold">
+          PAGOS NO REALIZADOS
+        </span>
+        <p className="text-[var(--brown-dark-800)]">
+          Detalle de saldos pendientes por cliente y proveedor.
+        </p>
+      </div>
       {/* Tabla de contacto*/}
       <GenericTable
         columns={columnsContact}
@@ -375,40 +321,6 @@ const Reports = () => {
           paginationDisabled={isLoadingVoucher}
         />
       )}
-
-      {/* HISTORIAL DE PRODUCTOS */}
-      <div className="flex flex-col px-5 self-start p-4 bg-[var(--brown-ligth-100)] rounded-md w-full mt-4">
-        <span className="text-[var(--brown-dark-950)] font-semibold">
-          HISTORIAL DE PRODUCTOS
-        </span>
-        <p className="text-[var(--brown-dark-800)]">
-          Puedes buscar el historial de movimientos de un producto en
-          particular.
-        </p>
-        <div className="flex items-center px-5 mt-2">
-          <input
-            type="text"
-            placeholder="Buscar producto..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full border border-[var(--brown-ligth-400)] rounded px-3 py-2 bg-[var(--brown-ligth-50)]"
-          />
-        </div>
-      </div>
-
-      {/* Tabla de productos */}
-      <GenericTable
-        columns={columnsProducts}
-        data={rawProducts}
-        enablePagination={true}
-        enableFilter={false}
-        externalPagination={false}
-        isLoading={isLoadingProducts}
-        currentPage={pageProducts}
-        totalPages={totalPagesProducts}
-        onPageChange={setPageProducts}
-        paginationDisabled={isLoadingProducts}
-      />
 
       {/* tabla de facturas */}
       {selectedProductIds && (

@@ -20,6 +20,7 @@ const CreditNoteList = ({
   const { data: invoice = [], isLoading } = useSearchVouchers({
     branch: branchName || undefined,
     type: tipo === "NOTA_CREDITO_CLIENTE" ? "P" : "FACTURA",
+    search: debouncedSearch || undefined,
     offset: 1,
     limit: 25,
   });

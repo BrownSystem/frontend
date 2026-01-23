@@ -51,8 +51,8 @@ const InvoiceTable = () => {
     tags === "remito"
       ? "REMITO"
       : tags === "factura"
-      ? "FACTURA"
-      : "NOTA_CREDITO_PROVEEDOR";
+        ? "FACTURA"
+        : "NOTA_CREDITO_PROVEEDOR";
 
   const additionalParams = {
     conditionPayment: conditionPaymentSelect,
@@ -101,7 +101,7 @@ const InvoiceTable = () => {
         });
         console.error("Error al borrar voucher:", error);
       },
-    }
+    },
   );
 
   const handlerDelete = (row, actionType) => {
@@ -127,7 +127,7 @@ const InvoiceTable = () => {
                 setPage(1); // refrescar la tabla
                 setMessage({ text: "Comprobante eliminado", type: "success" });
               },
-            }
+            },
           );
         },
         onError: (error) => {
@@ -136,7 +136,7 @@ const InvoiceTable = () => {
             type: "error",
           });
         },
-      }
+      },
     );
   };
 
@@ -240,7 +240,7 @@ const InvoiceTable = () => {
         ),
       },
     ],
-    [branches]
+    [branches],
   );
 
   const columnsRemito = useMemo(
@@ -319,7 +319,7 @@ const InvoiceTable = () => {
         ),
       },
     ],
-    [branches]
+    [branches],
   );
 
   const columnsCredito = useMemo(
@@ -362,8 +362,8 @@ const InvoiceTable = () => {
         className: "text-center",
         render: (_, row) =>
           row.destinationBranchName === "Sucursal destino"
-            ? row.contactName ?? "-"
-            : row.destinationBranchName ?? "-",
+            ? (row.contactName ?? "-")
+            : (row.destinationBranchName ?? "-"),
       },
       {
         key: "acciones",
@@ -414,7 +414,7 @@ const InvoiceTable = () => {
         ),
       },
     ],
-    [branches]
+    [branches],
   );
 
   const tabClass = (selected) =>
@@ -472,8 +472,8 @@ const InvoiceTable = () => {
           tags === "factura"
             ? columnsFactura
             : tags === "remito"
-            ? columnsRemito
-            : columnsCredito
+              ? columnsRemito
+              : columnsCredito
         }
         data={rawVoucher}
         enablePagination={true}
