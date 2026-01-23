@@ -74,30 +74,6 @@ const ProductHistory = () => {
   const columnsFactura = useMemo(() => {
     const baseColumns = [
       {
-        key: "status",
-        label: "ESTADO",
-        render: (value) => {
-          const statusColors = {
-            PENDIENTE: "var(--text-state-yellow)",
-            PAGADO: "var(--text-state-green)",
-            CANCELADO: "var(--text-state-red)",
-            ENTREGADO: "var(--text-state-blue)",
-          };
-          return (
-            <div className="flex justify-center">
-              <p
-                className="px-2 py-1 text-[10px] font-bold rounded-full border uppercase"
-                style={{
-                  backgroundColor: `var(--bg-state-${value === "PAGADO" ? "green" : "yellow"})`,
-                  borderColor: statusColors[value] || "gray",
-                  color: "var(--brown-dark-950)",
-                }}
-              ></p>
-            </div>
-          );
-        },
-      },
-      {
         key: "emissionDate",
         label: "FECHA",
         className: "text-center",
@@ -139,7 +115,7 @@ const ProductHistory = () => {
             row.contactName || row.destinationBranchName || "AJUSTE INTERNO";
 
           let subLabel = "PROVEEDOR";
-          if (row.type === "NOTA_CREDITO_CLIENTE" || row.type === "FACTURA")
+          if (row.type === "NOTA_CREDITO_CLIENTE" || row.type === "P")
             subLabel = "CLIENTE";
           if (row.type === "REMITO")
             subLabel = isTransfer ? "SUCURSAL DESTINO" : "STOCK LOCAL";
