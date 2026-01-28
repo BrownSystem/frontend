@@ -147,6 +147,8 @@ const ProductHistory = () => {
               if (row.type === "REMITO") {
                 // 🔄 Si IDs iguales -> Aumenta stock (ingreso/ajuste). Si distintos -> Resta (salida/envío)
                 isPositive = row.emissionBranchId === row.destinationBranchId;
+              } else if (row.type === "FACTURA") {
+                isPositive = true;
               } else {
                 // Las NC de cliente suelen ser devoluciones (entra stock)
                 isPositive = row.type === "NOTA_CREDITO_CLIENTE";
